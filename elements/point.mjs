@@ -4,10 +4,10 @@ export class Point {
   _x = 0;
   _y = 0;
 
-  constructor({x=0, y=0, svgPntRef = null}) {
-    this._x = x;
-    this._y = y;
-    this.pntRef = svgPntRef;
+  constructor({x, y, svgPntRef = null}) {
+    this._x = !isNaN(x) ? x : svgPntRef ? svgPntRef.x : 0;
+    this._y = !isNaN(y) ? y : svgPntRef ? svgPntRef.y : 0;
+    this._pntRef = svgPntRef;
   }
 
   get point() {
@@ -26,23 +26,25 @@ export class Point {
   }
 
   set x(xVlu) {
-    this._x = x;
+    this._x = xVlu;
+    this._updated();
   }
   get x() {
     return this._x;
   }
 
   set y(yVlu) {
-    this._y = y;
+    this._y = yVlu;
+    this._updated();
   }
   get y() {
     return this._y;
   }
 
   _updated() {
-    if (this.pntRef) {
-      this._pntRef.x.baseValue.value = this._x;
-      this._pntRef.y.baseValue.value = this._y;
+    if (this._pntRef) {
+      this._pntRef.x = this._x;
+      this._pntRef.y = this._y;
     }
   }
 }
