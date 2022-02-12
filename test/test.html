@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test</title>
+  <style>
+    body {
+      font-family: 'Courier New', Courier, monospace;
+      color: #222;
+    }
+    .passed > *, .failed > * {
+      background-color: white;
+      color: #222;
+      transition: height 0.6s;
+    }
+    .passed.hidden > div, .failed.hidden > div {
+      display: none;
+    }
+  </style>
+  <script src="lib/index.js"></script>
+  <script type="module" src="testAll.mjs"></script>
+</head>
+<body>
+  <h3>Testing</h3>
+  <svg width="1000" height="200"></svg>
+  <div id="testResult"></div>
+</body>
+</html>

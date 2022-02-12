@@ -1,0 +1,31 @@
+
+:root {
+  --bg-color: #c3c9f0;
+  --common: #e1fac8;
+  --ruler: #a85ca2;
+  --warn: #f7b21f;
+  --error: rgb(250, 52, 26);
+}
+
+body {
+  font: Verdana;
+  background-color: var(--bg-color);
+}
+
+svg {
+  border: 1px solid black;
+  display: block;
+}
+
+svg * {
+  stroke: black;
+}
+
+svg *.filled {
+  fill: white;
+}
+
+svg text {
+  fill: none;
+  stroke: black;
+}
