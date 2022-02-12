@@ -125,57 +125,104 @@ class Suite {
   }
 
   expect(value) {
-    const pass = (expected, fnName)=>{
-      this.descr.currDesc.currIt.expects.push({
-        name: `expect ${value} ${fnName} ${expected}`, status: true});
-      this.passedTests++
-    }
+    const self = this;
+    const result = (fnName, expected) => {
+      return {
+        pass: ()=>{
+          self.descr.currDesc.currIt.expects.push({
+            name: `expect ${value} ${fnName} ${expected}`, status: true});
+          self.passedTests++
+        },
 
-    const fail = (expected, fnName)=>{
-      try { throw new Error("find linenr"); } catch(err) {
-        const stack = err.stack.split('\n');
-        let folders = location.pathname.split('/');
-        const fileFolders = stack[3].split('/').slice(folders.length);
-        const match = fileFolders.join("/").match(/^(.*):(\d+):(\d+)\)?$/);
+        fail: function(exp, vlu){
+          if (arguments.length) {
+            expected = exp; value = vlu;
+          }
+          try { throw new Error("find linenr"); } catch(err) {
+            const stack = err.stack.split('\n');
+            let folders = location.pathname.split('/');
+            const fileFolders = stack[3].split('/').slice(folders.length);
+            const match = fileFolders.join("/").match(/^(.*):(\d+):(\d+)\)?$/);
 
-        this.descr.currDesc.currIt.expects.push({
-          name: `expect ${value} ${fnName} ${expected}`,
-          status: false, file: match[1], line: match[2], col: match[3]})
-        this.failedTests++
+            self.descr.currDesc.currIt.expects.push({
+              name: `expect ${value} ${fnName} ${expected}`,
+              status: false, file: match[1], line: match[2], col: match[3]})
+            self.failedTests++
+          }
+        }
       }
     }
 
     return {
       // Match or Asserts that expected and actual objects are same.
       toBe: function(expected) {
-        if (value === expected) pass(expected, "toBe");
-        else fail(expected, "toBe");
+        const res = result("toBe", expected);
+        if (value === expected) res.pass();
+        else res.fail();
+      },
+
+      toBeObj: function(expected) {
+        const res = result("toBeObj", expected);
+        if (Array.isArray(expected)) {
+          if (!Array.isArray(value)) return res.fail();
+          for(let i = 0; i < expected.length; ++i)
+            if (value[i] !== expected[i]) return res.fail();
+          res.pass();
+        } else if (expected !== null && typeof expected === 'object') {
+          if (typeof value!=='object' || value === null || Array.isArray(value))
+            return res.fail();
+          for(const [key, vlu] of Object.entries(expected))
+            if (key in value && value[key] !== vlu) return res.fail(vlu, value[key]);
+          res.pass();
+        }
       },
 
       // Match the expected and actual result of the test.
       toEqual: function(expected) {
-        if (value == expected) pass(expected, "toEqual");
-        else fail(expected, "toEqual");
+        const res = result("toEqual", expected);
+        if (value == expected) res.pass();
+        else res.fail();
+      },
+
+      toEqualObj: function(expected) {
+        const res = result("toEqualObj", expected);
+        if (Array.isArray(expected)) {
+          if (!Array.isArray(value)) return res.fail();
+          for(let i = 0; i < expected.length; ++i)
+            if (value[i] != expected[i]) return res.fail();
+          res.pass();
+        } else if (expected !== null && typeof expected === 'object') {
+          if (typeof value !=='object' || value === null || Array.isArray(value))
+            return res.fail();
+          for(const [key, value] of Object.entries(expected))
+            if (key in value && value[key] != value) return res.fail(vlu, value[key]);
+          res.pass();
+        }
+        res.fail();
       },
 
       toGt: function(expected) {
-        if (value > expected) pass(expected, "toGt");
-        else fail(expected, "toGt");
+        const res = result("toGt");
+        if (value > expected) res.pass();
+        else res.fail();
       },
 
       toLt: function(expected) {
-        if (value < expected) pass(expected, "toLt");
-        else fail(expected, "toLt");
+        const res = result("toLt");
+        if (value < expected) res.pass();
+        else res.fail();
       },
 
       toEqualOrGt: function(expected) {
-        if (value >= expected) pass(expected, "toEqualOrGt");
-        else fail(expected, "toEqualOrGt");
+        const res = result("toEqualOrGt");
+        if (value >= expected) res.pass();
+        else res.fail();
       },
 
       toEqualOrLt: function(expected) {
-        if (value <= expected) pass(expected, "toEqualOrLt");
-        else fail(expected, "toEqualOrLt");
+        const res = result("toEqualOrLt");
+        if (value <= expected) res.pass();
+        else res.fail();
       }
     }
   }

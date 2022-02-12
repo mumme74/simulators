@@ -1,8 +1,8 @@
 "use strict";
 
 export const allTests = [
-  "testPoint",
-  //"testShape", "testPolygon",
+  "testPoint", "testBase",
+  //"testPolygon",
   "testTriangle",
   //"testSquare"
 ];
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", async ()=>{
   for(const t of testToRun) {
     await import(`./${t}.mjs`);
     console.log("running test", t);
-    runTestSuite(t);
   };
+  runAllTestSuites();
   showTestsResults();
 });
