@@ -156,6 +156,13 @@ registerTestSuite("testPoint", ()=>{
   });
 
   describe("Test friend points", ()=>{
+    const createShape = (points = [{x:0,y:0}]) => {
+      return glbl.polygon = new Polygon({
+        parentElement:glbl.parentElement,
+        points
+      });
+    }
+
     it("Should follow point1", ()=>{
       const pt1 = new Point({y:4, x:2});
       const pt2 = new Point({y:3, x:1, followPoint:pt1});
@@ -216,6 +223,45 @@ registerTestSuite("testPoint", ()=>{
       expect(pt1).toBeObj({x:1,y:2});
       expect(pt2).toBeObj({x:1,y:2});
       expect(pt3).toBeObj({x:1,y:2});
+    });
+    it("Should remove followPoint", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint: pt1});
+      pt2.point = [6,8];
+      expect(pt1).toBeObj({x:6,y:8});
+      expect(pt2).toBeObj({x:6,y:8});
+      pt2.followPoint(null);
+      pt2.point = [4,6];
+      expect(pt1).toBeObj({x:6,y:8});
+      expect(pt2).toBeObj({x:4,y:6});
+      pt1.point = [3,1];
+      expect(pt1).toBeObj({x:3,y:1});
+      expect(pt2).toBeObj({x:4,y:6});
+    });
+    it("Should move followPoint in svg", ()=>{
+      const shape = createShape();
+      const pt1 = new Point({y:4, x:2, followPoint: shape.offset});
+      expect(pt1).toBeObj({y:0,x:0});
+      expect(shape.node.points[0]).toBeObj({x:0,y:0});
+      pt1.point = [10,20];
+      expect(pt1).toBeObj({x:10,y:20});
+      expect(shape.node.points[0]).toBeObj({x:10,y:20});
+    });
+    it("Should detach old followPoint", ()=>{
+      const pt1 = new Point({y:0, x:0});
+      const pt2 = new Point({y:4, x:2, followPoint: pt1});
+      const pt3 = new Point({y:4, x:2});
+      expect(pt2).toBeObj({y:0,x:0});
+      pt2.followPoint(pt3);
+      expect(pt2).toBeObj({y:4,x:2});
+      pt1.point = [10,20];
+      expect(pt2).toBeObj({y:4,x:2});
+      pt3.point = [6,8];
+      expect(pt2).toBeObj({x:6,y:8});
+      expect(pt1).toBeObj({y:20,x:10});
+      pt2.point = [1,3];
+      expect(pt3).toBeObj({x:1,y:3});
+      expect(pt1).toBeObj({y:20,x:10});
     });
   })
 })

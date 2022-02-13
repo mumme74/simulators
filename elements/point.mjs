@@ -65,17 +65,26 @@ export class Point {
 
   followPoint(point) {
     if (point instanceof Point) {
+      // clear old point
+      if (this._followPoint)
+        this.followPoint(null);
       this._followPoint = point;
       point._followPoints.push(this);
       this._x = this._followPoint._x;
       this._y = this._followPoint._y;
+      this._updated();
+    } else if (!point && this._followPoint) {
+      const idx = this._followPoint._followPoints.indexOf(this);
+      if (idx > -1)
+        this._followPoint._followPoints.splice(idx);
+      this._followPoint = null;
     }
   }
 
   _updated() {
     if (this._pntRef) {
-      this._pntRef.x = this._x;
-      this._pntRef.y = this._y;
+      this._pntRef.x = Math.round(this._x);
+      this._pntRef.y = Math.round(this._y);
     }
     if (this._onChangeCallback)
       this._onChangeCallback();
