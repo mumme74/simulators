@@ -1,16 +1,30 @@
 "use strict";
 
+import { Length } from "./length.mjs";
+
 export class Point {
-  _x = 0;
-  _y = 0;
+  _x = new Length({});
+  _y = new Length({});
   _pntRef = null;
   _onChangeCallback = null;
   _followPoint = null;
   _followPoints = [];
 
-  constructor({x, y, svgPntRef = null, onChangeCallback, followPoint}) {
-    this._x = !isNaN(x) ? x : svgPntRef ? svgPntRef.x : 0;
-    this._y = !isNaN(y) ? y : svgPntRef ? svgPntRef.y : 0;
+  constructor({x, y, svgPntRef = null,
+              svgLenXRef, svgLenYRef,
+              onChangeCallback, followPoint}) {
+    if (svgLenXRef) {
+      this._x._lenRef = svgLenXRef;
+      this._x.length = svgLenXRef.baseVal.value;
+    } else
+      this._x.length = !isNaN(x) ? x : svgPntRef ? svgPntRef.x : 0;
+
+    if (svgLenYRef) {
+      this._y._lenRef = svgLenYRef;
+      this._y.length = svgLenYRef.baseVal.value;
+    } else
+      this._y.length = !isNaN(y) ? y : svgPntRef ? svgPntRef.y : 0;
+
     this._pntRef = svgPntRef;
     this._onChangeCallback = onChangeCallback;
     if (followPoint)
@@ -18,22 +32,22 @@ export class Point {
   }
 
   get point() {
-    return {x:this._x, y:this._y};
+    return {x:this._x.length, y:this._y.length};
   }
 
   set point(arg) {
     if (this._followPoint)
       this._followPoint.point = arg;
     else if (Array.isArray(arg)) {
-      if (this._x !== arg[0] || this._y !== arg[1]) {
-        this._x = arg[0];
-        this._y = arg[1];
+      if (this._x.length !== arg[0] || this._y.length !== arg[1]) {
+        this._x.length = arg[0];
+        this._y.length = arg[1];
         this._updated();
       }
     } else {
-      if (this._x !== arg.x || this._y !== arg.y) {
-        this._x = arg.x;
-        this._y = arg.y;
+      if (this._x.length !== arg.x || this._y.length !== arg.y) {
+        this._x.length = arg.x;
+        this._y.length = arg.y;
         this._updated();
       }
     }
@@ -42,25 +56,25 @@ export class Point {
   set x(xVlu) {
     if (this._followPoint)
       this._followPoint.x = xVlu;
-    else if (this._x !== xVlu) {
-      this._x = xVlu;
+    else if (this._x.length !== xVlu) {
+      this._x.length = xVlu;
       this._updated();
     }
   }
   get x() {
-    return this._x;
+    return this._x.length;
   }
 
   set y(yVlu) {
     if (this._followPoint)
       this._followPoint.y = yVlu;
-    else if (this._y !== yVlu) {
-      this._y = yVlu;
+    else if (this._y.length !== yVlu) {
+      this._y.length = yVlu;
       this._updated();
     }
   }
   get y() {
-    return this._y;
+    return this._y.length;
   }
 
   followPoint(point) {
@@ -70,8 +84,8 @@ export class Point {
         this.followPoint(null);
       this._followPoint = point;
       point._followPoints.push(this);
-      this._x = this._followPoint._x;
-      this._y = this._followPoint._y;
+      this._x.length = this._followPoint._x.length;
+      this._y.length = this._followPoint._y.length;
       this._updated();
     } else if (!point && this._followPoint) {
       const idx = this._followPoint._followPoints.indexOf(this);
@@ -83,14 +97,15 @@ export class Point {
 
   _updated() {
     if (this._pntRef) {
-      this._pntRef.x = Math.round(this._x);
-      this._pntRef.y = Math.round(this._y);
+      this._pntRef.x = Math.round(this._x.length);
+      this._pntRef.y = Math.round(this._y.length);
     }
     if (this._onChangeCallback)
       this._onChangeCallback();
     // update all our points that follow this point
     for(const pt of this._followPoints) {
-      pt._x = this._x; pt._y = this._y;
+      pt._x.length = this._x.length;
+      pt._y.length = this._y.length;
       pt._updated();
     }
   }

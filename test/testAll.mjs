@@ -1,14 +1,18 @@
 "use strict";
 
 export const allTests = [
-  "testPoint", "testBase",
-  "testTriangle", "testSquare"
+  "testLength",
+  "testPoint",
+  "testBase",
+  "testTriangle",
+  "testSquare",
+  //"testCircle"
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
-const filterOut = hashStr.length ? hashStr.split(",") : [];
+const filterIn = hashStr.length ? hashStr.split(",") : [...allTests];
+const testToRun = allTests.filter(t=>filterIn.indexOf(t) > -1);
 
-const testToRun = allTests.filter(t=>filterOut.indexOf(t)===-1);
 document.addEventListener("DOMContentLoaded", async ()=>{
   setTestResultToHtml(document.getElementById("testResult"));
   for(const t of testToRun) {
