@@ -2,9 +2,7 @@
 
 export const allTests = [
   "testPoint", "testBase",
-  //"testPolygon",
-  "testTriangle",
-  //"testSquare"
+  "testTriangle", "testSquare"
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
