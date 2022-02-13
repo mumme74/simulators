@@ -17,7 +17,6 @@ registerTestSuite("testPoint", ()=>{
   });
 
   describe("Test point contruction", ()=>{
-
     it("Should construct a point with zero as default empty object", () =>{
       const pt = new Point({});
       expect(pt).toBeObj({x:0,y:0});
