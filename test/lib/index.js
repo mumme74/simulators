@@ -32,7 +32,7 @@ const log = function({txt = "", bgColor, color, parentNode = testResultNode}) {
 
   if (testResultNode) {
     const div = document.createElement("div");
-    div.innerHTML = txt.replace("\n", "<br/>") || "&nbsp;";
+    div.innerHTML = txt.replace(/\n/g, "<br/>") || "&nbsp;";
     cssProps.push("border: 1px solid #AAA;border-radius:0.2em;padding:0.3em;");
     div.style = cssProps.join(";");
     parentNode.appendChild(div);
@@ -228,21 +228,21 @@ class Suite {
   }
 
   displayResult() {
-    log({txt:`Suite ${this.suiteName} runned ${this.totalTests} tests
-${this.passedTests} passed, ${this.failedTests} failed, of ${this.totalTests} total tests`});
         const parentNode = log({txt: `Test ${this.suiteName}`, bgColor:this.failedTests ? color.bgRed : color.bgGreen});
         if (parentNode) insertToggleBtn(parentNode, !this.failedTests);
+        log({txt:`Suite ${this.suiteName} runned ${this.totalTests} tests\n` +
+             `${this.passedTests} passed, ${this.failedTests} failed, of ${this.totalTests} total groups`,
+            parentNode});
         for(const stat of this._stats) {
-            log({txt:stat.name, parentNode})
+            const groupNode = log({txt:stat.name, parentNode})
             for(const it of stat.its) {
-                log({txt:`   ${it.name}`, parentNode})
+                const itNode = log({txt:`   ${it.name}`, parentNode: groupNode})
                 for (const expect of it.expects) {
                     const col = expect.status ? color.green : color.red;
                     const txt = `${expect.name} ${!expect.status ? 'file:' + expect.file + ' line:' + expect.line + ' col:' + expect.col: ''}`
-                    log({txt: `     ${expect.status === true ? '√' : 'X' } ${txt}`, color:col, parentNode});
+                    log({txt: `     ${expect.status === true ? '√' : 'X' } ${txt}`, color:col, parentNode: itNode});
                 }
             }
-            log({})
         }
   }
 }
