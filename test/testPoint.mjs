@@ -107,4 +107,115 @@ registerTestSuite("testPoint", ()=>{
       expect(glbl.polygon.node.points[0]).toBeObj({x:3,y:5});
     });
   });
+
+  describe("Test Point onChange callback", ()=>{
+    let called = false;
+    function onChangeCallback() { called = true;}
+    afterEach(()=>{ called = false;});
+
+    it("Should call onchange callback when change x", ()=>{
+      const pt = new Point({y:4, x:2, onChangeCallback});
+      expect(pt).toBeObj({x:2,y:4});
+      expect(called).toBe(false);
+      pt.x += 1;
+      expect(called).toBe(true);
+      expect(pt.x).toEqual(3);
+    });
+    it("Should call onchange callback when change y", ()=>{
+      const pt = new Point({y:4, x:2, onChangeCallback});
+      expect(pt).toBeObj({x:2,y:4});
+      expect(called).toBe(false);
+      pt.y += 1;
+      expect(called).toBe(true);
+      expect(pt.y).toEqual(5);
+    });
+    it("Should call onchange callback when change point with array", ()=>{
+      const pt = new Point({y:4, x:2, onChangeCallback});
+      expect(pt).toBeObj({x:2,y:4});
+      expect(called).toBe(false);
+      pt.point = [1, 2];
+      expect(called).toBe(true);
+      expect(pt).toBeObj({x:1,y:2});
+    });
+    it("Should call onchange callback when change point with object", ()=>{
+      const pt = new Point({y:4, x:2, onChangeCallback});
+      expect(pt).toBeObj({x:2,y:4});
+      expect(called).toBe(false);
+      pt.point = {x:1,y:2};
+      expect(called).toBe(true);
+      expect(pt).toBeObj({x:1,y:2});
+    });
+    it("Should not call onchange callback when values unchanged", ()=>{
+      const pt = new Point({y:4, x:2, onChangeCallback});
+      expect(pt).toBeObj({x:2,y:4});
+      expect(called).toBe(false);
+      pt.point = {x:2,y:4};
+      expect(called).toBe(false);
+      expect(pt).toBeObj({x:2,y:4});
+    });
+  });
+
+  describe("Test friend points", ()=>{
+    it("Should follow point1", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1});
+      expect(pt1).toBeObj({x:2,y:4});
+      expect(pt2).toBeObj({x:2,y:4});
+    });
+    it("Should follow point1 via followPt(pt1)", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1});
+      expect(pt1).toBeObj({x:2,y:4});
+      expect(pt2).toBeObj({x:1,y:3});
+      pt2.followPoint(pt1);
+      expect(pt1).toBeObj({x:2,y:4});
+      expect(pt2).toBeObj({x:2,y:4});
+    });
+    it("Should follow point1 and move with pt1", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1});
+      expect(pt2).toBeObj({x:2,y:4});
+      pt1.point = [10,20];
+      expect(pt2).toBeObj({x:10,y:20});
+    });
+    it("Should follow point1 and move pt1 when it moves", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1});
+      expect(pt1).toBeObj({x:2,y:4});
+      expect(pt2).toBeObj({x:2,y:4});
+      pt2.point = [10,20]
+      expect(pt1).toBeObj({x:10,y:20});
+      expect(pt2).toBeObj({x:10,y:20});
+      pt2.x -= 5;
+      expect(pt1).toBeObj({x:5,y:20});
+      expect(pt2).toBeObj({x:5,y:20});
+      pt2.y -= 5;
+      expect(pt1).toBeObj({x:5,y:15});
+      expect(pt2).toBeObj({x:5,y:15});
+    });
+    it("Should follow with multiple points and move with pt1", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1});
+      const pt3 = new Point({y:2, x:0, followPoint:pt1});
+      expect(pt2).toBeObj({x:2,y:4});
+      pt1.point = [10,20];
+      expect(pt1).toBeObj({x:10,y:20});
+      expect(pt2).toBeObj({x:10,y:20});
+      expect(pt3).toBeObj({x:10,y:20});
+    });
+    it("Should follow with multiple points and move with pt2 or pt3", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1});
+      const pt3 = new Point({y:2, x:0, followPoint:pt1});
+      expect(pt2).toBeObj({x:2,y:4});
+      pt2.point = [10,20];
+      expect(pt1).toBeObj({x:10,y:20});
+      expect(pt2).toBeObj({x:10,y:20});
+      expect(pt3).toBeObj({x:10,y:20});
+      pt3.point = [1,2];
+      expect(pt1).toBeObj({x:1,y:2});
+      expect(pt2).toBeObj({x:1,y:2});
+      expect(pt3).toBeObj({x:1,y:2});
+    });
+  })
 })
