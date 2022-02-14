@@ -119,6 +119,8 @@ export class BasePointsShape extends BaseShape {
 
     const idx = !isNaN(beforePt) ? beforePt : this._points.indexOf(beforePt);
     if (idx !== null && idx > -1) {
+      if (idx === 0)
+        this.offset = pt;
       this.node.points.insertItemBefore(svgPt, idx);
       this._points.splice(idx, 0, pt);
     } else {

@@ -1,6 +1,6 @@
 "use strict";
 
-import { BasePointsShape, BaseShape, Polygon } from "../elements/base.mjs";
+import { BasePointsShape, BaseShape, Polygon, Polyline, Line } from "../elements/base.mjs";
 import { Point } from "../elements/point.mjs"
 
 const glbl = {
@@ -299,6 +299,8 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points[2]).toBeObj({x:3,y:4});
       expect(shp.node.points[3]).toBeObj({x:5,y:6});
       expect(shp.points[3]).toBeObj({x:5,y:6});
+      expect(shp.offset).toBe(shp.points[0]);
+      expect(shp.offset).toBeObj({x:10,y:11});
       pt0.point = [20,30];
       expect(shp.node.points[0]).toBeObj({x:20,y:30});
       expect(shp.points[0]).toBeObj({x:20,y:30});
