@@ -181,7 +181,7 @@ registerTestSuite("testPoint", ()=>{
       pt.x = 1;
       expect(called1).toBe(2);
       expect(called2).toBe(1);
-      pt.removeChangeCallbacks(cb1);
+      pt.removeChangeCallback(cb1);
       pt.y = 4;
       expect(called1).toBe(2);
       expect(called2).toBe(2);

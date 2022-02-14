@@ -101,7 +101,7 @@ export class Point {
     this._onChangeCallbacks.push(cb);
   }
 
-  removeChangeCallbacks(cb) {
+  removeChangeCallback(cb) {
     const idx = this._onChangeCallbacks.indexOf(cb);
     if (idx !== null && idx > -1)
       this._onChangeCallbacks.splice(idx, 1);
