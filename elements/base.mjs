@@ -3,7 +3,6 @@
 import { Point } from "./point.mjs";
 
 export class BaseShape {
-  offset = null;
   _points = [];
   _svgElem = null;
 
@@ -17,7 +16,7 @@ export class BaseShape {
         this._points.push(new Point({x:pt.x, y:pt.y, svgPntRef}));
       }
     }
-    this.offset = this._points[0];
+
     this.node = rootElement;
     if (className)
       this.node.setAttribute("class", className);
@@ -68,6 +67,14 @@ export class BaseShape {
             y = !isNaN(newPt.y) ? newPt.y : 0;
       pt.point = {x, y};
     }
+  }
+
+  get offset() {
+    return this._points[0];
+  }
+
+  set offset(point) {
+    this._points[0].point = point;
   }
 }
 
@@ -120,8 +127,6 @@ export class BasePointsShape extends BaseShape {
 
     const idx = !isNaN(beforePt) ? beforePt : this._points.indexOf(beforePt);
     if (idx !== null && idx > -1) {
-      if (idx === 0)
-        this.offset = pt;
       this.node.points.insertItemBefore(svgPt, idx);
       this._points.splice(idx, 0, pt);
     } else {
@@ -143,8 +148,6 @@ export class BasePointsShape extends BaseShape {
 
     const idx = this._points.indexOf(pt);
     if (idx !== null && idx > -1 && this._points.length > 1) {
-      if (idx === 0)
-        this.offset = this._points[1];
       this.node.points.removeItem(idx);
       this._points.splice(idx, 1);
     }
