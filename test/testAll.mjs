@@ -6,7 +6,7 @@ export const allTests = [
   "testBase",
   "testTriangle",
   "testSquare",
-  //"testCircle"
+  "testCircle"
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
