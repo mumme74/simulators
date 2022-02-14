@@ -4,9 +4,7 @@ export const allTests = [
   "testLength",
   "testPoint",
   "testBase",
-  "testTriangle",
-  "testSquare",
-  "testCircle"
+  "testTrigenometry",
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
