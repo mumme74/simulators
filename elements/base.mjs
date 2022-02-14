@@ -163,3 +163,30 @@ export class Polyline extends BasePointsShape {
     super({parentElement, rootElement:node, points, className});
   }
 }
+
+export class Line extends BaseShape {
+  constructor({parentElement, point1={x:0,y:0}, point2={x:0,y:0}, className}) {
+    const node = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const points = [];
+    node.x1.baseVal.value = point1.x;
+    node.y1.baseVal.value = point1.y;
+    node.x2.baseVal.value = point2.x;
+    node.y2.baseVal.value = point2.y;
+
+    if (point1 instanceof Point) {
+      point1._x._lenRef = node.x1;
+      point1._y._lenRef = node.y1;
+      points.push(point1);
+    } else
+      points.push(new Point({svgLenXRef:node.x1, svgLenYRef:node.y1}));
+
+    if (point2 instanceof Point) {
+      point2._x._lenRef = node.x2;
+      point2._y._lenRef = node.y2;
+      points.push(point2);
+    } else
+      points.push(new Point({svgLenXRef:node.x2, svgLenYRef:node.y2}));
+
+    super({parentElement, rootElement:node, points, className});
+  }
+}
