@@ -44,7 +44,7 @@ registerTestSuite("testCircle", ()=>{
       expect(circle.radii).toBe(10);
       expect(circle.node.r.baseVal.value).toBe(10);
       expect(circle.offset).toBeObj({x:20,y:30});
-      expect(circle.node.className.baseVal).toEqual("undefined");
+      expect(circle.node.className.baseVal).toEqual("");
     });
     it("Should construct a circle with className testClassName", ()=>{
       const circle = createCircle(10, {x:20,y:30}, "testClassName");

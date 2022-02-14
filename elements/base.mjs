@@ -19,7 +19,8 @@ export class BaseShape {
     }
     this.offset = this._points[0];
     this.node = rootElement;
-    this.node.setAttribute("class", className);
+    if (className)
+      this.node.setAttribute("class", className);
     parentElement.appendChild(this.node);
 
     this._svgElem = this.node;
