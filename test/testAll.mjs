@@ -1,11 +1,11 @@
 "use strict";
 
 export const allTests = [
-  "testHelpers",
-  "testLength",
-  "testPoint",
-  "testBase",
-  "testTrigenometry",
+  "helpers/test_helpers_index.mjs",
+  "test_length.mjs",
+  "test_point.mjs",
+  "test_base.mjs",
+  "trigenometry/test_trigenometry_index.mjs",
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
@@ -15,7 +15,7 @@ const testToRun = allTests.filter(t=>filterIn.indexOf(t) > -1);
 document.addEventListener("DOMContentLoaded", async ()=>{
   setTestResultToHtml(document.getElementById("testResult"));
   for(const t of testToRun) {
-    await import(`./${t}.mjs`);
+    await import(`./${t}`);
     console.log("running test", t);
   };
   runAllTestSuites();

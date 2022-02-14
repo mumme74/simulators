@@ -1,6 +1,6 @@
 "use strict";
 
-import { observeObject } from "../helpers/index.mjs";
+import { observeObject } from "../../helpers/index.mjs";
 
 registerTestSuite("test_observeObject", ()=>{
   let setCalled = 0, delCalled = 0,

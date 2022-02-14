@@ -1,6 +1,6 @@
 "use strict";
 
-import { Circle, Triangle, Square } from "../elements/trigenometry/index.mjs";
+import { Circle, Triangle, Square } from "../../elements/trigenometry/index.mjs";
 
 const glbl = {
   shape: null,
