@@ -190,3 +190,61 @@ export class Line extends BaseShape {
     super({parentElement, rootElement:node, points, className});
   }
 }
+
+export class Text extends BaseShape {
+  _offsetX = 0;
+  _offsetY = 0;
+  _followPoint = null;
+  constructor({parentElement, point={x:0,y:0}, text, className,
+              followPoint, offsetX=0, offsetY=0}) {
+    const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    node.x.baseVal.value = point.x;
+    node.y.baseVal.value = point.y;
+
+    if (point instanceof Point) {
+      point._x._lenRef = node.x;
+      point._y._lenRef = node.y;
+    } else
+      point = new Point({svgLenXRef:node.x, svgLenYRef:node.y});
+
+    super({parentElement, rootElement:node, points:[point], className});
+
+    this._followPointChanged.bound = this._followPointChanged.bind(this);
+    if (followPoint) this.followPoint({point:followPoint, offsetX, offsetY});
+    if (text) this.text = text;
+  }
+
+  followPoint({point, offsetX=0, offsetY=0}) {
+    this._offsetX = offsetX;
+    this._offsetY = offsetY;
+
+    if (point === null) {
+      if (this._followPoint) {
+        this._followPoint.removeChangeCallback(this._followPointChanged.bound);
+        this._followPoint = null;
+      }
+    } else if (point instanceof Point) {
+      if (this._followPoint) // clear old follow point
+        this.followPoint({point:null, offsetX, offsetY});
+      this._followPoint = point;
+      point.addChangeCallback(this._followPointChanged.bound);
+    }
+    if (this._followPoint)
+      this._followPointChanged();
+  }
+
+  get text() {
+    return this.node.innerHTML;
+  }
+
+  set text(newText) {
+    this.node.innerHTML = newText;
+  }
+
+  _followPointChanged() {
+    this.offset.point = [
+      this._followPoint.x + this._offsetX,
+      this._followPoint.y + this._offsetY
+    ];
+  }
+}
