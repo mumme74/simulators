@@ -152,6 +152,40 @@ registerTestSuite("testPoint", ()=>{
       expect(called).toBe(false);
       expect(pt).toBeObj({x:2,y:4});
     });
+    it("Sould add 2 onChangeCallbacks", ()=>{
+      let called1 = 0, called2 = 0;
+      const cb1 = ()=>{ called1++;},
+            cb2 = ()=>{ called2++;}
+      const pt = new Point({x:1,y:2});
+      pt.addChangeCallback(cb1);
+      expect(called1).toBe(0);
+      pt.x = 3;
+      expect(called1).toBe(1);
+      pt.addChangeCallback(cb2);
+      expect(called2).toBe(0);
+      pt.x = 1;
+      expect(called1).toBe(2);
+      expect(called2).toBe(1);
+    });
+    it("Should remove 1 onChangeCallback", ()=>{
+      let called1 = 0, called2 = 0;
+      const cb1 = ()=>{ called1++;},
+            cb2 = ()=>{ called2++;}
+      const pt = new Point({x:1,y:2});
+      pt.addChangeCallback(cb1);
+      expect(called1).toBe(0);
+      pt.x = 3;
+      expect(called1).toBe(1);
+      pt.addChangeCallback(cb2);
+      expect(called2).toBe(0);
+      pt.x = 1;
+      expect(called1).toBe(2);
+      expect(called2).toBe(1);
+      pt.removeChangeCallbacks(cb1);
+      pt.y = 4;
+      expect(called1).toBe(2);
+      expect(called2).toBe(2);
+    })
   });
 
   describe("Test friend points", ()=>{

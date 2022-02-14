@@ -6,7 +6,7 @@ export class Point {
   _x = new Length({});
   _y = new Length({});
   _pntRef = null;
-  _onChangeCallback = null;
+  _onChangeCallbacks = [];
   _followPoint = null;
   _followPoints = [];
 
@@ -26,7 +26,9 @@ export class Point {
       this._y.length = !isNaN(y) ? y : svgPntRef ? svgPntRef.y : 0;
 
     this._pntRef = svgPntRef;
-    this._onChangeCallback = onChangeCallback;
+    if (onChangeCallback)
+      this._onChangeCallbacks.push(onChangeCallback);
+
     if (followPoint)
       this.followPoint(followPoint);
   }
@@ -95,18 +97,33 @@ export class Point {
     }
   }
 
+  addChangeCallback(cb) {
+    this._onChangeCallbacks.push(cb);
+  }
+
+  removeChangeCallbacks(cb) {
+    const idx = this._onChangeCallbacks.indexOf(cb);
+    if (idx !== null && idx > -1)
+      this._onChangeCallbacks.splice(idx, 1);
+  }
+
   _updated() {
     if (this._pntRef) {
       this._pntRef.x = Math.round(this._x.length);
       this._pntRef.y = Math.round(this._y.length);
     }
-    if (this._onChangeCallback)
-      this._onChangeCallback();
+    // call event listeners
+    if (this._onChangeCallbacks.length) {
+      for(const cb of this._onChangeCallbacks)
+        cb();
+    }
     // update all our points that follow this point
-    for(const pt of this._followPoints) {
-      pt._x.length = this._x.length;
-      pt._y.length = this._y.length;
-      pt._updated();
+    if (this._followPoints.length) {
+      for(const pt of this._followPoints) {
+        pt._x.length = this._x.length;
+        pt._y.length = this._y.length;
+        pt._updated();
+      }
     }
   }
 }
