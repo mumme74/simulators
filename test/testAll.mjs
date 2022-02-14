@@ -1,6 +1,7 @@
 "use strict";
 
 export const allTests = [
+  "testHelpers",
   "testLength",
   "testPoint",
   "testBase",
