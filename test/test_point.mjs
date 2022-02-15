@@ -21,23 +21,25 @@ registerTestSuite("testPoint", ()=>{
       const pt = new Point({});
       expect(pt).toBeObj({x:0,y:0});
     });
-
     it("should construct a point with zero as default on y", ()=>{
       const pt = new Point({x:2});
       expect(pt.x).toEqual(2);
       expect(pt.y).toEqual(0);
     });
-
     it("Should construct a point with zero as default on x", ()=>{
       const pt = new Point({y:2});
       expect(pt.x).toEqual(0);
       expect(pt.y).toEqual(2);
     });
-
     it("Should construct a point with x=2 y=4", ()=>{
       const pt = new Point({y:4, x:2});
       expect(pt).toBeObj({x:2,y:4});
     });
+    it("Should construct a point with owner ", ()=>{
+      const owner = {};
+      const pt = new Point({x:1,y:2, owner});
+      expect(pt.owner).toBe(owner);
+    })
   });
 
   describe("Test Point move", ()=>{

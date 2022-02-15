@@ -10,9 +10,10 @@ export class Point {
   _followPoint = null;
   _followPoints = [];
 
-  constructor({x, y, svgPntRef = null,
+  constructor({x, y, svgPntRef = null, owner=null,
               svgLenXRef, svgLenYRef,
               onChangeCallback, followPoint}) {
+    this.owner = owner;
     if (svgLenXRef) {
       this._x._lenRef = svgLenXRef;
       this._x.length = svgLenXRef.baseVal.value;
