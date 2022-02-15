@@ -85,6 +85,31 @@ registerTestSuite("testWave", ()=>{
       const shp = createWave({dataPoints:[10,20,30,40]});
       expect(shp.dataPoints).toBeObj([10,20,30,40]);
     });
+    it("Should set datapoints update", ()=>{
+      const shp = createWave({dataPoints:[10,20,30,40]});
+      shp.dataPoints = [11,21,31,41];
+      expect(shp.dataPoints).toBeObj([11,21,31,41]);
+      expect(shp.points[0]).toBeObj({x:0,y:11});
+      expect(shp.points[1]).toBeObj({x:1,y:21});
+      expect(shp.points[2]).toBeObj({x:2,y:31});
+      expect(shp.points[3]).toBeObj({x:3,y:41});
+    });
+    it("Should set datapoints insert", ()=>{
+      const shp = createWave({dataPoints:[10,20]});
+      shp.dataPoints = [11,21,31,41];
+      expect(shp.dataPoints).toBeObj([11,21,31,41]);
+      expect(shp.points[0]).toBeObj({x:0,y:11});
+      expect(shp.points[1]).toBeObj({x:1,y:21});
+      expect(shp.points[2]).toBeObj({x:2,y:31});
+      expect(shp.points[3]).toBeObj({x:3,y:41});
+    });
+    it("Should set datapoints delete", ()=>{
+      const shp = createWave({dataPoints:[10,20,30,40]});
+      shp.dataPoints = [11];
+      expect(shp.points.length).toBe(1);
+      expect(shp.dataPoints).toBeObj([11]);
+      expect(shp.points[0]).toBeObj({x:0,y:11});
+    });
     it("Should move pt0", ()=>{
       const shp = createWave({dataPoints:[10,20,30,40]});
       const pnts = shp.dataPoints;

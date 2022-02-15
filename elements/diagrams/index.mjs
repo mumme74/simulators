@@ -41,6 +41,18 @@ export class Wave extends Polygon {
     return this._dataPoints;
   }
 
+  set dataPoints(points) {
+    if (points !== this._dataPoints) {
+      let i = 0;
+      // update/insert new
+      for(; i < points.length; ++i)
+        this._dataPoints[i] = points[i];
+      // remove too many
+      if (i < this._dataPoints.length)
+        this._dataPoints.splice(i);
+    }
+  }
+
   get offset() {
     return this._offset;
   }
