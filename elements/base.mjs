@@ -55,7 +55,7 @@ export class BaseShape {
   }
 
   get points() {
-    return this._points;
+    return [...this._points];
   }
 
   set points(points) {
@@ -85,7 +85,7 @@ export class BasePointsShape extends BaseShape {
   }
 
   get points() {
-    return this._points;
+    return [...this._points];
   }
 
   set points(points) {
