@@ -207,7 +207,7 @@ registerTestSuite("testPoint", ()=>{
       const pt2 = new Point({y:3, x:1});
       expect(pt1).toBeObj({x:2,y:4});
       expect(pt2).toBeObj({x:1,y:3});
-      pt2.followPoint(pt1);
+      pt2.followPoint = pt1;
       expect(pt1).toBeObj({x:2,y:4});
       expect(pt2).toBeObj({x:2,y:4});
     });
@@ -263,7 +263,7 @@ registerTestSuite("testPoint", ()=>{
       pt2.point = [6,8];
       expect(pt1).toBeObj({x:6,y:8});
       expect(pt2).toBeObj({x:6,y:8});
-      pt2.followPoint(null);
+      pt2.followPoint = null;
       pt2.point = [4,6];
       expect(pt1).toBeObj({x:6,y:8});
       expect(pt2).toBeObj({x:4,y:6});
@@ -285,7 +285,7 @@ registerTestSuite("testPoint", ()=>{
       const pt2 = new Point({y:4, x:2, followPoint: pt1});
       const pt3 = new Point({y:4, x:2});
       expect(pt2).toBeObj({y:0,x:0});
-      pt2.followPoint(pt3);
+      pt2.followPoint = pt3;
       expect(pt2).toBeObj({y:4,x:2});
       pt1.point = [10,20];
       expect(pt2).toBeObj({y:4,x:2});
@@ -296,5 +296,19 @@ registerTestSuite("testPoint", ()=>{
       expect(pt3).toBeObj({x:1,y:3});
       expect(pt1).toBeObj({y:20,x:10});
     });
-  })
+    it("Should detach all followers", ()=>{
+      const pt1 = new Point({y:0, x:0});
+      const pt2 = new Point({y:4, x:2, followPoint: pt1});
+      const pt3 = new Point({y:4, x:2, followPoint: pt1});
+      expect(pt2).toBeObj({x:0,y:0});
+      expect(pt3).toBeObj({x:0,y:0});
+      pt1.point = [10,20]; // make sure we are attached
+      expect(pt1).toBeObj({x:10,y:20});
+      expect(pt2).toBeObj({x:10,y:20});
+      pt1.detachEverything();
+      pt1.point = [1,2]; // make sure we got detached
+      expect(pt2).toBeObj({x:10,y:20});
+      expect(pt3).toBeObj({x:10,y:20});
+    });
+  });
 })

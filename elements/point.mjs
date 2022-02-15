@@ -30,7 +30,7 @@ export class Point {
       this._onChangeCallbacks.push(onChangeCallback);
 
     if (followPoint)
-      this.followPoint(followPoint);
+      this.followPoint = followPoint;
   }
 
   get point() {
@@ -79,11 +79,15 @@ export class Point {
     return this._y.length;
   }
 
-  followPoint(point) {
+  get followPoint(){
+    return this._followPoint;
+  }
+
+  set followPoint(point) {
     if (point instanceof Point) {
       // clear old point
       if (this._followPoint)
-        this.followPoint(null);
+        this.followPoint = null;
       this._followPoint = point;
       point._followPoints.push(this);
       this._x.length = this._followPoint._x.length;
@@ -105,6 +109,12 @@ export class Point {
     const idx = this._onChangeCallbacks.indexOf(cb);
     if (idx !== null && idx > -1)
       this._onChangeCallbacks.splice(idx, 1);
+  }
+
+  detachEverything() {
+    for(const trackPt of this._followPoints)
+      trackPt._followPoint = null;
+    this._followPoints.splice(0);
   }
 
   _updated() {
