@@ -312,5 +312,14 @@ registerTestSuite("testPoint", ()=>{
       expect(pt2).toBeObj({x:10,y:20});
       expect(pt3).toBeObj({x:10,y:20});
     });
+    it("Should return all connected points", ()=>{
+      const pt1 = new Point({x:0,y:1});
+      const pt2 = new Point({x:2,y:3, followPoint: pt1});
+      const pt3 = new Point({x:4,y:5, followPoint: pt2});
+      pt1.idx =1; pt2.idx=2; pt3.idx =3;
+      expect(pt1.connectedPoints()).toBeObj([pt1,pt2,pt3]);
+      expect(pt2.connectedPoints()).toBeObj([pt1,pt2,pt3]);
+      expect(pt3.connectedPoints()).toBeObj([pt1,pt2,pt3]);
+    })
   });
 })

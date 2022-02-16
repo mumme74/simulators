@@ -89,8 +89,14 @@ export class Point {
       // clear old point
       if (this._followPoint)
         this.followPoint = null;
-      this._followPoint = point;
-      point._followPoints.push(this);
+      // move up tree to attach to the root most point
+      let pntIt = point, visited = [];
+      while(pntIt._followPoint && visited.indexOf(pntIt) === -1){
+        visited.push(pntIt);
+        pntIt = pntIt._followPoint;
+      }
+      this._followPoint = pntIt;
+      pntIt._followPoints.push(this);
       this._x.length = this._followPoint._x.length;
       this._y.length = this._followPoint._y.length;
       this._updated();
@@ -116,6 +122,12 @@ export class Point {
     for(const trackPt of this._followPoints)
       trackPt._followPoint = null;
     this._followPoints.splice(0);
+  }
+
+  connectedPoints() {
+    if (this._followPoint)
+      return [this._followPoint, ...this._followPoint._followPoints];
+    return [this, ...this._followPoints];
   }
 
   _updated() {
