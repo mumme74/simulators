@@ -156,13 +156,19 @@ class Suite {
     return {
       // Match or Asserts that expected and actual objects are same.
       toBe: function(expected) {
-        const res = result("toBe", expected);
+        const res = result("===", expected);
         if (value === expected) res.pass();
         else res.fail();
       },
 
+      toNotBe: function(expected) {
+        const res = result("!==", expected);
+        if (value !== expected) res.pass();
+        else res.fail();
+      },
+
       toBeObj: function(expected) {
-        const res = result("toBeObj", expected);
+        const res = result("===", expected);
         if (Array.isArray(expected)) {
           if (!Array.isArray(value)) return res.fail();
           for(let i = 0; i < expected.length; ++i)
@@ -179,13 +185,19 @@ class Suite {
 
       // Match the expected and actual result of the test.
       toEqual: function(expected) {
-        const res = result("toEqual", expected);
+        const res = result("==", expected);
         if (value == expected) res.pass();
         else res.fail();
       },
 
+      toNotEqual: function(expected) {
+        const res = result("!=", expected);
+        if (value != expected) res.pass();
+        else res.fail();
+      },
+
       toEqualObj: function(expected) {
-        const res = result("toEqualObj", expected);
+        const res = result("==", expected);
         if (Array.isArray(expected)) {
           if (!Array.isArray(value)) return res.fail();
           for(let i = 0; i < expected.length; ++i)
@@ -202,25 +214,25 @@ class Suite {
       },
 
       toGt: function(expected) {
-        const res = result("toGt");
+        const res = result(">");
         if (value > expected) res.pass();
         else res.fail();
       },
 
       toLt: function(expected) {
-        const res = result("toLt");
+        const res = result("<");
         if (value < expected) res.pass();
         else res.fail();
       },
 
       toEqualOrGt: function(expected) {
-        const res = result("toEqualOrGt");
+        const res = result(">=");
         if (value >= expected) res.pass();
         else res.fail();
       },
 
       toEqualOrLt: function(expected) {
-        const res = result("toEqualOrLt");
+        const res = result("<=");
         if (value <= expected) res.pass();
         else res.fail();
       }
