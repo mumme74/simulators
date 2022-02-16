@@ -51,7 +51,6 @@ registerTestSuite("testBaseShape", ()=>{
     it("Should get points", ()=>{
       const shp = createShape();
       expect(shp.points.length).toBe(1);
-      const shp = createShape();
       expect(shp.points[0]).toBeObj({x:0,y:0});
     });
     it("Should move offset", ()=>{
@@ -494,7 +493,7 @@ registerTestSuite("testPolygon", ()=>{
       expect(shp.points.length).toBe(2);
     });
     it("Should move second pt in a Line", ()=>{
-      createShape([{x:0,y:0}, {x:100,y:200}]);
+      const shp = createShape([{x:0,y:0}, {x:100,y:200}]);
       expect(shp.points[0]).toBeObj({x:0,y:0});
       expect(shp.points[1]).toBeObj({x:100,y:200});
       expect(shp.points.length).toBe(2);
