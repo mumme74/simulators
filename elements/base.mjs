@@ -129,12 +129,8 @@ export class BaseShape {
 
 export class BasePointsShape extends BaseShape {
   constructor({parentElement, rootElement, points, className}) {
-    const svgElem = lookupSvgRoot(parentElement);
-
     rootElement.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
     super({parentElement, rootElement, points, className});
-
-    if (this.node.points.getItem(0) !== this._points[0]._pntRef) console.log("fail")
   }
 
   _decorateNewPoint(pnt) {
