@@ -5,6 +5,7 @@ export const allTests = [
   "test_length.mjs",
   "test_point.mjs",
   "test_base.mjs",
+  "test_wire.mjs",
   "trigenometry/test_trigenometry_index.mjs",
   "diagrams/test_diagrams_index.mjs",
 ];
