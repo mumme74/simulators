@@ -119,7 +119,9 @@ export class Point {
   }
 
   addChangeCallback(cb) {
-    this._onChangeCallbacks.push(cb);
+    const idx = this._onChangeCallbacks.indexOf(cb);
+    if (idx !== null && idx < 0)
+      this._onChangeCallbacks.push(cb);
   }
 
   removeChangeCallback(cb) {
