@@ -214,27 +214,56 @@ class Suite {
       },
 
       toGt: function(expected) {
-        const res = result(">");
+        const res = result(">", expected);
         if (value > expected) res.pass();
         else res.fail();
       },
 
       toLt: function(expected) {
-        const res = result("<");
+        const res = result("<", expected);
         if (value < expected) res.pass();
         else res.fail();
       },
 
       toEqualOrGt: function(expected) {
-        const res = result(">=");
+        const res = result(">=", expected);
         if (value >= expected) res.pass();
         else res.fail();
       },
 
       toEqualOrLt: function(expected) {
-        const res = result("<=");
+        const res = result("<=", expected);
         if (value <= expected) res.pass();
         else res.fail();
+      },
+
+      toContain: function(expected) {
+        const res = result("contain", expected);
+        let matched = 0;
+        const matchArr = (exp)=>{
+          const idx = value.indexOf(exp);
+          if (idx !== null && idx > -1)
+            ++matched;
+        }
+        if (Array.isArray(value) || typeof value === 'string') {
+          if (Array.isArray(expected)) {
+            for(const exp of expected)
+              matchArr(exp);
+          } else
+            matchArr(expected);
+        } else if (typeof value === 'object' && value !== undefined) {
+          if (Array.isArray(expected)) {
+            for(const exp of expected)
+              if (exp in value) ++matched;
+          } else if (expected in value)
+            ++matched;
+        }
+        if (Array.isArray(expected)) {
+          if (matched === expected.length)
+            return res.pass()
+        } else if (matched === 1)
+          return res.pass();
+        res.fail();
       }
     }
   }
