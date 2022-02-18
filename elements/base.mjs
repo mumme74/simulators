@@ -2,29 +2,34 @@
 
 import { Point } from "./point.mjs";
 
+function lookupSvgRoot(svgElem) {
+  while(svgElem && svgElem.tagName !== 'svg')
+    svgElem = svgElem.parentElement;
+  return svgElem;
+}
+
 export class BaseShape {
   _points = [];
   _svgElem = null;
 
   constructor({parentElement, rootElement, points, className}) {
-    for (let i = 0; i < points.length; ++i) {
-      const pt = points[i];
-      if (pt instanceof Point)
-        this._points.push(pt);
-      else {
-        const svgPntRef = rootElement?.points[i];
-        this._points.push(new Point({x:pt.x, y:pt.y, svgPntRef}));
-      }
-    }
-
     this.node = rootElement;
     if (className)
       this.node.setAttribute("class", className);
     parentElement.appendChild(this.node);
 
-    this._svgElem = this.node;
-    while(this._svgElem && this._svgElem.tagName !== 'svg')
-      this._svgElem = this._svgElem.parentElement;
+    this._svgElem = lookupSvgRoot(parentElement);
+
+    for (let i = 0; i < points.length; ++i) {
+      let pnt = points[i];
+      if (!(pnt instanceof Point)) {
+        const svgPntRef = rootElement?.points.getItem(i);
+        pnt = new Point({x:pnt.x, y:pnt.y, svgPntRef, owner: this});
+      }
+      this._decorateNewPoint(pnt);
+      this._points.push(pnt);
+    }
+
   }
 
   move(newPoint) {
@@ -59,14 +64,46 @@ export class BaseShape {
   }
 
   set points(points) {
-    let newIter = 0;
-    for (const pt of this.points) {
-      if (points.length === newIter) break;
-      const newPt = points[newIter++];
-      const x = !isNaN(newPt.x) ? newPt.x : 0,
-            y = !isNaN(newPt.y) ? newPt.y : 0;
-      pt.point = {x, y};
+    const newPts = []; let i = 0;
+
+    // we might get points sorted in a new order but same instance of points
+    for (; i < points.length; ++i) {
+      let newPt = points[i];
+      const oldPt = this._points[i],
+            oldPntIdxInNewPoints = oldPt ? points.indexOf(oldPt) : -2;
+
+      if (newPt instanceof Point) {
+        const idx = this._points.indexOf(newPt);
+        if (idx === -1)
+          this._decorateNewPoint(newPt);
+      } else {
+        if (i < this._points.length) {
+          if (oldPntIdxInNewPoints === -1) {
+            oldPt.x = newPt.x; oldPt.y = newPt.y;
+            newPts.push(oldPt);
+            continue;
+          }
+        }
+        newPt = new Point(newPt);
+        this._decorateNewPoint(newPt);
+      }
+      newPts.push(newPt);
+      if (oldPntIdxInNewPoints === -1)
+        this._pointRemoved(oldPt);
     }
+
+    // don't remove our offset point
+    if (i === 0) newPts[i++] = this._points[0];
+
+    // remove too many points, but dont remove pt0
+    for(; i < this._points.length; ++i) {
+      const myPt = this._points[i];
+      if (newPts.indexOf(myPt) === -1)
+        this._pointRemoved(myPt);
+    }
+
+    this._points = newPts;
+    this._recalulatePnts(newPts);
   }
 
   get offset() {
@@ -76,81 +113,86 @@ export class BaseShape {
   set offset(point) {
     this._points[0].point = point;
   }
+
+  /// subclass might use, called when a new point is inserted
+  /// and we should attach it to a svg property
+  _decorateNewPoint(newPnt) {}
+
+  /// subclass might use, called when a point is removed
+  /// we might want to synk svg node with this event
+  _pointRemoved(pnt) {}
+
+  /// subclass might use, when pointsList is updated
+  /// we might want to synk some ordered list with this event
+  _recalulatePnts(pntsArr) {}
 }
 
 export class BasePointsShape extends BaseShape {
   constructor({parentElement, rootElement, points, className}) {
+    const svgElem = lookupSvgRoot(parentElement);
+
     rootElement.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
     super({parentElement, rootElement, points, className});
+
+    if (this.node.points.getItem(0) !== this._points[0]._pntRef) console.log("fail")
   }
 
-  get points() {
-    return [...this._points];
+  _decorateNewPoint(pnt) {
+    return pnt._pntRef ? pnt : this.makePointWithSvgRef(pnt);
   }
 
-  set points(points) {
-    const origLen = this._points.length;
-    super.points = points; // opdate existing position in super
-
-    if (origLen < points.length) {
-      // add points
-      for(let i = origLen; i < points.length; ++i){
-        const svgPt = this._svgElem.createSVGPoint();
-        svgPt.x = points[i].x; svgPt.y = points[i].y;
-        this.node.points.appendItem(svgPt);
-        this._points.push(new Point({svgPntRef:svgPt}));
-      }
-    } else if (origLen > points.length) {
-      // remove points
-      // need to save one point as all shapes must have at least one
-      for(let i = origLen-1; i > Math.max(points.length-1, 0); --i) {
-        this.node.points.removeItem(i);
-        this._points.pop();
-      }
-    }
+  _recalulatePnts(points) {
+    // we nee to insert into node, then take ref, appendItem copies pont instead of using it directly
+    this.node.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
+    for(let i = 0; i < this.points.length; ++i)
+      this.points[i]._pntRef = this.node.points.getItem(i);
   }
 
   insertPoint(point, beforePt=null) {
-    const svgPt = this._svgElem.createSVGPoint();
-    let pt;
-    if (point instanceof Point) {
-      point._pntRef = svgPt;
-      svgPt.x = point.x; svgPt.y = point.y;
-      pt = point;
-    } else if (Array.isArray(point)) {
-      svgPt.x = point[0]; svgPt.y = point[1];
-      pt = new Point({svgPntRef:svgPt});
-    } else {
-      svgPt.x = point.x; svgPt.y = point.y;
-      pt = new Point({svgPntRef:svgPt});
-    }
+    const pnt = this.makePointWithSvgRef(
+      Array.isArray(point) ? {x:point[0], y:point[1]} : point);
 
     const idx = !isNaN(beforePt) ? beforePt : this._points.indexOf(beforePt);
     if (idx !== null && idx > -1) {
-      this.node.points.insertItemBefore(svgPt, idx);
-      this._points.splice(idx, 0, pt);
+      this.node.points.insertItemBefore(pnt._pntRef, idx);
+      this._points.splice(idx, 0, pnt);
     } else {
-      this.node.points.appendItem(svgPt);
-      this._points.push(pt);
+      this.node.points.appendItem(pnt._pntRef);
+      this._points.push(pnt);
     }
   }
 
   removePoint(point) {
-    let pt;
+    let pnt;
     if (point instanceof Point)
-      pt = point;
+      pnt = point;
     else if (!isNaN(point))
-      pt = this.points[point];
+      pnt = this._points[point];
     else if (Array.isArray(point))
-      pt = this.points.find(p=>p.x===point[0] && p.y===point[1]);
+      pnt = this._points.find(p=>p.x===point[0] && p.y===point[1]);
     else
-      pt = this.points.find(p=>p.x===point.x && p.y===point.y);
+      pnt = this._points.find(p=>p.x===point.x && p.y===point.y);
 
-    const idx = this._points.indexOf(pt);
+    const idx = this._points.indexOf(pnt);
     if (idx !== null && idx > -1 && this._points.length > 1) {
       this.node.points.removeItem(idx);
       this._points.splice(idx, 1);
     }
+  }
+
+  static makePointWithSvgRefStatic(pnt, svgElem) {
+    const svgPnt = svgElem.createSVGPoint();
+    svgPnt.x = !isNaN(pnt?.x) ? pnt.x : 0;
+    svgPnt.y = !isNaN(pnt?.y) ? pnt.y : 0;
+    if (pnt instanceof Point) {
+      pnt._pntRef = svgPnt;
+      return pnt;
+    }
+    return new Point({svgPntRef: svgPnt});
+  }
+
+  makePointWithSvgRef(pnt) {
+    return BasePointsShape.makePointWithSvgRefStatic(pnt, this._svgElem);
   }
 }
 

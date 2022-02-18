@@ -18,11 +18,13 @@ registerTestSuite("testBaseShape", ()=>{
     const pts = [];
     for(const p of shp.points) pts.push(p);
     pts[0] = glbl.point;
-    return glbl.shape = new BaseShape({
+    glbl.shape = new BaseShape({
       parentElement: glbl.parentElement, rootElement: shp,
       points: pts,
       className
     });
+    glbl.point.owner = glbl.shape;
+    return glbl.shape;
   };
 
   afterEach(()=>{
@@ -45,7 +47,24 @@ registerTestSuite("testBaseShape", ()=>{
       expect(shp.offset).toEqual(glbl.point);
       expect(document.querySelector(".testClassName")).toEqual(shp.node);
     });
-  })
+    it("Should call decorateNewPoint on construction", ()=>{
+      const pts = [];
+      const oldMhd = BaseShape.prototype._decorateNewPoint;
+      BaseShape.prototype._decorateNewPoint = (pt) => { pts.push(pt); }
+      const shp = createShape([{x:1,y:2},{x:3,y:4}]);
+      expect(shp.points.length).toBe(2);
+      expect(pts.length).toBe(2);
+      expect(pts).toBeObj(shp.points);
+      BaseShape.prototype._decorateNewPoint = oldMhd;
+    });
+    it("Should register owner as shp", ()=>{
+      const shp = createShape([{x:1,y:2}, {x:3,y:4},{x:5,y:6}]);
+      expect(shp.offset.owner).toBe(shp);
+      expect(shp.points[0].owner).toBe(shp);
+      expect(shp.points[1].owner).toBe(shp);
+      expect(shp.points[2].owner).toBe(shp);
+    })
+  });
 
   describe("Test BaseShape points", ()=>{
     it("Should get points", ()=>{
@@ -73,7 +92,106 @@ registerTestSuite("testBaseShape", ()=>{
       shp.points = [{x:10,y:20},{x:1,y:3}];
       expect(shp.node.points[0]).toBeObj({x:10,y:20});
     });
+    it("Should remove points", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      shp.points = [{x:1,y:2}];
+      expect(shp.points.length).toBe(1);
+      expect(shp.points[0]).toBeObj({x:1,y:2})
+    });
+    it("Should not remove pt0", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      shp.points = [];
+      expect(shp.points.length).toBe(1)
+      expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.offset).toBeObj({x:1,y:2});
+    });
+    it("Should add points", ()=>{
+      const shp = createShape([{x:1,y:2}]);
+      expect(shp.points.length).toBe(1);
+      shp.points = [{x:1,y:2},{x:3,y:4},{x:5,y:6}];
+      expect(shp.points.length).toBe(3);
+      expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[2]).toBeObj({x:5,y:6});
+    });
+    it("Should reorder points", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      const pt0 = shp.points[0],
+            pt1 = shp.points[1],
+            pt2 = shp.points[2];
+      shp.points = [pt1,pt2,pt0];
+      expect(shp.offset).toBe(pt1);
+      expect(shp.points[0]).toBe(pt1);
+      expect(shp.points[1]).toBe(pt2);
+      expect(shp.points[2]).toBe(pt0);
+    });
+    it("Should reorder, add, and remove points", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      const pt0 = shp.points[0],
+            pt1 = shp.points[1],
+            pt2 = shp.points[2];
+      shp.points = [pt2,{x:7,y:8},pt1];
+      expect(shp.offset).toBe(pt2);
+      expect(shp.points[0]).toBe(pt2);
+      expect(shp.points[1]).toNotBe(pt1);
+      expect(shp.points[1]).toBeObj({x:7,y:8});
+      expect(shp.points[2]).toBe(pt1);
+    });
+    it("Should call _decorateNewPoint", ()=>{
+      const shp = createShape([{x:1,y:2}]);
+      const pts = [];
+      const oldMhd = BaseShape.prototype._decorateNewPoint;
+      BaseShape.prototype._decorateNewPoint = (pt) => { pts.push(pt); }
+      const pt = new Point({x:3,y:4});
+      shp.points = [pt];
+      expect(shp.points.length).toBe(1);
+      expect(pts.length).toBe(1);
+      expect(pts).toBeObj(shp.points);
+      expect(shp.points[0]).toBeObj({x:3,y:4});
+      expect(shp.offset).toBe(pt);
+      BaseShape.prototype._decorateNewPoint = oldMhd;
+    });
+    it("Should call _pointRemoved", ()=>{
+      const pts = [];
+      const oldMhd = BaseShape.prototype._pointRemoved;
+      BaseShape.prototype._pointRemoved = (pt) => { pts.push(pt); }
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      const pt0 = shp.points[0], pt1 = shp.points[1], pt2 = shp.points[2];
+      shp.points = [pt2,pt0];
+      expect(pts.length).toBe(1);
+      expect(pts[0]).toBe(pt1);
+      expect(shp.points[0]).toBe(pt2);
+      expect(shp.points[1]).toBe(pt0);
+      BaseShape.prototype._pointRemoved = oldMhd;
+    });
+    it("Should call _pointRemoved {x,y}", ()=>{
+      const pts = [];
+      const oldMhd = BaseShape.prototype._pointRemoved;
+      BaseShape.prototype._pointRemoved = (pt) => { pts.push(pt); }
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      const pt0 = shp.points[0], pt1 = shp.points[1], pt2 = shp.points[2];
+      shp.points = [{x:5,y:6},{x:1,y:2}];
+      expect(pts.length).toBe(1);
+      expect(pts[0]).toBe(pt2);
+      expect(shp.points[0]).toBeObj({x:5,y:6});
+      expect(shp.points[1]).toBeObj({x:1,y:2});
+      BaseShape.prototype._pointRemoved = oldMhd;
+    });
+    it("Should call _recalculatePnts", ()=>{
+      let pts = [];
+      const oldMhd = BaseShape.prototype._recalulatePnts;
+      BaseShape.prototype._recalulatePnts = (pt) => { pts = pts.concat(pt); }
+      const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
+      const pt0 = shp.points[0], pt1 = shp.points[1], pt2 = shp.points[2];
+      shp.points = [pt1,pt2,pt0];
+      expect(shp.points).toBeObj([pt1,pt2,pt0]);
+      expect(pts.length).toBe(3);
+      expect(pts).toBeObj([pt1,pt2,pt0]);
+      BaseShape.prototype._recalulatePnts = oldMhd;
+    })
+  });
 
+  describe("Test BaseShape move", ()=>{
     it("Should move shape", ()=>{
       const shp = createShape([{x:0,y:0}, {x:10,y:20}, {x:30, y:40}]);
       shp.move({x:1,y:3});
@@ -201,6 +319,9 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points[0]).toBeObj({x:1,y:2});
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.node.points[0]).toBeObj(shp.node.points[0]);
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should construct a linw with className", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4}], "testClassName");
@@ -211,12 +332,16 @@ registerTestSuite("testBasePointsShape", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6},{x:7,y:8}]);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:5,y:6});
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.node.points[3]).toBeObj({x:7,y:8});
       expect(shp.points[3]).toBeObj({x:7,y:8});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
     });
   });
 
@@ -225,11 +350,14 @@ registerTestSuite("testBasePointsShape", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
       shp.points = [{x:2,y:3},{x:4,y:5},{x:6,y:7}];
       expect(shp.node.points[0]).toBeObj({x:2,y:3});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[0]).toBeObj({x:2,y:3});
       expect(shp.node.points[1]).toBeObj({x:4,y:5});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points[1]).toBeObj({x:4,y:5});
       expect(shp.node.points[2]).toBeObj({x:6,y:7});
       expect(shp.points[2]).toBeObj({x:6,y:7});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.points.length).toBe(3);
     });
     it("Should add points", ()=>{
@@ -238,10 +366,13 @@ registerTestSuite("testBasePointsShape", ()=>{
       shp.points = [{x:2,y:3},{x:4,y:5},{x:6,y:7}];
       expect(shp.node.points[0]).toBeObj({x:2,y:3});
       expect(shp.points[0]).toBeObj({x:2,y:3});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:4,y:5});
       expect(shp.points[1]).toBeObj({x:4,y:5});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:6,y:7});
       expect(shp.points[2]).toBeObj({x:6,y:7});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.points.length).toBe(3);
     });
     it("Should remove points", ()=>{
@@ -249,8 +380,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       shp.points = [{x:2,y:3},{x:4,y:5}];
       expect(shp.node.points[0]).toBeObj({x:2,y:3});
       expect(shp.points[0]).toBeObj({x:2,y:3});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:4,y:5});
       expect(shp.points[1]).toBeObj({x:4,y:5});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
     });
     it("Should remove all but one point", ()=>{
@@ -258,6 +391,7 @@ registerTestSuite("testBasePointsShape", ()=>{
       shp.points = [];
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points.length).toBe(1);
     });
     it("Should insertPoint as pt1", ()=>{
@@ -266,12 +400,16 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points.length).toBe(4);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:10,y:11});
       expect(shp.points[1]).toBeObj({x:10,y:11});
-      expect(shp.node.points[2]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
+      expect(shp.node.points[2]).toBeObj({x:3,y:4});;
       expect(shp.points[2]).toBeObj({x:3,y:4});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2])
       expect(shp.node.points[3]).toBeObj({x:5,y:6});
       expect(shp.points[3]).toBeObj({x:5,y:6});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
     });
     it("Should insertPoint as pt1 as arr", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -279,12 +417,16 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points.length).toBe(4);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:10,y:11});
       expect(shp.points[1]).toBeObj({x:10,y:11});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:3,y:4});
       expect(shp.points[2]).toBeObj({x:3,y:4});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.node.points[3]).toBeObj({x:5,y:6});
       expect(shp.points[3]).toBeObj({x:5,y:6});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
     });
     it("Should insertPoint as pt0 as Point", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -293,12 +435,16 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points.length).toBe(4);
       expect(shp.node.points[0]).toBeObj({x:10,y:11});
       expect(shp.points[0]).toBeObj({x:10,y:11});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:1,y:2});
       expect(shp.points[1]).toBeObj({x:1,y:2});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:3,y:4});
       expect(shp.points[2]).toBeObj({x:3,y:4});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.node.points[3]).toBeObj({x:5,y:6});
       expect(shp.points[3]).toBeObj({x:5,y:6});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
       expect(shp.offset).toBe(shp.points[0]);
       expect(shp.offset).toBeObj({x:10,y:11});
       pt0.point = [20,30];
@@ -311,12 +457,16 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points.length).toBe(4);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:5,y:6});
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.node.points[3]).toBeObj({x:10,y:11});
       expect(shp.points[3]).toBeObj({x:10,y:11});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
     });
     it("Should remove pt1 with index", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -325,8 +475,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:5,y:6});
       expect(shp.points[1]).toBeObj({x:5,y:6});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should remove pt1 with pointRef", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -335,8 +487,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:5,y:6});
       expect(shp.points[1]).toBeObj({x:5,y:6});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should remove pt1 with {x,y}", ()=> {
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -345,8 +499,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:5,y:6});
       expect(shp.points[1]).toBeObj({x:5,y:6});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should remove pt1 with [x,y]", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -355,8 +511,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:5,y:6});
       expect(shp.points[1]).toBeObj({x:5,y:6});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should not remove pt1 with mismatch {x,y}", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -368,10 +526,13 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(3);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:5,y:6});
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
     });
     it("Should not remove pt1 with mismatch [x,y]", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -383,10 +544,13 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(3);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:5,y:6});
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
     })
     it("Should remove pt0 and change offset", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -396,8 +560,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:3,y:4});
       expect(shp.points[0]).toBeObj({x:3,y:4});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:5,y:6});
       expect(shp.points[1]).toBeObj({x:5,y:6});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.offset).toBeObj({x:3,y:4});
       expect(shp.offset).toBe(pt1);
     });
@@ -415,6 +581,7 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(1);
       expect(shp.node.points[0]).toBeObj({x:5,y:6});
       expect(shp.points[0]).toBeObj({x:5,y:6});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.offset).toBeObj({x:5,y:6});
       expect(shp.offset).toBe(pt2);
     });
@@ -425,11 +592,66 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
-  })
-})
+    it("Should add SVGpoint instances", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4}]);
+      const svgPnt0 = shp.points[0]._pntRef;
+      const svgPnt1 = shp.points[1]._pntRef;
+      const pnt = shp.makePointWithSvgRef({x:5,y:6});
+      shp.points = [pnt, ...shp.points];
+      expect(shp.points[0]._pntRef).toBeObj(pnt._pntRef);
+      expect(shp.points[1]._pntRef).toBeObj(svgPnt0);
+      expect(shp.points[2]._pntRef).toBeObj(svgPnt1);
+    });
+    it("Should keep SVGpoint instances", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4}]);
+      const svgPnt0 = shp.points[0]._pntRef;
+      const svgPnt1 = shp.points[1]._pntRef;
+      shp.points = [[10,20],[30,40]];
+      expect(shp.points[0]._pntRef).toBeObj(svgPnt0);
+      expect(shp.points[1]._pntRef).toBeObj(svgPnt1);
+    });
+    it("Should keep SVGpoint instances reorder", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4}]);
+      const svgPnt0 = shp.points[0]._pntRef;
+      const svgPnt1 = shp.points[1]._pntRef;
+      shp.points = [shp.points[1], shp.points[0]];
+      expect(shp.points[0]._pntRef).toBeObj(svgPnt1);
+      expect(shp.points[1]._pntRef).toBeObj(svgPnt0);
+    });
+  });
+
+  describe("Test makePointWithSvgRef", ()=>{
+    it("Should create new point 0,0 svg and pnt", ()=>{
+      const shp = createShape([{x:-1,y:-2}]);
+      const pnt = shp.makePointWithSvgRef({x:1,y:2});
+      expect(pnt).toBeObj({x:1,y:2});
+      expect(pnt._pntRef instanceof SVGPoint).toBe(true);
+      expect(pnt._pntRef).toBeObj({x:1,y:2});
+    });
+    it("Should create svg Point attached to pnt", ()=>{
+      const shp = createShape([{x:-1,y:-2}]);
+      const p = new Point({x:1,y:2})
+      shp.makePointWithSvgRef(p);
+      expect(p).toBeObj({x:1,y:2});
+      expect(p._pntRef instanceof SVGPoint).toBe(true);
+      expect(p._pntRef).toBeObj({x:1,y:2});
+    });
+    it("Should create svg point attached to pnt and pnt returned", ()=>{
+      const shp = createShape([{x:-1,y:-2}]);
+      const p = new Point({x:1,y:2})
+      const pnt = shp.makePointWithSvgRef(p);
+      expect(p).toBe(pnt);
+      expect(pnt).toBeObj({x:1,y:2});
+      expect(pnt._pntRef instanceof SVGPoint).toBe(true);
+      expect(pnt._pntRef).toBeObj({x:1,y:2});
+    });
+  });
+});
 
 registerTestSuite("testPolygon", ()=>{
   const createShape = (points, className)=>{
@@ -451,29 +673,40 @@ registerTestSuite("testPolygon", ()=>{
     it("Should construct a Line", ()=>{
       const shp = createShape([{x:0,y:0}, {x:100,y:200}]);
       expect(shp.points[0]).toBeObj({x:0,y:0});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
     });
     it("Should construct a Line with className", ()=>{
       const shp = createShape([{x:0,y:0}, {x:100,y:200}], "testClassName");
       expect(shp.points[0]).toBeObj({x:0,y:0});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
       expect(document.querySelector(".testClassName")).toBe(shp.node);
     });
     it("Should construct a Triangle", ()=>{
       const shp = createShape([{x:2,y:4},{x:100,y:200},{x:50, y:100}]);
       expect(shp.points[0]).toBeObj({x:2,y:4});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points[2]).toBeObj({x:50,y:100});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.points.length).toBe(3);
     });
     it("Should construct a 4corner", ()=>{
       const shp = createShape([{x:2,y:4},{x:100,y:200},{x:50, y:100},{x:10,y:20}]);
       expect(shp.points[0]).toBeObj({x:2,y:4});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points[2]).toBeObj({x:50,y:100});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
       expect(shp.points[3]).toBeObj({x:10,y:20});
+      expect(shp.points[3]._pntRef).toBeObj(shp.node.points[3]);
       expect(shp.points.length).toBe(4);
     });
   });
@@ -488,20 +721,26 @@ registerTestSuite("testPolygon", ()=>{
       expect(shp.points[0]).toBeObj({x:40,y:50});
       expect(shp.points[1]).toBeObj({x:100,y:200});
       expect(shp.node.points[0]).toBeObj({x:40,y:50});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.offset).toBeObj({x:40,y:50});
       expect(shp.points.length).toBe(2);
     });
     it("Should move second pt in a Line", ()=>{
       const shp = createShape([{x:0,y:0}, {x:100,y:200}]);
       expect(shp.points[0]).toBeObj({x:0,y:0});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
       shp.points[1].point = [40,50];
       expect(shp.points[0]).toBeObj({x:0,y:0});
       expect(shp.points[1]).toBeObj({x:40,y:50});
       expect(shp.node.points[0]).toBeObj({x:0,y:0});
       expect(shp.node.points[1]).toBeObj({x:40,y:50});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.offset).toBeObj({x:0,y:0});
       expect(shp.points.length).toBe(2);
     });
@@ -536,8 +775,10 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.className.baseVal).toBe("testClassName");
       expect(document.querySelector(".testClassName"));
     });
@@ -546,10 +787,13 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.points.length).toBe(3);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.node.points[2]).toBeObj({x:5,y:6});
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2]._pntRef).toBeObj(shp.node.points[2]);
     });
   });
 
@@ -561,6 +805,7 @@ registerTestSuite("testPolyLine", ()=>{
       shp.points[1].point = [30,40];
       expect(shp.points[1]).toBeObj({x:30,y:40});
       expect(shp.node.points[1]).toBeObj({x:30,y:40});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
     it("Should insert pt0", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -571,6 +816,7 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.node.points.length).toBe(4);
       expect(shp.points[0]).toBeObj({x:30,y:40});
       expect(shp.node.points[0]).toBeObj({x:30,y:40});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.offset).toBe(shp.points[0]);
       expect(shp.offset).toBeObj({x:30,y:40});
     });
@@ -583,8 +829,10 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.node.points.length).toBe(2);
       expect(shp.points[0]).toBeObj({x:1,y:2});
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:3,y:4});
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
   })
 });

@@ -43,6 +43,7 @@ registerTestSuite("testWave", ()=>{
       expect(shp.dataPoints).toBeObj([10]);
       expect(shp.offset).toBeObj({x:0,y:0});
       expect(shp.points[0]).toBeObj({x:0,y:10});
+      expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
     });
     it("Should construct with 1 datapoint and offset 10,20", ()=>{
       const shp = createWave({dataPoints:[10], offset:{x:10,y:20}});
@@ -115,7 +116,10 @@ registerTestSuite("testWave", ()=>{
       const pnts = shp.dataPoints;
       expect(shp.points[0]).toBeObj({x:0,y:10});
       expect(shp.node.points[0]).toBeObj({x:0,y:10});
+      const svgPnt = shp.node.points[0];
+      expect(shp.points[0]._pntRef).toBeObj(svgPnt);
       pnts[0] = 11;
+      expect(shp.node.points[0]).toBeObj(svgPnt);
       expect(shp.points[0]).toBeObj({x:0,y:11});
       expect(shp.node.points[0]).toBeObj({x:0,y:11});
     });
@@ -124,7 +128,10 @@ registerTestSuite("testWave", ()=>{
       const pnts = shp.dataPoints;
       expect(shp.points[1]).toBeObj({x:2,y:20});
       expect(shp.node.points[1]).toBeObj({x:2,y:20});
+      const svgPnt = shp.node.points[0];
+      expect(shp.points[1]._pntRef).toBeObj(svgPnt);
       pnts[1] = 11;
+      expect(shp.node.points[0]).toBeObj(svgPnt);
       expect(shp.points[1]).toBeObj({x:2,y:11});
       expect(shp.node.points[1]).toBeObj({x:2,y:11});
     });
