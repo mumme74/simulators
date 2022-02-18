@@ -25,7 +25,8 @@ export class BaseShape {
       if (!(pnt instanceof Point)) {
         const svgPntRef = rootElement?.points.getItem(i);
         pnt = new Point({x:pnt.x, y:pnt.y, svgPntRef, owner: this});
-      }
+      } else
+        pnt.owner = this;
       this._decorateNewPoint(pnt);
       this._points.push(pnt);
     }
@@ -85,6 +86,7 @@ export class BaseShape {
           }
         }
         newPt = new Point(newPt);
+        newPt.owner = this;
         this._decorateNewPoint(newPt);
       }
       newPts.push(newPt);

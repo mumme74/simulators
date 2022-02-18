@@ -14,16 +14,12 @@ registerTestSuite("testBaseShape", ()=>{
   const createShape = (points = [{x:0,y:0}], className)=>{
     const shp = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
     shp.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(" "));
-    glbl.point = new Point({svgPntRef: shp.points[0]});
-    const pts = [];
-    for(const p of shp.points) pts.push(p);
-    pts[0] = glbl.point;
     glbl.shape = new BaseShape({
       parentElement: glbl.parentElement, rootElement: shp,
-      points: pts,
+      points,
       className
     });
-    glbl.point.owner = glbl.shape;
+    glbl.point = glbl.shape.points[0];
     return glbl.shape;
   };
 
@@ -63,7 +59,20 @@ registerTestSuite("testBaseShape", ()=>{
       expect(shp.points[0].owner).toBe(shp);
       expect(shp.points[1].owner).toBe(shp);
       expect(shp.points[2].owner).toBe(shp);
-    })
+    });
+    it("Should register owner as shp with points", ()=>{
+      const pt0 = new Point({x:1,y:2}),
+            pt1 = new Point({x:3,y:4}),
+            pt2 = new Point({x:5,y:6})
+      const shp = createShape([pt0,pt1,pt2]);
+      expect(shp.offset.owner).toBe(shp);
+      expect(shp.points[0].owner).toBe(shp);
+      expect(pt0.owner).toBe(shp);
+      expect(shp.points[1].owner).toBe(shp);
+      expect(pt1.owner).toBe(shp);
+      expect(shp.points[2].owner).toBe(shp);
+      expect(pt2.owner).toBe(shp);
+    });
   });
 
   describe("Test BaseShape points", ()=>{
@@ -111,8 +120,11 @@ registerTestSuite("testBaseShape", ()=>{
       shp.points = [{x:1,y:2},{x:3,y:4},{x:5,y:6}];
       expect(shp.points.length).toBe(3);
       expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.points[0].owner).toBeObj(shp);
       expect(shp.points[1]).toBeObj({x:3,y:4});
+      expect(shp.points[1].owner).toBeObj(shp);
       expect(shp.points[2]).toBeObj({x:5,y:6});
+      expect(shp.points[2].owner).toBeObj(shp);
     });
     it("Should reorder points", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -122,8 +134,11 @@ registerTestSuite("testBaseShape", ()=>{
       shp.points = [pt1,pt2,pt0];
       expect(shp.offset).toBe(pt1);
       expect(shp.points[0]).toBe(pt1);
+      expect(shp.points[0].owner).toBe(shp);
       expect(shp.points[1]).toBe(pt2);
+      expect(shp.points[1].owner).toBe(shp);
       expect(shp.points[2]).toBe(pt0);
+      expect(shp.points[2].owner).toBe(shp);
     });
     it("Should reorder, add, and remove points", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -133,9 +148,12 @@ registerTestSuite("testBaseShape", ()=>{
       shp.points = [pt2,{x:7,y:8},pt1];
       expect(shp.offset).toBe(pt2);
       expect(shp.points[0]).toBe(pt2);
+      expect(shp.points[0].owner).toBe(shp);
       expect(shp.points[1]).toNotBe(pt1);
       expect(shp.points[1]).toBeObj({x:7,y:8});
+      expect(shp.points[1].owner).toBe(shp);
       expect(shp.points[2]).toBe(pt1);
+      expect(shp.points[2].owner).toBe(shp);
     });
     it("Should call _decorateNewPoint", ()=>{
       const shp = createShape([{x:1,y:2}]);
