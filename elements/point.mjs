@@ -17,14 +17,20 @@ export class Point {
     if (svgLenXRef) {
       this._x._lenRef = svgLenXRef;
       this._x.length = svgLenXRef.baseVal.value;
+    } else if (svgPntRef) {
+      if (!isNaN(x)) svgPntRef.x = x;
+      this._x.length = svgPntRef.x;
     } else
-      this._x.length = !isNaN(x) ? x : svgPntRef ? svgPntRef.x : 0;
+      this._x.length = !isNaN(x) ? x : 0;
 
     if (svgLenYRef) {
       this._y._lenRef = svgLenYRef;
       this._y.length = svgLenYRef.baseVal.value;
+    } else if (svgPntRef) {
+      if (!isNaN(y)) svgPntRef.y = y;
+      this._y.length = svgPntRef.y;
     } else
-      this._y.length = !isNaN(y) ? y : svgPntRef ? svgPntRef.y : 0;
+      this._y.length = !isNaN(y) ? y : 0;
 
     this._pntRef = svgPntRef;
     if (onChangeCallback)
@@ -106,6 +112,10 @@ export class Point {
         this._followPoint._followPoints.splice(idx);
       this._followPoint = null;
     }
+  }
+
+  svgPntRef() {
+    return this._pntRef;
   }
 
   addChangeCallback(cb) {

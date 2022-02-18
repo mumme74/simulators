@@ -39,7 +39,30 @@ registerTestSuite("testPoint", ()=>{
       const owner = {};
       const pt = new Point({x:1,y:2, owner});
       expect(pt.owner).toBe(owner);
-    })
+    });
+    it("Should construct a point with svgPntRef set x,y from svgPnt ", ()=>{
+      const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      const svgPnt = svgNode.createSVGPoint();
+      svgPnt.x = 1, svgPnt.y = 2;
+      const pt = new Point({svgPntRef:svgPnt});
+      expect(pt.svgPntRef()).toEqual(svgPnt);
+      expect(pt).toBeObj({x:1,y:2});
+    });
+    it("Should construct a point with svgPntRef set svgPnt(x,y) from x,y ", ()=>{
+      const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');      const svgPnt = svgNode.createSVGPoint();
+      const pt = new Point({x:1,y:2, svgPntRef:svgPnt});
+      expect(pt.svgPntRef()).toEqual(svgPnt);
+      expect(pt).toBeObj({x:1,y:2});
+      expect(svgPnt).toBeObj({x:1,y:2});
+    });
+    it("Should construct a point with svgPntRef set svgPnt(x,y) from x,y priortise x,y ", ()=>{
+      const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');      const svgPnt = svgNode.createSVGPoint();
+      svgPnt.x = 3, svgPnt.y = 4;
+      const pt = new Point({x:1,y:2, svgPntRef:svgPnt});
+      expect(pt.svgPntRef()).toEqual(svgPnt);
+      expect(pt).toBeObj({x:1,y:2});
+      expect(svgPnt).toBeObj({x:1,y:2});
+    });
   });
 
   describe("Test Point move", ()=>{
