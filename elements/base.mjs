@@ -334,6 +334,9 @@ export class Line extends BaseShape {
  * Class for dynamic SVG texts
  * @extends BaseShape
  * @property {string} text The text displayed
+ * @property {Point|null} point - The point to follow, null clears followPoint
+ * @property {number} followOffsetX - followPoint offset by X
+ * @property {number} followOffsetY - followPoint offset by Y
 */
 export class Text extends BaseShape {
   _offsetX = 0;
@@ -364,20 +367,17 @@ export class Text extends BaseShape {
     super({parentElement, rootElement:node, points:[point], className});
 
     this._followPointChanged.bound = this._followPointChanged.bind(this);
-    if (followPoint) this.followPoint({point:followPoint, offsetX, offsetY});
+    this._offsetX = offsetX;
+    this._offsetY = offsetY;
+    if (followPoint) this.followPoint = followPoint;
     if (text) this.text = text;
   }
 
-  /**
-   * Sets or clears a followPoint
-   * @param {Point|null} point - The point to follow, null clears followPoint
-   * @param {number} offsetX - followPoint offset by X
-   * @param {number} offsetY - followPoint offset by Y
-   */
-  followPoint({point, offsetX=0, offsetY=0}) {
-    this._offsetX = offsetX;
-    this._offsetY = offsetY;
+  get followPoint() {
+    return this._followPoint;
+  }
 
+  set followPoint(point) {
     if (point === null) {
       if (this._followPoint) {
         this._followPoint.removeChangeCallback(this._followPointChanged.bound);
@@ -385,13 +385,37 @@ export class Text extends BaseShape {
       }
     } else if (point instanceof Point) {
       if (this._followPoint) // clear old follow point
-        this.followPoint({point:null, offsetX, offsetY});
+        this.followPoint = null;
       this._followPoint = point;
       point.addChangeCallback(this._followPointChanged.bound);
     }
     if (this._followPoint)
       this._followPointChanged();
   }
+
+  get followOffsetX() {
+    return this._offsetX;
+  }
+
+  set followOffsetX(offsetX) {
+    this._offsetX = offsetX;
+    if (this._followPoint)
+      this._followPointChanged();
+  }
+
+  get followOffsetY() {
+    return this._offsetY;
+  }
+
+  set followOffsetY(offsetY) {
+    this._offsetY = offsetY;
+    if (this._followPoint)
+      this._followPointChanged();
+  }
+
+  /**
+   * Sets or clears a followPoint
+   */
 
   get text() {
     return this.node.innerHTML;

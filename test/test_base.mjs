@@ -1093,7 +1093,7 @@ registerTestSuite("testText", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
       expect(shp.points[0]).toBeObj({x:2,y:4});
-      shp.followPoint({point});
+      shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:20});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(20);
@@ -1106,7 +1106,8 @@ registerTestSuite("testText", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
       expect(shp.points[0]).toBeObj({x:2,y:4});
-      shp.followPoint({point, offsetX: 5});
+      shp.followPoint = point;
+      shp.followOffsetX = 5;
       expect(shp.points[0]).toBeObj({x:15,y:20});
       expect(shp.node.x.baseVal.value).toBe(15);
       expect(shp.node.y.baseVal.value).toBe(20);
@@ -1119,7 +1120,8 @@ registerTestSuite("testText", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
       expect(shp.points[0]).toBeObj({x:2,y:4});
-      shp.followPoint({point, offsetY: 5});
+      shp.followOffsetY = 5;
+      shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:25});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(25);
@@ -1131,11 +1133,12 @@ registerTestSuite("testText", ()=>{
     it("Should only update offsetX", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
-      shp.followPoint({point, offsetX: 5});
+      shp.followOffsetX = 5;
+      shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:15,y:20});
       expect(shp.node.x.baseVal.value).toBe(15);
       expect(shp.node.y.baseVal.value).toBe(20);
-      shp.followPoint({offsetX:10});
+      shp.followOffsetX = 10;
       expect(shp.points[0]).toBeObj({x:20,y:20});
       expect(shp.node.x.baseVal.value).toBe(20);
       expect(shp.node.y.baseVal.value).toBe(20);
@@ -1143,11 +1146,12 @@ registerTestSuite("testText", ()=>{
     it("Should only update offsetY", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
-      shp.followPoint({point, offsetY: 5});
+      shp.followOffsetY = 5;
+      shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:25});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(25);
-      shp.followPoint({offsetY:10});
+      shp.followOffsetY = 10;
       expect(shp.points[0]).toBeObj({x:10,y:30});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(30);
@@ -1155,7 +1159,7 @@ registerTestSuite("testText", ()=>{
     it("Should clear followPoint", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
-      shp.followPoint({point});
+      shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:20});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(20);
@@ -1163,7 +1167,7 @@ registerTestSuite("testText", ()=>{
       expect(shp.points[0]).toBeObj({x:15,y:25});
       expect(shp.node.x.baseVal.value).toBe(15);
       expect(shp.node.y.baseVal.value).toBe(25);
-      shp.followPoint({point:null});
+      shp.followPoint = null;
       point.point = [20,30];
       expect(shp.points[0]).toBeObj({x:15,y:25});
       expect(shp.node.x.baseVal.value).toBe(15);
@@ -1176,7 +1180,7 @@ registerTestSuite("testText", ()=>{
       expect(shp.points[0]).toBeObj({x:10,y:20});
       expect(shp.node.x.baseVal.value).toBe(10);
       expect(shp.node.y.baseVal.value).toBe(20);
-      shp.followPoint({point:point2});
+      shp.followPoint = point2;
       expect(shp.points[0]).toBeObj({x:20,y:30});
       expect(shp.node.x.baseVal.value).toBe(20);
       expect(shp.node.y.baseVal.value).toBe(30);
