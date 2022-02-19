@@ -311,6 +311,22 @@ export class Line extends BaseShape {
 
     super({parentElement, rootElement:node, points, className});
   }
+
+  get point1() {
+    return this._points[0];
+  }
+
+  set point1(point) {
+    this._points[0].point = point;
+  }
+
+  get point2() {
+    return this._points[1];
+  }
+
+  set point2(point) {
+    this._points[1].point = point;
+  }
 }
 
 /**

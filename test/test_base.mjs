@@ -944,6 +944,41 @@ registerTestSuite("testLine", ()=>{
       expect(shp.node.x2.baseVal.value).toBe(5);
       expect(shp.node.y2.baseVal.value).toBe(6);
     });
+  });
+
+  describe("Test point1 and point2", ()=>{
+    it("Should get pt1", ()=>{
+      const pt = new Point({x:1,x:2});
+      const line = createShape(pt);
+      expect(line.point1).toBe(pt);
+    });
+    it("Should get pt2", ()=>{
+      const pt = new Point({x:1,x:2});
+      const line = createShape(undefined, pt);
+      expect(line.point2).toBe(pt);
+    });
+    it("Should move pt1", ()=>{
+      const line = createShape();
+      line.point1 = [1,2]
+      expect(line.point1).toBeObj({x:1,y:2});
+    });
+    it("Should move pt2", ()=>{
+      const line = createShape();
+      line.point2 = {x:1,y:2};
+      expect(line.point2).toBeObj({x:1,y:2});
+    });
+    it("Should move pt1 with a point", ()=>{
+      const pt = new Point({x:1,y:2});
+      const line = createShape();
+      line.point1 = pt;
+      expect(line.point1).toBeObj({x:1,y:2});
+    });
+    it("Should move pt2 with a point", ()=>{
+      const pt = new Point({x:1,y:2});
+      const line = createShape();
+      line.point2 = pt;
+      expect(line.point2).toBeObj({x:1,y:2});
+    });
   })
 });
 
