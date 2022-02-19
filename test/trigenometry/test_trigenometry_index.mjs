@@ -1,5 +1,6 @@
 "use strict";
 
+import { Point } from "../../elements/point.mjs";
 import { Circle, Triangle, Square } from "../../elements/trigenometry/index.mjs";
 
 const glbl = {
@@ -140,6 +141,22 @@ registerTestSuite("testTriangle", ()=>{
       expect(triangle.points[0]).toBeObj({x:2,y:4});
       expect(triangle.points[1]).toBeObj({x:6,y:8});
       expect(triangle.points[2]).toBeObj({x:10,y:12});
+    });
+    it("should only construct with 3 point instance and move points in SVG", ()=>{
+      const pt0 = new Point({x:1,y:2}),
+            pt1 = new Point({x:3,y:4}),
+            pt2 = new Point({x:5,y:6});
+      const triangle = createTriangle([pt0,pt1,pt2]);
+      expect(triangle.points.length).toEqual(3);
+      pt0.point = [10,20];
+      expect(triangle.points[0]).toBe(pt0);
+      expect(triangle.node.points[0]).toBeObj({x:10,y:20});
+      pt1.point = [30,40];
+      expect(triangle.points[1]).toBe(pt1);
+      expect(triangle.node.points[1]).toBeObj({x:30,y:40});
+      pt2.point = [50,60];
+      expect(triangle.points[2]).toBe(pt2);
+      expect(triangle.node.points[2]).toBeObj({x:50,y:60});
     });
   })
 });

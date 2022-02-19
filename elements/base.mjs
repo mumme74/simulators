@@ -34,15 +34,16 @@ export class BaseShape {
 
     for (let i = 0; i < points.length; ++i) {
       let pnt = points[i];
-      if (!(pnt instanceof Point)) {
-        const svgPntRef = rootElement?.points.getItem(i);
+      const svgPntRef = rootElement?.points?.getItem(i);
+      if (!(pnt instanceof Point) || (pnt._pntRef && svgPntRef)) {
         pnt = new Point({x:pnt.x, y:pnt.y, svgPntRef, owner: this});
-      } else
+      } else {
         pnt.owner = this;
+        if (svgPntRef) pnt._pntRef = svgPntRef;
+      }
       this._decorateNewPoint(pnt);
       this._points.push(pnt);
     }
-
   }
 
   /**
@@ -175,8 +176,8 @@ export class BasePointsShape extends BaseShape {
   _recalulatePnts(points) {
     // we nee to insert into node, then take ref, appendItem copies pont instead of using it directly
     this.node.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
-    for(let i = 0; i < this.points.length; ++i)
-      this.points[i]._pntRef = this.node.points.getItem(i);
+    for(let i = 0; i < this._points.length; ++i)
+      this._points[i]._pntRef = this.node.points.getItem(i);
   }
 
   /**

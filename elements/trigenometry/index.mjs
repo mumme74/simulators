@@ -50,10 +50,9 @@ export class Triangle extends Polygon {
    * @param {Array.<Point>|Array.<{x:number,y:number}>}
    * @param {string} className The CSS classes this node should have
    */
-  constructor({parentElement, points = [], className = ""}) {
-    for (let i = 0; i < 3; ++i)
-      if (points.length === i)
-       points.push({x:0, y:0});
+  constructor({parentElement, points=[], className=""}) {
+    for (let i = points.length; i < 3; ++i)
+      points.push({x:0, y:0});
     super({parentElement, points: points.slice(0,3), className});
   }
 
