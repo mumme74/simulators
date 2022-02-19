@@ -1,6 +1,6 @@
 "use strict";
 
-import { observeObject } from "../../helpers/index.mjs";
+import { observeObject, toFraction } from "../../helpers/index.mjs";
 
 registerTestSuite("test_observeObject", ()=>{
   let setCalled = 0, delCalled = 0,
@@ -169,3 +169,72 @@ registerTestSuite("test_observeObject", ()=>{
     });
   });
 });
+
+registerTestSuite("test_toFraction", ()=>{
+  describe("Test below default", ()=>{
+    it("Should return 1/2", ()=>{
+      const res = toFraction({vlu:0.5});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(1);
+      expect(res.den).toBe(2);
+    });
+    it("Should return 1/3", ()=>{
+      const res = toFraction({vlu:0.3333333});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(1);
+      expect(res.den).toBe(3);
+    });
+    it("Should return 1 1/4", ()=>{
+      const res = toFraction({vlu:1.25});
+      expect(res.int).toBe(1);
+      expect(res.num).toBe(1);
+      expect(res.den).toBe(4);
+    });
+    it("Should return -1/2", ()=>{
+      const res = toFraction({vlu:-0.5});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(-1);
+      expect(res.den).toBe(2);
+    });
+    it("Should return 1/1000", ()=>{
+      const res = toFraction({vlu:0.001});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(1);
+      expect(res.den).toBe(1000);
+    });
+  });
+  describe("Test tolerance", ()=>{
+    it("Should return 1/20", ()=>{
+      const res = toFraction({vlu:0.04, tolerance:0.05});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(1);
+      expect(res.den).toEqualOrGt(20);
+    });
+    it("Should return 1/10", ()=>{
+      const res = toFraction({vlu:0.09, tolerance:0.1});
+      expect(res.int).toBe(0);
+      expect(res.num).toBe(1);
+      expect(res.den).toEqualOrGt(10);
+    });
+  });
+  describe("Test useInt", ()=>{
+    it("Should return 2/1", ()=>{
+      const res = toFraction({vlu:2, useInt:false});
+      expect(res.int).toBe(undefined);
+      expect(res.num).toBe(2);
+      expect(res.den).toBe(1);
+    });
+    it("Should return 3/2", ()=>{
+      const res = toFraction({vlu:1.5, useInt:false});
+      expect(res.int).toBe(undefined);
+      expect(res.num).toBe(3);
+      expect(res.den).toBe(2);
+    });
+    it("Should return 9/4", ()=>{
+      const res = toFraction({vlu:2.25, useInt:false});
+      expect(res.int).toBe(undefined);
+      expect(res.num).toBe(9);
+      expect(res.den).toBe(4);
+    });
+  });
+})
