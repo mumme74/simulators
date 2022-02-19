@@ -1,15 +1,29 @@
 "use strict";
 
 import { Polygon } from "../base.mjs"
-import { Length } from "../length.mjs";
 import { Point } from "../point.mjs";
 import { observeObject } from "../../helpers/index.mjs";
 
+/**
+ * A Wave class
+ * @extends Polygon
+ * @property {Array.<number>} dataPoints The datapoints to show, updates wave implicitly when changed
+ */
 export class Wave extends Polygon {
   _xScale = 1;
   _yScale = 1;
   // need to specialcase offset here as point[0] might move with data
   _offset = null;
+
+  /**
+   * Create a new Wave instance
+   * @param {SVGElement} parentElement The SVG node to attach this.node to.
+   * @param {Point|{x:number,y:number}} offset Where Wave should be placed
+   * @param {string} className The CSS classes this node should have
+   * @param {Array.<number>} dataPoints Initial datapoints of wave
+   * @param {number} xScale Scale horizontally by this factor for each datapoint
+   * @param {number} yScale Scale each datapoint value verticaly by this factor.
+   */
   constructor({parentElement, offset={x:0,y:0}, className,
               dataPoints=[], xScale=1, yScale=1}) {
     super({parentElement, points:[offset], className});

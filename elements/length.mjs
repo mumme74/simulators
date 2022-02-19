@@ -1,11 +1,23 @@
 "use strict";
 
+/**
+ * class for controlling length/distance
+ * Can directly control a SVGLength object and update it wih this length
+ * @property {number} length The value of this length
+ */
 export class Length {
   _len = 0;
   _lenRef = null;
   _followLength = null;
   _followLengths = [];
 
+  /**
+   * Creates a Length object
+   * @param {number} length The length/Distance value
+   * @param {SVGLength} svgLength The SVG length this class controls
+   * @param {function} onChangeCallback A onchangeCallback this class controles
+   * @param {Length} followLength A Length instance this class follows and changes with
+   */
   constructor({length, svgLenRef = null, onChangeCallback, followLength}) {
     this._len = !isNaN(length) ? length : 0;
     this._lenRef = svgLenRef;
@@ -27,6 +39,10 @@ export class Length {
     }
   }
 
+  /**
+   * Sets a followLength this instance follows
+   * @param {Length|null} length Sets or clears a length instance to follow
+   */
   followLength(length) {
     if (length instanceof Length) {
       // clear old length

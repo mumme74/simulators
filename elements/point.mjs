@@ -2,6 +2,12 @@
 
 import { Length } from "./length.mjs";
 
+/**
+ * A Point object class
+ * @property {number} x The x value
+ * @property {number} y The y value
+ * @property {Point|null} followPoint The point this point is attached to follows when it moves
+ */
 export class Point {
   _x = new Length({});
   _y = new Length({});
@@ -10,6 +16,16 @@ export class Point {
   _followPoint = null;
   _followPoints = [];
 
+  /**
+   * Creates a new Point
+   * @param {number} [x] The X value, if svgPntRef is set it gets this x value
+   * @param {number} [y] The y Value, if svgPntRef is set it gets this y value
+   * @param {SVGPoint} [svgPntRef] The svgPoint this point is controlling
+   * @param {SVGLength} [svgLenXRef] The x svgLength this x value is controlling, ie cx in a svg circle
+   * @param {SVGLength} [svgLenYRef] The y svgLength this y value is controlling, ie cy of a svg circle
+   * @param {function} [onChangeCallback] A callback thats called when this point moves
+   * @param {Point} [followPoint] A point to follow and move with
+   */
   constructor({x, y, svgPntRef = null, owner=null,
               svgLenXRef, svgLenYRef,
               onChangeCallback, followPoint}) {
@@ -114,28 +130,48 @@ export class Point {
     }
   }
 
+  /**
+   * Gets the SVGPoint this point controls
+   * @returns {SVGPoint|null} the SVGPoint this point controls
+   */
   svgPntRef() {
     return this._pntRef;
   }
 
+  /**
+   * Add a callback that gets called when this point moves
+   * @param {function} cb A callback function
+   */
   addChangeCallback(cb) {
     const idx = this._onChangeCallbacks.indexOf(cb);
     if (idx !== null && idx < 0)
       this._onChangeCallbacks.push(cb);
   }
 
+  /**
+   * Remove cb from onChangeCallbacks
+   * @param {function} cb  The callback to remove
+   */
   removeChangeCallback(cb) {
     const idx = this._onChangeCallbacks.indexOf(cb);
     if (idx !== null && idx > -1)
       this._onChangeCallbacks.splice(idx, 1);
   }
 
+  /**
+   * Detach all followPoints and onChangeCallbacks
+   */
   detachEverything() {
     for(const trackPt of this._followPoints)
       trackPt._followPoint = null;
     this._followPoints.splice(0);
+    this._onChangeCallbacks.splice(0);
   }
 
+  /**
+   * Gets all points attached to this point and it's followPoint
+   * @returns {Array.<Point>} All points attached to this and its followPoint
+   */
   connectedPoints() {
     if (this._followPoint)
       return [this._followPoint, ...this._followPoint._followPoints];

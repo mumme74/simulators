@@ -8,10 +8,22 @@ function lookupSvgRoot(svgElem) {
   return svgElem;
 }
 
+/**
+ * Base class for all SVG shapes
+ * @property {Point} offset the first point of the shape
+ * @property {Array.<{Point}>} points All points for this shape
+ */
 export class BaseShape {
   _points = [];
   _svgElem = null;
 
+  /**
+   * Create a BaseShape
+   * @param {SVGElement} parentElement The element to attach this node to
+   * @param {SVGElement} rootElement The root element of this shape
+   * @param {{Array.{Point}} | Array.{x:numer,y:number}} points The points of this shape, points[0] becomes offset
+   * @param {string} className The CSS classes to this.node
+   */
   constructor({parentElement, rootElement, points, className}) {
     this.node = rootElement;
     if (className)
@@ -33,6 +45,10 @@ export class BaseShape {
 
   }
 
+  /**
+   * Moves shape to a new pos
+   * @param {Point|{x,y}} newPoint Point to move to
+   */
   move(newPoint) {
     const newX = Array.isArray(newPoint) ? newPoint[0] : newPoint.x,
           newY = Array.isArray(newPoint) ? newPoint[1] : newPoint.y;
@@ -42,6 +58,12 @@ export class BaseShape {
       pt.point = [pt.x + xDiff, pt.y + yDiff];
   }
 
+  /**
+   * Scales the shape by scaling all points
+   * @param {number} [factor=1] Scale X and Y by this factor
+   * @param {number} [xFactor] Scale only X by this factor
+   * @param {number} [yFactor] Scale only Y by this factor
+   */
   scale({factor=1, xFactor=null, yFactor=null}) {
     xFactor = xFactor === null ? factor : xFactor;
     yFactor = yFactor === null ? factor : yFactor;
@@ -129,7 +151,18 @@ export class BaseShape {
   _recalulatePnts(pntsArr) {}
 }
 
+/**
+ * Base class for points base svg elements (polygon, polyline etc)
+ * @extends BaseShape
+ */
 export class BasePointsShape extends BaseShape {
+  /**
+   * Create a BaseShape
+   * @param {SVGElement} parentElement The element to attach this node to
+   * @param {SVGElement} rootElement The root element of this shape
+   * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
+   * @param {string} className The CSS classes to this.node
+   */
   constructor({parentElement, rootElement, points, className}) {
     rootElement.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
     super({parentElement, rootElement, points, className});
@@ -146,6 +179,11 @@ export class BasePointsShape extends BaseShape {
       this.points[i]._pntRef = this.node.points.getItem(i);
   }
 
+  /**
+   * Insert a a Point to shape
+   * @param {Point|{x:number,y:number}|Array.<number,number>} point
+   * @param {number|Point} beforePt
+   */
   insertPoint(point, beforePt=null) {
     const pnt = this.makePointWithSvgRef(
       Array.isArray(point) ? {x:point[0], y:point[1]} : point);
@@ -160,6 +198,10 @@ export class BasePointsShape extends BaseShape {
     }
   }
 
+  /**
+   * Remove a point
+   * @param {Point|number|{x:number, y:number}|Array.<number,number>} point The point to remove
+   */
   removePoint(point) {
     let pnt;
     if (point instanceof Point)
@@ -189,26 +231,62 @@ export class BasePointsShape extends BaseShape {
     return new Point({svgPntRef: svgPnt});
   }
 
+  /**
+   * Make a new SVG point for pnt
+   * @param {Point|{x:number,y:number}|Array<number,number>} pnt
+   * @returns
+   */
   makePointWithSvgRef(pnt) {
     return BasePointsShape.makePointWithSvgRefStatic(pnt, this._svgElem);
   }
 }
 
+/**
+ * Class for Polygon
+ * @extends BasePointsShape
+ */
 export class Polygon extends BasePointsShape {
+  /**
+   * Creates a Polygon
+   * @param {SVGElement} parentElement The element to attach this node to
+   * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
+   * @param {string} className The CSS classes to this.node
+   */
   constructor({parentElement, points, className}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
     super({parentElement, rootElement:node, points, className});
   }
 }
 
+/**
+ * Class for Polyline
+ * @extends BasePointsShape
+ */
 export class Polyline extends BasePointsShape {
+  /**
+   * Creates a Polyline
+   * @param {SVGElement} parentElement The element to attach this node to
+   * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
+   * @param {string} className The CSS classes to this.node
+   */
   constructor({parentElement, points, className}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
     super({parentElement, rootElement:node, points, className});
   }
 }
 
+/**
+ * Class for a SVG Line
+ * @extends BaseShape
+ */
 export class Line extends BaseShape {
+  /**
+   * Create a Line class
+   * @param {SVGElement} parentElement to attach line to
+   * @param {*} point1 First point of line
+   * @param {*} point2 Second point of line
+   * @param {string} className Css className of line Node
+   */
   constructor({parentElement, point1={x:0,y:0}, point2={x:0,y:0}, className}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     const points = [];
@@ -235,10 +313,25 @@ export class Line extends BaseShape {
   }
 }
 
+/**
+ * Class for dynamic SVG texts
+ * @extends BaseShape
+ * @property {string} text The text displayed
+*/
 export class Text extends BaseShape {
   _offsetX = 0;
   _offsetY = 0;
   _followPoint = null;
+  /**
+   * Create a SVG text element class
+   * @param {SVGElement} parentElement The SVG node to attach this.node to.
+   * @param {Point|{x:number,y:number}} point pos text at
+   * @param {string} text The Text to show
+   * @param {string} className The Css classes to this node
+   * @param {Point} followPoint Follows this point, we move with this node automatically
+   * @param {number} offsetX followPoint offset by X
+   * @param {number} offsetY followPoint offset y Y
+   */
   constructor({parentElement, point={x:0,y:0}, text, className,
               followPoint, offsetX=0, offsetY=0}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -258,6 +351,12 @@ export class Text extends BaseShape {
     if (text) this.text = text;
   }
 
+  /**
+   * Sets or clears a followPoint
+   * @param {Point|null} point - The point to follow, null clears followPoint
+   * @param {number} offsetX - followPoint offset by X
+   * @param {number} offsetY - followPoint offset by Y
+   */
   followPoint({point, offsetX=0, offsetY=0}) {
     this._offsetX = offsetX;
     this._offsetY = offsetY;

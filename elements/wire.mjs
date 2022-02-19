@@ -3,7 +3,23 @@
 import { Polyline } from "./base.mjs";
 import { Point } from "./point.mjs";
 
+/**
+ * A Wire class, Auto 90deg corners
+ * It also gets all endpoints for this and all sequential wires
+ * @extends Polyline
+ * @property {Point} startPnt The first point of the Wire
+ * @property {Point} endPnt The last pointof the Wire
+ * @property {Array.<Point>} betweenPnts An array of all the points Line must croww through
+ */
 export class Wire extends Polyline {
+  /**
+   * Creates a new Wire
+   * @param {SVGElement} parentElement The element to attach this node to
+   * @ param {Point|{x:number,y:number}} startPnt First point of wire.
+   * @ param {Point|{x:number,y:number}} endPnt Last point of wire.
+   * @param {Array.<Point>} betweenPnts List of points wire should cross trough
+   * @param {string} className The CSSclasses this.node should have
+   */
   constructor({parentElement, startPnt={x:0,y:0}, endPnt={x:0,y:0}, betweenPnts=[], className}) {
     let points = [
       new Point({x: startPnt.x, y: startPnt.y}),
@@ -66,7 +82,9 @@ export class Wire extends Polyline {
       [this.startPnt, ...points, this.endPnt]);
   }
 
-  // finds shortest distance and
+  /**
+   * Updates wire and auto inserts 90deg points
+   */
   recalculate() {
     // find all pinned points
     const pinnedPts = [
@@ -79,8 +97,8 @@ export class Wire extends Polyline {
   }
 
   /**
-   * @brief find all points connected to this and attached wires
-   *        should be to all components
+   * Finds all points connected to this and attached wires
+   * @returns {Array.<Point>} All points this net is connected to
    */
   connections() {
     const visited = [], endPts = [];
