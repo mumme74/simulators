@@ -77,22 +77,22 @@ export class Wave extends Polygon {
 
   _genPnt(vlu, idx) {
     return {
-      x:this.offset.x + idx * this._xScale,
-      y:this.offset.y + vlu * this._yScale
+      x:this.offset.x + (idx * this._xScale),
+      y:this.offset.y + (vlu * (-this._yScale))
     };
   }
 
   _dataPointChanged(target, property, value) {
     const idx = +property;
-    if (idx >= this.points.length)
+    if (idx >= this._points.length)
       this.insertPoint(this._genPnt(value, idx));
     else
-      this.points[idx].point = this._genPnt(value, idx);
+      this._points[idx].point = this._genPnt(value, idx);
   }
 
   _dataPointDeleted(target, property) {
     const idx = +property;
-    if (idx <= this.points.length)
+    if (idx <= this._points.length)
       this.removePoint(idx);
   }
 }
