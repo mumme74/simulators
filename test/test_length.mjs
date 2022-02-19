@@ -24,8 +24,8 @@ registerTestSuite("testLength", ()=>{
       const prop = i % 2 == 0 ? 'x' : 'y'
       lens[i].baseVal.value = points[Math.floor(i/2)][prop];
     }
-    glbl.point = new Point({svgLenXRef: shp.x1, svgLenYRef: shp.y1});
-    const pts = [glbl.point, new Point({svgLenYRef:shp.y2, svgLenXRef: shp.x2})];
+    glbl.point = new Point({svgLenXRef: shp.x1.baseVal, svgLenYRef: shp.y1.baseVal});
+    const pts = [glbl.point, new Point({svgLenYRef:shp.y2.baseVal, svgLenXRef: shp.x2.baseVal})];
     glbl.shape = new BaseShape({
       parentElement: glbl.parentElement, rootElement: shp,
       points: pts,

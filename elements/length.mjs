@@ -62,7 +62,7 @@ export class Length {
 
   _updated() {
     if (this._lenRef)
-      this._lenRef.baseVal.value = Math.round(this._len);
+      this._lenRef.value = Math.round(this._len);
     if (this._onChangeCallback)
       this._onChangeCallback();
 

@@ -297,18 +297,24 @@ export class Line extends BaseShape {
     node.y2.baseVal.value = point2.y;
 
     if (point1 instanceof Point) {
-      point1._x._lenRef = node.x1;
-      point1._y._lenRef = node.y1;
+      point1._x._lenRef = node.x1.baseVal;
+      point1._y._lenRef = node.y1.baseVal;
       points.push(point1);
     } else
-      points.push(new Point({svgLenXRef:node.x1, svgLenYRef:node.y1}));
+      points.push(new Point({
+        svgLenXRef:node.x1.baseVal,
+        svgLenYRef:node.y1.baseVal
+      }));
 
     if (point2 instanceof Point) {
-      point2._x._lenRef = node.x2;
-      point2._y._lenRef = node.y2;
+      point2._x._lenRef = node.x2.baseVal;
+      point2._y._lenRef = node.y2.baseVal;
       points.push(point2);
     } else
-      points.push(new Point({svgLenXRef:node.x2, svgLenYRef:node.y2}));
+      points.push(new Point({
+        svgLenXRef:node.x2.baseVal,
+        svgLenYRef:node.y2.baseVal
+      }));
 
     super({parentElement, rootElement:node, points, className});
   }
@@ -355,14 +361,19 @@ export class Text extends BaseShape {
   constructor({parentElement, point={x:0,y:0}, text, className,
               followPoint, offsetX=0, offsetY=0}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    node.x.baseVal.value = point.x;
-    node.y.baseVal.value = point.y;
+    const svgElem = lookupSvgRoot(parentElement);
+    node.x.baseVal.appendItem(svgElem.createSVGLength());
+    node.y.baseVal.appendItem(svgElem.createSVGLength());
+    node.x.baseVal[0].value = followPoint ? followPoint.x : point.x;
+    node.y.baseVal[0].value = followPoint ? followPoint.y : point.y;
+    const svgLenXRef = node.x.baseVal.getItem(0),
+          svgLenYRef = node.y.baseVal.getItem(0);
 
     if (point instanceof Point) {
-      point._x._lenRef = node.x;
-      point._y._lenRef = node.y;
+      point._x._lenRef = svgLenXRef;
+      point._y._lenRef = svgLenYRef;
     } else
-      point = new Point({svgLenXRef:node.x, svgLenYRef:node.y});
+      point = new Point({svgLenXRef, svgLenYRef});
 
     super({parentElement, rootElement:node, points:[point], className});
 

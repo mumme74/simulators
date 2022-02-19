@@ -32,7 +32,7 @@ export class Point {
     this.owner = owner;
     if (svgLenXRef) {
       this._x._lenRef = svgLenXRef;
-      this._x.length = svgLenXRef.baseVal.value;
+      this._x.length = svgLenXRef.value;
     } else if (svgPntRef) {
       if (!isNaN(x)) svgPntRef.x = x;
       this._x.length = svgPntRef.x;
@@ -41,7 +41,7 @@ export class Point {
 
     if (svgLenYRef) {
       this._y._lenRef = svgLenYRef;
-      this._y.length = svgLenYRef.baseVal.value;
+      this._y.length = svgLenYRef.value;
     } else if (svgPntRef) {
       if (!isNaN(y)) svgPntRef.y = y;
       this._y.length = svgPntRef.y;

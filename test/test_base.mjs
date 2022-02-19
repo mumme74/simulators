@@ -1013,14 +1013,14 @@ registerTestSuite("testText", ()=>{
     it("Should construct with {0,0} as default", ()=>{
       const shp = createText();
       expect(shp.points[0]).toBeObj({x:0,y:0});
-      expect(shp.node.x.baseVal.value).toBe(0);
-      expect(shp.node.y.baseVal.value).toBe(0);
+      expect(shp.node.x.baseVal[0].value).toBe(0);
+      expect(shp.node.y.baseVal[0].value).toBe(0);
     });
     it("Should construct at {2,4}", ()=>{
       const shp = createText({x:2,y:4});
       expect(shp.points[0]).toBeObj({x:2,y:4});
-      expect(shp.node.x.baseVal.value).toBe(2);
-      expect(shp.node.y.baseVal.value).toBe(4);
+      expect(shp.node.x.baseVal[0].value).toBe(2);
+      expect(shp.node.y.baseVal[0].value).toBe(4);
     });
     it("Should construct with className", ()=>{
       const shp = createText({x:2,y:4}, "", "testClassName");
@@ -1037,31 +1037,31 @@ registerTestSuite("testText", ()=>{
       const pt = new Point({x:10, y:20});
       const shp = createText({x:2,y:4}, undefined, undefined, pt);
       expect(shp.offset).toBeObj({x:10,y:20});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
     });
     it("Should construct with followPoint offsetX", ()=>{
       const pt = new Point({x:10, y:20});
       const shp = createText({x:2,y:4}, undefined, undefined, pt, 5);
       expect(shp.offset).toBeObj({x:15,y:20});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       pt.point = [11,21];
       expect(shp.offset).toBeObj({x:16,y:21});
-      expect(shp.node.x.baseVal.value).toBe(16);
-      expect(shp.node.y.baseVal.value).toBe(21);
+      expect(shp.node.x.baseVal[0].value).toBe(16);
+      expect(shp.node.y.baseVal[0].value).toBe(21);
     });
     it("Should construct with followPoint offsetY", ()=>{
       const pt = new Point({x:10, y:20});
       const shp = createText({x:2,y:4}, undefined, undefined,
                               pt, undefined, 5);
       expect(shp.offset).toBeObj({x:10,y:25});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
       pt.point = [11,21];
       expect(shp.offset).toBeObj({x:11,y:26});
-      expect(shp.node.x.baseVal.value).toBe(11);
-      expect(shp.node.y.baseVal.value).toBe(26);
+      expect(shp.node.x.baseVal[0].value).toBe(11);
+      expect(shp.node.y.baseVal[0].value).toBe(26);
     });
   });
   describe("Test Text set/get text", ()=>{
@@ -1095,12 +1095,12 @@ registerTestSuite("testText", ()=>{
       expect(shp.points[0]).toBeObj({x:2,y:4});
       shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:20});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       point.point = [15,25];
       expect(shp.points[0]).toBeObj({x:15,y:25});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
     });
     it("Should followPoint with offsetX", ()=>{
       const point = new Point({x:10,y:20});
@@ -1109,12 +1109,12 @@ registerTestSuite("testText", ()=>{
       shp.followPoint = point;
       shp.followOffsetX = 5;
       expect(shp.points[0]).toBeObj({x:15,y:20});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       point.point = [15,25];
       expect(shp.points[0]).toBeObj({x:20,y:25});
-      expect(shp.node.x.baseVal.value).toBe(20);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(20);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
     });
     it("Should followPoint with offsetY", ()=>{
       const point = new Point({x:10,y:20});
@@ -1123,12 +1123,12 @@ registerTestSuite("testText", ()=>{
       shp.followOffsetY = 5;
       shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:25});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
       point.point = [15,25];
       expect(shp.points[0]).toBeObj({x:15,y:30});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(30);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(30);
     });
     it("Should only update offsetX", ()=>{
       const point = new Point({x:10,y:20});
@@ -1136,12 +1136,12 @@ registerTestSuite("testText", ()=>{
       shp.followOffsetX = 5;
       shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:15,y:20});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       shp.followOffsetX = 10;
       expect(shp.points[0]).toBeObj({x:20,y:20});
-      expect(shp.node.x.baseVal.value).toBe(20);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(20);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
     });
     it("Should only update offsetY", ()=>{
       const point = new Point({x:10,y:20});
@@ -1149,49 +1149,49 @@ registerTestSuite("testText", ()=>{
       shp.followOffsetY = 5;
       shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:25});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
       shp.followOffsetY = 10;
       expect(shp.points[0]).toBeObj({x:10,y:30});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(30);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(30);
     });
     it("Should clear followPoint", ()=>{
       const point = new Point({x:10,y:20});
       const shp = createText({x:2,y:4});
       shp.followPoint = point;
       expect(shp.points[0]).toBeObj({x:10,y:20});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       point.point = [15,25];
       expect(shp.points[0]).toBeObj({x:15,y:25});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
       shp.followPoint = null;
       point.point = [20,30];
       expect(shp.points[0]).toBeObj({x:15,y:25});
-      expect(shp.node.x.baseVal.value).toBe(15);
-      expect(shp.node.y.baseVal.value).toBe(25);
+      expect(shp.node.x.baseVal[0].value).toBe(15);
+      expect(shp.node.y.baseVal[0].value).toBe(25);
     });
     it("Should clear old followPoint", ()=>{
       const point = new Point({x:10,y:20}),
             point2 = new Point({x:20,y:30});
       const shp = createText({x:2,y:4},"","",point);
       expect(shp.points[0]).toBeObj({x:10,y:20});
-      expect(shp.node.x.baseVal.value).toBe(10);
-      expect(shp.node.y.baseVal.value).toBe(20);
+      expect(shp.node.x.baseVal[0].value).toBe(10);
+      expect(shp.node.y.baseVal[0].value).toBe(20);
       shp.followPoint = point2;
       expect(shp.points[0]).toBeObj({x:20,y:30});
-      expect(shp.node.x.baseVal.value).toBe(20);
-      expect(shp.node.y.baseVal.value).toBe(30);
+      expect(shp.node.x.baseVal[0].value).toBe(20);
+      expect(shp.node.y.baseVal[0].value).toBe(30);
       point.point = [15,25];
       expect(shp.points[0]).toBeObj({x:20,y:30});
-      expect(shp.node.x.baseVal.value).toBe(20);
-      expect(shp.node.y.baseVal.value).toBe(30);
+      expect(shp.node.x.baseVal[0].value).toBe(20);
+      expect(shp.node.y.baseVal[0].value).toBe(30);
       point2.point = [40,50];
       expect(shp.points[0]).toBeObj({x:40,y:50});
-      expect(shp.node.x.baseVal.value).toBe(40);
-      expect(shp.node.y.baseVal.value).toBe(50);
+      expect(shp.node.x.baseVal[0].value).toBe(40);
+      expect(shp.node.y.baseVal[0].value).toBe(50);
     });
   });
 })
