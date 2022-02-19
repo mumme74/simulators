@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cos - Sin animation</title>
+    <style>
+      @import url(../css/common.css);
+      input[type=range] { width: 50rem; }
+      polygon, path { fill: var(--common); }
+      #ruler { stroke: var(--ruler); }
+    </style>
+  </head>
+  <body>
+    <h1>Cosinus - Sinus simulation</h1>
+    <svg width="1000" height="300">
+      <text x="20" y="15">Enhetscirkeln, radie=1</text>
+      <circle cx="120" cy="150" r="100" class="filled"/>
+      <polygon points="120,150 220,150 220,150"/>
+      <text id="radian" x="230" y="140">radian: 0&pi;</text>
+      <text id="sin" x="230" y="165">sin: 0</text>
+      <text id="cos" x="170" y="165">cos: 0</text>
+      <line x1="400" y1="50" x2="400" y2="250"/>
+      <line x1="400" y1="150" x2="600" y2="150"/>
+      <path id="sineWave" d="M400 150 Z"/>
+      <line id="ruler" x1="220" y1="150" x2="400" y2="150"/>
+
+    </svg>
+    <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
+    <output>0</output>&deg;
+    <script>
+      const triangle = document.querySelector("polygon"),
+            radianNode = document.getElementById("radian"),
+            sinNode = document.getElementById("sin"),
+            cosNode = document.getElementById("cos"),
+            sineWaveNode = document.getElementById("sineWave"),
+            rulerNode = document.getElementById("ruler");
+      const waveXoffset = sineWaveNode.previousElementSibling.x1.baseVal.value;
+
+      const centPt = triangle.points[0],
+            cosPt = triangle.points[2],
+            sinPt = triangle.points[1],
+            radii = cosPt.x - centPt.x;
+      const slider = document.querySelector("input[type=range]");
+
+      function updateText(node, txt, x, y) {
+        node.innerHTML = txt;
+        node.y.baseVal[0].value = y;
+        node.x.baseVal[0].value = x;
+      }
+
+      function drawWave(rad) {
+        let pnts = [], x= 0, y = 0;
+        const xFactor = (2 * radii) / 6.28;
+        for (let r = 0.0; r <= Math.min(rad, 12.56); r+=0.01) {
+          const s = Math.round(Math.sin(r) * radii);
+          const c = Math.round(xFactor * r) + waveXoffset;
+          if (c != x || s != y) {
+            pnts.push(`${c} ${150 - s}`);
+            x = c; y = s;
+          }
+        }
+        if (x > 0 && y != centPt.y)
+          pnts.push(`${x} ${centPt.y}`);
+        const path = `M${waveXoffset} ${centPt.y} L ${pnts.join(" ")} Z`;
+        sineWaveNode.attributes.d.nodeValue = path;
+      }
+
+      function toFraction(x) {
+        if (x == 0) return {int:0, num:0, den:1};
+        if (x < 0) x = -x;
+        const tolerance = 0.001;
+        var num = 1, den = 1;
+
+        function iterate() {
+            var R = num/den;
+            if (Math.abs((R-x)/x) < tolerance) return;
+
+            if (R < x) num++;
+            else den++;
+            iterate();
+        }
+
+        iterate();
+        let int = 0;
+        while (num >= den) {
+            ++int; num -= den;
+        }
+        return {int, num, den};
+      }
+
+      function moveRuler(rad, x, y) {
+        const xFactor = (2 * radii) / 6.28;
+        rulerNode.x1.baseVal.value = centPt.x + x;
+        rulerNode.y1.baseVal.value = rulerNode.y2.baseVal.value = centPt.y - y;
+        rulerNode.x2.baseVal.value = Math.round(xFactor * rad) + waveXoffset;
+      }
+
+      slider.addEventListener("input", function(evt) {
+        const rad = (+this.value) * (Math.PI / 180);
+        let sin = Math.sin(rad), cos = Math.cos(rad);
+        if (sin < 0.01 && sin > -0.01) sin = 0.0;
+        if (cos < 0.01 && cos > -0.01) cos = 0.0;
+        const x = Math.cos(rad) * radii,
+              y = Math.sin(rad) * radii;
+        sinPt.x = x + centPt.x; sinPt.y = centPt.y - y;
+        cosPt.x = x + centPt.x;
+
+        const frac = toFraction(rad / Math.PI);
+        const intStr = frac.int > 0 ? ''+frac.int : '',
+              frStr = frac.num > 0 ? `${frac.num}/${frac.den}`: "";
+        updateText(radianNode, `radian: ${intStr} ${frStr}&pi; (${rad.toPrecision(3)})`,
+          centPt.x + x * 1.1, centPt.y - 10 - y * 1.1);
+        updateText(sinNode, `sin: ${sin.toPrecision(3)}`,
+          centPt.x + x * 1.1, centPt.y + 15 - y * 1.1);
+        updateText(cosNode, `cos: ${cos.toPrecision(3)}`,
+          centPt.x + x * 0.3, centPt.y + (y >= 0.0 ? 15 : - 10));
+        moveRuler(rad, x, y);
+        drawWave(rad);
+      });
+    </script>
+  </body>
+</html>

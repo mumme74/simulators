@@ -8,116 +8,89 @@
     <style>
       @import url(../css/common.css);
       input[type=range] { width: 50rem; }
-      polygon, path { fill: var(--common); }
-      #ruler { stroke: var(--ruler); }
+      .triangle, .wave { fill: var(--common); }
+      .wave { stroke:blue; }
+      .ruler { stroke: var(--ruler); }
+      .circle { fill: white; }
     </style>
   </head>
   <body>
     <h1>Cosinus - Sinus simulation</h1>
     <svg width="1000" height="300">
       <text x="20" y="15">Enhetscirkeln, radie=1</text>
-      <circle cx="120" cy="150" r="100" class="filled"/>
-      <polygon points="120,150 220,150 220,150"/>
-      <text id="radian" x="230" y="140">radian: 0&pi;</text>
-      <text id="sin" x="230" y="165">sin: 0</text>
-      <text id="cos" x="170" y="165">cos: 0</text>
-      <line x1="400" y1="50" x2="400" y2="250"/>
-      <line x1="400" y1="150" x2="600" y2="150"/>
-      <path id="sineWave" d="M400 150 Z"/>
-      <line id="ruler" x1="220" y1="150" x2="400" y2="150"/>
-
     </svg>
     <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
     <output>0</output>&deg;
-    <script>
-      const triangle = document.querySelector("polygon"),
-            radianNode = document.getElementById("radian"),
-            sinNode = document.getElementById("sin"),
-            cosNode = document.getElementById("cos"),
-            sineWaveNode = document.getElementById("sineWave"),
-            rulerNode = document.getElementById("ruler");
-      const waveXoffset = sineWaveNode.previousElementSibling.x1.baseVal.value;
+    <script type="module">
+      import { Triangle, Circle } from '../elements/trigenometry/index.mjs';
+      import { Text, Line } from '../elements/base.mjs';
+      import { Point } from '../elements/point.mjs';
+      import { Wave } from '../elements/diagrams/index.mjs';
+      import { toFraction } from '../helpers/index.mjs';
 
-      const centPt = triangle.points[0],
-            cosPt = triangle.points[2],
-            sinPt = triangle.points[1],
-            radii = cosPt.x - centPt.x;
-      const slider = document.querySelector("input[type=range]");
+      const vlu = { deg:0, rad:0, sin:0, cos:1 };
+      const maxDeg = 720;
 
-      function updateText(node, txt, x, y) {
-        node.innerHTML = txt;
-        node.y.baseVal[0].value = y;
-        node.x.baseVal[0].value = x;
-      }
+      // create graphical elements
+      const parentElement = document.querySelector("svg");
+      const vLine = new Line({parentElement, point1:{x:450,y:50}, point2:{x:450,y:250}}),
+            hLine = new Line({parentElement, point1:{x:450,y:150}, point2:{x:850,y:150}});
 
-      function drawWave(rad) {
-        let pnts = [], x= 0, y = 0;
-        const xFactor = (2 * radii) / 6.28;
-        for (let r = 0.0; r <= Math.min(rad, 12.56); r+=0.01) {
-          const s = Math.round(Math.sin(r) * radii);
-          const c = Math.round(xFactor * r) + waveXoffset;
-          if (c != x || s != y) {
-            pnts.push(`${c} ${150 - s}`);
-            x = c; y = s;
-          }
-        }
-        if (x > 0 && y != centPt.y)
-          pnts.push(`${x} ${centPt.y}`);
-        const path = `M${waveXoffset} ${centPt.y} L ${pnts.join(" ")} Z`;
-        sineWaveNode.attributes.d.nodeValue = path;
-      }
+      const circle = new Circle({
+        parentElement, centerPoint:{x:180,y:150},
+        radii:100, className:"circle"});
+      const circleX = circle.offset.x,
+            circleY = circle.offset.y,
+            waveXScale = (circle.radii * 2) / 360;
 
-      function toFraction(x) {
-        if (x == 0) return {int:0, num:0, den:1};
-        if (x < 0) x = -x;
-        const tolerance = 0.001;
-        var num = 1, den = 1;
+      const sinPt = new Point({x:circleX + circle.radii, y:circleY}),
+            cosPt = new Point({x:sinPt.x, y:sinPt.y});
+      const triangle = new Triangle({parentElement, className:"triangle", points:[
+                          circle.offset, cosPt, sinPt]}),
+            wave = new Wave({parentElement, offset:hLine.offset,
+              className:"wave", dataPoints:Array(720).fill(0), yScale:100, xScale: waveXScale});
+      const degTxt = new Text({parentElement, text:"deg: 0°", followPoint:sinPt, offsetX:10, offsetY:-30}),
+            radianTxt = new Text({parentElement, text:"radian", followPoint:sinPt, offsetX:10, offsetY:-10}),
+            sinTxt = new Text({parentElement, text:"sin", followPoint:sinPt, offsetX:10, offsetY:10}),
+            cosTxt = new Text({parentElement, text:"cos", followPoint:cosPt, offsetX:-65, offsetY:10});
+      const ruler = new Line({parentElement, point1:new Point({followPoint:sinPt}), className: "ruler",
+                              point2:{x:hLine.offset.x, y:hLine.offset.y}});
 
-        function iterate() {
-            var R = num/den;
-            if (Math.abs((R-x)/x) < tolerance) return;
+      const waveData = wave.dataPoints;
 
-            if (R < x) num++;
-            else den++;
-            iterate();
-        }
-
-        iterate();
-        let int = 0;
-        while (num >= den) {
-            ++int; num -= den;
-        }
-        return {int, num, den};
-      }
-
-      function moveRuler(rad, x, y) {
-        const xFactor = (2 * radii) / 6.28;
-        rulerNode.x1.baseVal.value = centPt.x + x;
-        rulerNode.y1.baseVal.value = rulerNode.y2.baseVal.value = centPt.y - y;
-        rulerNode.x2.baseVal.value = Math.round(xFactor * rad) + waveXoffset;
-      }
-
-      slider.addEventListener("input", function(evt) {
-        const rad = (+this.value) * (Math.PI / 180);
-        let sin = Math.sin(rad), cos = Math.cos(rad);
-        if (sin < 0.01 && sin > -0.01) sin = 0.0;
-        if (cos < 0.01 && cos > -0.01) cos = 0.0;
-        const x = Math.cos(rad) * radii,
-              y = Math.sin(rad) * radii;
-        sinPt.x = x + centPt.x; sinPt.y = centPt.y - y;
-        cosPt.x = x + centPt.x;
-
-        const frac = toFraction(rad / Math.PI);
+      sinPt.addChangeCallback(()=>{
+        cosPt.x = sinPt.x;
+        // move ruler
+        const x = wave.offset.x + vlu.deg * waveXScale;
+        ruler.point2.point = [x, sinPt.y];
+        // update wave
+        const radFactor = Math.PI / 180;
+        for(let i = 0; i < vlu.deg; ++i)
+          waveData[i] = Math.sin(i * radFactor);
+        waveData[vlu.deg] = vlu.sin;
+        waveData.fill(0, vlu.deg+1);
+        // update texts
+        const frac = toFraction({vlu:vlu.rad / Math.PI});
         const intStr = frac.int > 0 ? ''+frac.int : '',
               frStr = frac.num > 0 ? `${frac.num}/${frac.den}`: "";
-        updateText(radianNode, `radian: ${intStr} ${frStr}&pi; (${rad.toPrecision(3)})`,
-          centPt.x + x * 1.1, centPt.y - 10 - y * 1.1);
-        updateText(sinNode, `sin: ${sin.toPrecision(3)}`,
-          centPt.x + x * 1.1, centPt.y + 15 - y * 1.1);
-        updateText(cosNode, `cos: ${cos.toPrecision(3)}`,
-          centPt.x + x * 0.3, centPt.y + (y >= 0.0 ? 15 : - 10));
-        moveRuler(rad, x, y);
-        drawWave(rad);
+        degTxt.text = `deg: ${vlu.deg}°`;
+        radianTxt.text = `radian: ${intStr} ${frStr}&pi; (${vlu.rad.toPrecision(3)})`;
+        sinTxt.text = `sin: ${vlu.sin.toPrecision(3)}`;
+        cosTxt.text = `cos: ${vlu.cos.toPrecision(3)}`;
+      });
+
+      const slider = document.querySelector("input[type=range]");
+
+      slider.addEventListener("input", function(evt) {
+        vlu.deg = +this.value;
+        vlu.rad = (+this.value) * (Math.PI / 180);
+        vlu.sin = Math.sin(vlu.rad);
+        vlu.cos = Math.cos(vlu.rad);
+        if (vlu.sin < 0.01 && vlu.sin > -0.01) vlu.sin = 0.0;
+        if (vlu.cos < 0.01 && vlu.cos > -0.01) vlu.cos = 0.0;
+
+        const radii = circle.radii;
+        sinPt.point = [circleX + vlu.cos * radii, circleY - vlu.sin * radii];
       });
     </script>
   </body>
