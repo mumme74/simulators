@@ -4,6 +4,7 @@ export const allTests = [
   "helpers/test_helpers_index.mjs",
   "test_length.mjs",
   "test_point.mjs",
+  "test_rotation.mjs",
   "test_base.mjs",
   "test_wire.mjs",
   "trigenometry/test_trigenometry_index.mjs",
