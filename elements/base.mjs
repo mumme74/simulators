@@ -297,6 +297,8 @@ export class Line extends BaseShape {
     node.y2.baseVal.value = point2.y;
 
     if (point1 instanceof Point) {
+      if (point1._x._lenRef || point1._y._lenRef)
+        point1 = new Point({followPoint:point1})
       point1._x._lenRef = node.x1.baseVal;
       point1._y._lenRef = node.y1.baseVal;
       points.push(point1);
@@ -307,6 +309,8 @@ export class Line extends BaseShape {
       }));
 
     if (point2 instanceof Point) {
+      if (point2._x._lenRef || point2._y._lenRef)
+        point2 = new Point({followPoint:point2})
       point2._x._lenRef = node.x2.baseVal;
       point2._y._lenRef = node.y2.baseVal;
       points.push(point2);

@@ -6,6 +6,7 @@ import { Point } from "../elements/point.mjs"
 
 const glbl = {
   shape: null,
+  shapes: [],
   parentElement: document.querySelector("svg"),
   point: null,
 };
@@ -857,16 +858,17 @@ registerTestSuite("testPolyLine", ()=>{
 
 registerTestSuite("testLine", ()=>{
   const createShape = (point1, point2, className)=>{
-    return glbl.shape = new Line({
+    glbl.shapes.push(new Line({
       parentElement: glbl.parentElement,
       point1, point2, className
-    });
+    }));
+    return glbl.shapes[glbl.shapes.length-1];
   };
 
   afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
+    if (glbl.shapes) {
+      while(glbl.shapes.length)
+        glbl.parentElement.removeChild(glbl.shapes.pop().node)
       glbl.point = null;
     }
   });
@@ -907,6 +909,35 @@ registerTestSuite("testLine", ()=>{
       expect(shp.node.className.baseVal).toBe("testClassName");
       expect(document.querySelector(".testClassName")).toBe(shp.node);
     });
+    it("Should construct with ref to pnt", ()=>{
+      const pt0 = new Point({x:1,y:2});
+      const shp = createShape(pt0, {x:3,y:4});
+      expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.node.x1.baseVal.value).toBe(1);
+      expect(shp.node.y1.baseVal.value).toBe(2);
+      pt0.point = [10,20];
+      expect(shp.points[0]).toBeObj({x:10,y:20});
+      expect(shp.node.x1.baseVal.value).toBe(10);
+      expect(shp.node.y1.baseVal.value).toBe(20);
+    });
+    it("Should construct without overwriting pnt _lenRef", ()=>{
+      const pt0 = new Point({x:1,y:2});
+      const shp0 = createShape(pt0, {x:3,y:4}),
+            shp1 = createShape(pt0, {x:3,y:4});
+      expect(shp0.points[0]).toBeObj({x:1,y:2});
+      expect(shp0.node.x1.baseVal.value).toBe(1);
+      expect(shp0.node.y1.baseVal.value).toBe(2);
+      expect(shp1.points[0]).toBeObj({x:1,y:2});
+      expect(shp1.node.x1.baseVal.value).toBe(1);
+      expect(shp1.node.y1.baseVal.value).toBe(2);
+      pt0.point = [10,20];
+      expect(shp0.points[0]).toBeObj({x:10,y:20});
+      expect(shp0.node.x1.baseVal.value).toBe(10);
+      expect(shp0.node.y1.baseVal.value).toBe(20);
+      expect(shp1.points[0]).toBeObj({x:10,y:20});
+      expect(shp1.node.x1.baseVal.value).toBe(10);
+      expect(shp1.node.y1.baseVal.value).toBe(20);
+    })
   });
 
   describe("Test line move", ()=>{
