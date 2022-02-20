@@ -67,14 +67,16 @@ registerTestSuite("testLength", ()=>{
       expect(glbl.shape.points[1]).toBeObj({x:12,y:23});
     });
     it("Should call onChangeCallback", ()=>{
-      let called = false;
-      function cb() { called = true; }
+      let called = false, lenCb;
+      function cb(l) { called = true; lenCb = l}
       const len = new Length({length:10, onChangeCallback:cb});
       expect(len.length).toBe(10);
       expect(called).toBe(false);
+      expect(lenCb).toBe(undefined);
       len.length = 20;
       expect(len.length).toBe(20);
       expect(called).toBe(true);
+      expect(lenCb).toBe(len);
     })
   });
 

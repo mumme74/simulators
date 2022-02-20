@@ -133,49 +133,59 @@ registerTestSuite("testPoint", ()=>{
   });
 
   describe("Test Point onChange callback", ()=>{
-    let called = false;
-    function onChangeCallback() { called = true;}
-    afterEach(()=>{ called = false;});
+    let called = false, pntCb;
+    function onChangeCallback(p) { called = true; pntCb = p;}
+    afterEach(()=>{ called = false; pntCb = undefined; });
 
     it("Should call onchange callback when change x", ()=>{
       const pt = new Point({y:4, x:2, onChangeCallback});
       expect(pt).toBeObj({x:2,y:4});
       expect(called).toBe(false);
+      expect(pntCb).toBe(undefined);
       pt.x += 1;
       expect(called).toBe(true);
       expect(pt.x).toEqual(3);
+      expect(pntCb).toBe(pt);
     });
     it("Should call onchange callback when change y", ()=>{
       const pt = new Point({y:4, x:2, onChangeCallback});
       expect(pt).toBeObj({x:2,y:4});
       expect(called).toBe(false);
+      expect(pntCb).toBe(undefined);
       pt.y += 1;
       expect(called).toBe(true);
       expect(pt.y).toEqual(5);
+      expect(pntCb).toBe(pt);
     });
     it("Should call onchange callback when change point with array", ()=>{
       const pt = new Point({y:4, x:2, onChangeCallback});
       expect(pt).toBeObj({x:2,y:4});
       expect(called).toBe(false);
+      expect(pntCb).toBe(undefined);
       pt.point = [1, 2];
       expect(called).toBe(true);
       expect(pt).toBeObj({x:1,y:2});
+      expect(pntCb).toBe(pt);
     });
     it("Should call onchange callback when change point with object", ()=>{
       const pt = new Point({y:4, x:2, onChangeCallback});
       expect(pt).toBeObj({x:2,y:4});
       expect(called).toBe(false);
+      expect(pntCb).toBe(undefined);
       pt.point = {x:1,y:2};
       expect(called).toBe(true);
       expect(pt).toBeObj({x:1,y:2});
+      expect(pntCb).toBe(pt);
     });
     it("Should not call onchange callback when values unchanged", ()=>{
       const pt = new Point({y:4, x:2, onChangeCallback});
       expect(pt).toBeObj({x:2,y:4});
       expect(called).toBe(false);
+      expect(pntCb).toBe(undefined);
       pt.point = {x:2,y:4};
       expect(called).toBe(false);
       expect(pt).toBeObj({x:2,y:4});
+      expect(pntCb).toBe(undefined);
     });
     it("Sould add 2 onChangeCallbacks", ()=>{
       let called1 = 0, called2 = 0;

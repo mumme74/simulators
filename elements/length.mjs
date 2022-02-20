@@ -64,7 +64,7 @@ export class Length {
     if (this._lenRef)
       this._lenRef.value = Math.round(this._len);
     if (this._onChangeCallback)
-      this._onChangeCallback();
+      this._onChangeCallback(this);
 
     // update all our followLenghts
     for (const len of this._followLengths) {

@@ -186,7 +186,7 @@ export class Point {
     // call event listeners
     if (this._onChangeCallbacks.length) {
       for(const cb of this._onChangeCallbacks)
-        cb();
+        cb(this);
     }
     // update all our points that follow this point
     if (this._followPoints.length) {
