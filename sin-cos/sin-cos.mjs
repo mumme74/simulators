@@ -24,7 +24,7 @@ const sinPt = new Point({x:circleX + circle.radii, y:circleY}),
 const triangle = new Triangle({parentElement, className:"triangle", points:[
                     circle.offset, cosPt, sinPt]}),
       wave = new Wave({parentElement, offset:hLine.offset,
-        className:"wave", dataPoints:Array(720).fill(0), yScale:100, xScale: waveXScale});
+        className:"wave", dataPoints:Array(maxDeg).fill(0), yScale:100, xScale: waveXScale});
 const degTxt = new Text({parentElement, text:"deg: 0°", followPoint:sinPt, offsetX:10, offsetY:-30}),
       radianTxt = new Text({parentElement, text:"radian", followPoint:sinPt, offsetX:10, offsetY:-8}),
       sinTxt = new Text({parentElement, text:"sin", followPoint:sinPt, offsetX:10, offsetY:15}),
