@@ -31,6 +31,7 @@ const circleX = circle.offset.x,
       circleY = circle.offset.y,
       waveXScale = (circle.radii * 2) / 360;
 
+
 // the points that rotate
 const sinPts = [
   new Point({}), new Point({}), new Point({}),
@@ -77,6 +78,11 @@ const rulers = sinPts.map((pnt,i)=>{
   return new Line({parentElement, point1:pnt,
                    className: "ruler"+i,
                    point2:{x:hLine.offset.x, y:pnt.y}});
+});
+
+const axle = new Circle({
+  parentElement, centerPoint:circle.offset,
+  radii: 10, className:"axle"
 });
 
 // the waves
