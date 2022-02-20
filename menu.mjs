@@ -33,7 +33,7 @@ const allPages = [
     tags:[tags.math, tags.trigenometry, tags.sim]
   },
   {
-    name:"Synkron-motor", path:"bldc/motor_synkron.html",
+    name:"Synkron-motor", path:"motors/bldc/motor_synkron.html",
     tags:[tags.ac_electrical, tags.electrical, tags.motors]
   }
 ];

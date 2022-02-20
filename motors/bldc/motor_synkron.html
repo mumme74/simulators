@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cos - Sin animation</title>
     <style>
-      @import url(../css/common.css);
+      @import url(../../css/common.css);
       input[type=range] { width: 50rem; }
       .triangle, .wave { fill: var(--common); }
       .wave { stroke:blue; }
       .ruler { stroke: var(--ruler); }
       .circle { fill: white; }
     </style>
-    <script type="module" src="./motor-syncron"></script>
-    <script type="module" src="../menu.mjs"></script>
+    <script type="module" src="../../menu.mjs"></script>
+    <script type="module" src="./motor_synkron.mjs"></script>
   </head>
   <body>
     <div>
@@ -23,6 +23,8 @@
       </header>
       <section>
         <svg width="1000" height="300">
+          <rect x="0" y="0" width="10" height="10" fill="green"
+                transform="rotate(100,10,10)" />
           <path d="m200 100 q20 -60, 40 0 q20 -60 40 0"/>
         </svg>
         <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
