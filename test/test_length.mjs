@@ -11,8 +11,8 @@ const glbl = {
 
 registerTestSuite("testLength", ()=>{
   afterEach(()=>{
-    if (glbl.polygon) {
-      glbl.parentElement.removeChild(glbl.polygon.node);
+    if (glbl.shape) {
+      glbl.parentElement.removeChild(glbl.shape.node);
       glbl.shape = null;
     }
   });
