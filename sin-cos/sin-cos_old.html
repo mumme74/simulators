@@ -13,22 +13,28 @@
     </style>
   </head>
   <body>
-    <h1>Cosinus - Sinus simulation</h1>
-    <svg width="1000" height="300">
-      <text x="20" y="15">Enhetscirkeln, radie=1</text>
-      <circle cx="120" cy="150" r="100" class="filled"/>
-      <polygon points="120,150 220,150 220,150"/>
-      <text id="radian" x="230" y="140">radian: 0&pi;</text>
-      <text id="sin" x="230" y="165">sin: 0</text>
-      <text id="cos" x="170" y="165">cos: 0</text>
-      <line x1="400" y1="50" x2="400" y2="250"/>
-      <line x1="400" y1="150" x2="600" y2="150"/>
-      <path id="sineWave" d="M400 150 Z"/>
-      <line id="ruler" x1="220" y1="150" x2="400" y2="150"/>
-
-    </svg>
-    <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
-    <output>0</output>&deg;
+    <div>
+      <header class="page-header">
+        <h1>Cosinus - Sinus simulation</h1>
+      </header>
+      <section>
+        <svg width="1000" height="300">
+          <text x="20" y="15">Enhetscirkeln, radie=1</text>
+          <circle cx="120" cy="150" r="100" class="filled"/>
+          <polygon points="120,150 220,150 220,150"/>
+          <text id="radian" x="230" y="140">radian: 0&pi;</text>
+          <text id="sin" x="230" y="165">sin: 0</text>
+          <text id="cos" x="170" y="165">cos: 0</text>
+          <line x1="400" y1="50" x2="400" y2="250"/>
+          <line x1="400" y1="150" x2="600" y2="150"/>
+          <path id="sineWave" d="M400 150 Z"/>
+          <line id="ruler" x1="220" y1="150" x2="400" y2="150"/>
+        </svg>
+        <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
+        <output>0</output>&deg;
+      </section>
+      <footer></footer>
+    </div>
     <script>
       const triangle = document.querySelector("polygon"),
             radianNode = document.getElementById("radian"),
