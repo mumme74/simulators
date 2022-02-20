@@ -35,6 +35,10 @@ const allPages = [
   {
     name:"Synkron-motor", path:"motors/bldc/motor_synkron.html",
     tags:[tags.ac_electrical, tags.electrical, tags.motors]
+  },
+  {
+    name:"3-Fas simulering", path:"motors/three_phase.html",
+    tags:[tags.ac_electrical, tags.motors]
   }
 ];
 

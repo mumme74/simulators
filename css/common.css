@@ -8,6 +8,9 @@
   --content: white;
   --highlight: #52ab98;
   --ruler: #a85ca2;
+  --phase0: #a85ca2;
+  --phase1: #8ec06d;
+  --phase2: #cfac4c;
   --warn: #f7b21f;
   --error: rgb(250, 52, 26);
 }
