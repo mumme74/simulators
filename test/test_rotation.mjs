@@ -254,7 +254,7 @@ registerTestSuite("testRotation", ()=>{
       rot.angle = 90;
       expect(shp.points[0]).toBeObj({x:0,y:-100},1);
       expect(shp.points[1]).toBeObj({x:100,y:0},1);
-      rot.angle = -90;
+      rot.angle = 0;
       expect(shp.points[0]).toBeObj({x:100,y:0},1);
       expect(shp.points[1]).toBeObj({x:0,y:100},1);
     });
@@ -264,7 +264,7 @@ registerTestSuite("testRotation", ()=>{
       rot.angle = 90;
       expect(shp.points[0]).toBeObj({x:0,y:100},1);
       expect(shp.points[1]).toBeObj({x:100,y:200},1);
-      rot.angle = -90;
+      rot.angle = 0;
       expect(shp.points[0]).toBeObj({x:100,y:0},1);
       expect(shp.points[1]).toBeObj({x:0,y:100},1);
     });
