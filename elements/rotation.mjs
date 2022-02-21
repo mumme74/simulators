@@ -64,6 +64,10 @@ export class Rotation {
     return {x:this._x, y:this._y}
   }
 
+  get points() {
+    return [this.point];
+  }
+
   set point(newPnt) {
     const nX = Array.isArray(newPnt) ? newPnt[0] : newPnt.x,
           nY = Array.isArray(newPnt) ? newPnt[1] : newPnt.y;
@@ -111,8 +115,8 @@ export class Rotation {
         beforeRotations = {shp, rot:0.0};
         this._rotateShapes.rotations.push(beforeRotations);
       }
-      //const rad = radian - beforeRotations.rot;
-      const rad = radian;
+      const rad = radian - beforeRotations.rot;
+      //const rad = radian;
 
       for (const pnt of shp.points) {
         let x = pnt.x, y = pnt.y;
@@ -120,8 +124,8 @@ export class Rotation {
               yDiff = this._y - y; // y is reversed in computer graphics
         const hypotenuse = Math.sqrt(xDiff*xDiff + yDiff*yDiff); // pythagoras theorem
         const pointAngleToMe = Math.atan2(yDiff, xDiff); // get the internal angle from me
-        y = Math.round(Math.sin(rad + pointAngleToMe) * hypotenuse);
-        x = Math.round(Math.cos(rad + pointAngleToMe) * hypotenuse);
+        y = Math.sin(rad + pointAngleToMe) * hypotenuse;
+        x = Math.cos(rad + pointAngleToMe) * hypotenuse;
         pnt.point = [this._x + x, this._y - y]; // update pnt
       }
 
