@@ -83,8 +83,10 @@ export class StateFromHash {
     if (location.hash.length > 5) {
       location.hash.substring(1).split("&").forEach(itm=>{
         const pair = itm.split("=");
-        if (pair.length > 1)
-          initialState[pair[0]] = decodeURIComponent(pair[1]);
+        if (pair.length > 1) {
+          const vlu = decodeURIComponent(pair[1]);
+          initialState[pair[0]] = isNaN(+vlu) ? vlu : +vlu;
+        }
       });
     } else
       this._rebuildHash(initialState);

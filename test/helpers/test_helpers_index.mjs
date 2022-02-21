@@ -279,6 +279,11 @@ registerTestSuite("testStateFromHash", ()=>{
       expect(location.hash).toBe("#test=%C3%B6%C3%A4%C3%A5%26%3D");
       const state2 = new StateFromHash();
       expect(state2.ref.test).toBe("öäå&=");
+    });
+    it("Should restore to number", ()=>{
+      location.hash = "#test=10";
+      const state = new StateFromHash();
+      expect(state.ref.test).toBe(10);
     })
   });
 
