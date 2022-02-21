@@ -7,6 +7,7 @@ const tags = {
   trigenometry: "Trigenometri",
   electrical:"Ellära",
   mechanical: "Mekanisk",
+  gears: "Växlar",
   pneumatic:"Pneumatik",
   hydraulic:"Hydraulik",
   ac_electrical:'Växelströmslära',
@@ -24,6 +25,9 @@ const tagSubCategories = {
       tags:[tags.motors]
     }
   },
+  mechanical: {
+    tags: [tags.gears]
+  }
 }
 
 // add a new page here
@@ -39,6 +43,10 @@ const allPages = [
   {
     name:"3-Fas simulering", path:"motors/three_phase.html",
     tags:[tags.ac_electrical, tags.motors]
+  },
+  {
+    name:"Planetväxel", path:"mechanical/planetary_gear.html",
+    tags:[tags.mechanical, tags.gears]
   }
 ];
 
