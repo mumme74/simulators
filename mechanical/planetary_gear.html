@@ -9,15 +9,17 @@
       @import url(../../css/common.css);
 
       input[type=range] { width: 50rem; }
-      .ruler0, .phase0 { stroke: var(--phase0); }
-      .ruler1, .phase1 { stroke: var(--phase1); }
-      .ruler2, .phase2 { stroke: var(--phase2); }
-      .wave0 { fill: var(--phase0) }
-      .wave1 { fill: var(--phase1) }
-      .wave2 { fill: var(--phase2) }
-      .wave0, .wave1, .wave2 {
-        opacity: 0.4;
-        stroke: var(--dark-color);
+      .forceIn {
+        fill: var(--phase0) !important;
+        background-color: var(--phase0);
+      }
+      .forceOut {
+        fill: var(--phase1) !important;
+        background-color: var(--phase1);
+      }
+      .locked {
+        fill: var(--phase2) !important;
+        background-color: var(--phase2);
       }
       .inner { fill: #eff2f5; stroke: var(--dark-color);}
       .ringGear, .planetaryGear,.sunGear {
@@ -29,6 +31,27 @@
         border-radius: 0.3rem;
         margin: 0.5rem;
         padding: 0.3rem;
+      }
+      .displayRoot {
+        position: absolute;
+        top: 200px;
+        left: 650px;
+        border: 1px solid var(--dark-color);
+        border-radius: 0.3rem;
+        color: var(--text-color);
+        background-color: var(--mild);
+        padding: 1rem;
+        font-size: 1.5rem;
+      }
+      .displayRoot .displayItm {
+        vertical-align:text-top;
+        margin: 0.4rem;
+      }
+      .displayRoot .partColor {
+        display: inline-block;
+        height: 2rem;
+        width: 2rem;
+        margin: 0 0.5rem;
       }
 
     </style>
