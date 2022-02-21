@@ -1,6 +1,6 @@
 "use strict";
 
-import { observeObject, toFraction } from "../../helpers/index.mjs";
+import { observeObject, StateFromHash, toFraction } from "../../helpers/index.mjs";
 
 registerTestSuite("test_observeObject", ()=>{
   let setCalled = 0, delCalled = 0,
@@ -237,4 +237,64 @@ registerTestSuite("test_toFraction", ()=>{
       expect(res.den).toBe(4);
     });
   });
+});
+
+registerTestSuite("testStateFromHash", ()=>{
+  afterEach(()=>{
+    location.hash = "";
+  });
+
+  describe("Test constructor", ()=>{
+    it("Should construct with empty obj", ()=>{
+      const stateObj = new StateFromHash();
+      expect(Object.keys(stateObj.ref).length).toBe(0);
+      expect(location.hash).toBe("");
+    });
+    it("Should construct with obj", ()=>{
+      const state = {test:1,two:"test"};
+      const stateObj = new StateFromHash(state);
+      expect(stateObj.ref).toBeObj({test:1,two:"test"});
+      expect(location.hash).toBe("#test=1&two=test");
+    });
+  });
+
+  describe("Test ref property", ()=>{
+    it("Should update using ref to object", ()=>{
+      const state = {test:1,two:"test"};
+      const stateObj = new StateFromHash(state);
+      expect(stateObj.ref).toBeObj({test:1,two:"test"});
+      expect(location.hash).toBe("#test=1&two=test");
+      const stateRef = stateObj.ref;
+      stateRef.test = 2;
+      expect(stateObj.ref).toBeObj({test:2,two:"test"});
+      expect(location.hash).toBe("#test=2&two=test");
+      stateRef.three = 3;
+      expect(stateObj.ref).toBeObj({test:2,two:"test",three:3});
+      expect(location.hash).toBe("#test=2&two=test&three=3");
+    });
+    it("Should URIENcode", ()=>{
+      const state = new StateFromHash();
+      state.ref.test = "öäå&=";
+      expect(state.ref.test).toBe("öäå&=");
+      expect(location.hash).toBe("#test=%C3%B6%C3%A4%C3%A5%26%3D");
+      const state2 = new StateFromHash();
+      expect(state2.ref.test).toBe("öäå&=");
+    })
+  });
+
+  describe("get/set function", ()=>{
+    it("Should get property", ()=>{
+      const initial = {test:1,two:2};
+      const state = new StateFromHash(initial);
+      expect(state.get("test")).toBe(1);
+      expect(state.get("two")).toBe(2);
+    });
+    it("Should set property", ()=>{
+      const initial = {test:1, two:0};
+      const state = new StateFromHash(initial);
+      state.set("test",3);
+      expect(state.ref.test).toBe(3);
+      expect(initial.test).toBe(3);
+    })
+  })
 })
