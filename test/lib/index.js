@@ -155,10 +155,14 @@ class Suite {
 
     return {
       // Match or Asserts that expected and actual objects are same.
-      toBe: function(expected) {
+      toBe: function(expected, precision) {
         const res = result("===", expected);
-        if (value === expected) res.pass();
-        else res.fail();
+        if (value === expected)
+          return res.pass();
+        if (precision !== undefined && !isNaN(value) &&
+            Math.round(value*10*precision) == expected*10*precision)
+          return res.pass();
+        res.fail();
       },
 
       toNotBe: function(expected) {
@@ -167,27 +171,43 @@ class Suite {
         else res.fail();
       },
 
-      toBeObj: function(expected) {
+      toBeObj: function(expected, precision) {
         const res = result("===", expected);
         if (Array.isArray(expected)) {
           if (!Array.isArray(value)) return res.fail();
-          for(let i = 0; i < expected.length; ++i)
-            if (value[i] !== expected[i]) return res.fail();
+          for(let i = 0; i < expected.length; ++i) {
+            if (value[i] !== expected[i]) {
+              if (precision !== undefined && !isNaN(value[i]) &&
+                  Math.round(value[i]*10*precision) === expected[i]*10*precision)
+                  return res.pass();
+              return res.fail();
+            }
+          }
           res.pass();
         } else if (expected !== null && typeof expected === 'object') {
           if (typeof value!=='object' || value === null || Array.isArray(value))
             return res.fail();
-          for(const [key, vlu] of Object.entries(expected))
-            if (key in value && value[key] !== vlu) return res.fail(vlu, value[key]);
+          for(const [key, vlu] of Object.entries(expected)) {
+            if (key in value && value[key] !== vlu){
+              if (precision !== undefined && !isNaN(value[key]) &&
+                  Math.round(value[key]*10*precision) === vlu*10*precision)
+                  return res.pass();
+              return res.fail(vlu, value[key]);
+            }
+          }
           res.pass();
         }
       },
 
       // Match the expected and actual result of the test.
-      toEqual: function(expected) {
+      toEqual: function(expected, precision) {
         const res = result("==", expected);
-        if (value == expected) res.pass();
-        else res.fail();
+        if (value == expected)
+          return res.pass();
+        if (precision !== undefined && !isNaN(value) &&
+            Math.round(value*10*precision) == expected*10*precision)
+          return res.pass();
+        res.fail();
       },
 
       toNotEqual: function(expected) {
@@ -196,18 +216,28 @@ class Suite {
         else res.fail();
       },
 
-      toEqualObj: function(expected) {
+      toEqualObj: function(expected, precision) {
         const res = result("==", expected);
         if (Array.isArray(expected)) {
           if (!Array.isArray(value)) return res.fail();
-          for(let i = 0; i < expected.length; ++i)
-            if (value[i] != expected[i]) return res.fail();
+          for(let i = 0; i < expected.length; ++i) {
+            if (value[i] != expected[i])
+              if (precision !== undefined && !isNaN(value[i]) &&
+                Math.round(value[i]*10*precision) == expected[i]*10*precision)
+              return res.pass();
+            return res.fail();
+          }
           res.pass();
         } else if (expected !== null && typeof expected === 'object') {
           if (typeof value !=='object' || value === null || Array.isArray(value))
             return res.fail();
-          for(const [key, value] of Object.entries(expected))
-            if (key in value && value[key] != value) return res.fail(vlu, value[key]);
+          for(const [key, value] of Object.entries(expected)) {
+            if (key in value && value[key] != value)
+              if (precision !== undefined && !isNaN(value[key]) &&
+                 Math.round(value[key]*10*precision) == vlu*10*precision)
+                return res.pass();
+             return res.fail(vlu, value[key]);
+          }
           res.pass();
         }
         res.fail();

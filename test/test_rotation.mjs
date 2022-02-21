@@ -211,20 +211,20 @@ registerTestSuite("testRotation", ()=>{
       const shp = createShape([{x:100,y:0},{x:0,y:100}]);
       rot.addRotateShape(shp);
       rot.angle = 90;
-      expect(shp.points[0]).toBeObj({x:0,y:-100});
-      expect(shp.points[1]).toBeObj({x:100,y:0});
+      expect(shp.points[0]).toBeObj({x:0,y:-100}, 1);
+      expect(shp.points[1]).toBeObj({x:100,y:0}, 1);
     });
     it("Should remove rotateShape", ()=>{
       const rot = new Rotation({});
       const shp = createShape([{x:100,y:0},{x:0,y:100}]);
       rot.addRotateShape(shp);
       rot.angle = 90;
-      expect(shp.points[0]).toBeObj({x:0,y:-100});
-      expect(shp.points[1]).toBeObj({x:100,y:0});
+      expect(shp.points[0]).toBeObj({x:0,y:-100},1);
+      expect(shp.points[1]).toBeObj({x:100,y:0},1);
       rot.removeRotateShape(shp);
       rot.angle = -90;
-      expect(shp.points[0]).toBeObj({x:0,y:-100});
-      expect(shp.points[1]).toBeObj({x:100,y:0});
+      expect(shp.points[0]).toBeObj({x:0,y:-100},1);
+      expect(shp.points[1]).toBeObj({x:100,y:0},1);
     });
     it("Should add 2 rotateShapes", ()=>{
       const rot = new Rotation({});
@@ -233,40 +233,40 @@ registerTestSuite("testRotation", ()=>{
       rot.addRotateShape(shp1);
       rot.addRotateShape(shp2);
       rot.angle = 90;
-      expect(shp1.points[0]).toBeObj({x:0,y:-100});
-      expect(shp1.points[1]).toBeObj({x:100,y:0});
-      expect(shp2.points[0]).toBeObj({x:200,y:0});
-      expect(shp2.points[1]).toBeObj({x:0,y:-200});
+      expect(shp1.points[0]).toBeObj({x:0,y:-100},1);
+      expect(shp1.points[1]).toBeObj({x:100,y:0},1);
+      expect(shp2.points[0]).toBeObj({x:200,y:0},1);
+      expect(shp2.points[1]).toBeObj({x:0,y:-200},1);
     });
-    it("Should add 2 rotateShapes from cunstructor", ()=>{
+    it("Should add 2 rotateShapes from constructor", ()=>{
       const shp1 = createShape([{x:100,y:0},{x:0,y:100}]);
       const shp2 = createShape([{x:0,y:200},{x:200,y:0}]);
       const rot = new Rotation({rotateShapes:[shp1,shp2]});
       rot.angle = 90;
-      expect(shp1.points[0]).toBeObj({x:0,y:-100});
-      expect(shp1.points[1]).toBeObj({x:100,y:0});
-      expect(shp2.points[0]).toBeObj({x:200,y:0});
-      expect(shp2.points[1]).toBeObj({x:0,y:-200});
+      expect(shp1.points[0]).toBeObj({x:0,y:-100},1);
+      expect(shp1.points[1]).toBeObj({x:100,y:0},1);
+      expect(shp2.points[0]).toBeObj({x:200,y:0},1);
+      expect(shp2.points[1]).toBeObj({x:0,y:-200},1);
     });
     it("Should should rotate the shape forward and backward", ()=>{
       const shp = createShape([{x:100,y:0},{x:0,y:100}]);
       const rot = new Rotation({rotateShapes:[shp]});
       rot.angle = 90;
-      expect(shp.points[0]).toBeObj({x:0,y:-100});
-      expect(shp.points[1]).toBeObj({x:100,y:0});
+      expect(shp.points[0]).toBeObj({x:0,y:-100},1);
+      expect(shp.points[1]).toBeObj({x:100,y:0},1);
       rot.angle = -90;
-      expect(shp.points[0]).toBeObj({x:100,y:0});
-      expect(shp.points[1]).toBeObj({x:0,y:100});
+      expect(shp.points[0]).toBeObj({x:100,y:0},1);
+      expect(shp.points[1]).toBeObj({x:0,y:100},1);
     });
     it("Should should rotate the shape with offset center", ()=>{
       const shp = createShape([{x:100,y:0},{x:0,y:100}]);
       const rot = new Rotation({x:100,y:100,rotateShapes:[shp]});
       rot.angle = 90;
-      expect(shp.points[0]).toBeObj({x:0,y:100});
-      expect(shp.points[1]).toBeObj({x:100,y:200});
+      expect(shp.points[0]).toBeObj({x:0,y:100},1);
+      expect(shp.points[1]).toBeObj({x:100,y:200},1);
       rot.angle = -90;
-      expect(shp.points[0]).toBeObj({x:100,y:0});
-      expect(shp.points[1]).toBeObj({x:0,y:100});
+      expect(shp.points[0]).toBeObj({x:100,y:0},1);
+      expect(shp.points[1]).toBeObj({x:0,y:100},1);
     });
   })
 });
