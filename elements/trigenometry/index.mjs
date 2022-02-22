@@ -110,3 +110,77 @@ export class Square extends Polygon {
     return this._width.length;
   }
 }
+
+
+/**
+ * A class for a rectangle
+ */
+export class Rect extends BaseShape {
+  _width = new Length({});
+  _height = new Length({});
+  _roundCorners = new Point({});
+
+  constructor({parentElement, topLeft={x:0,y:0}, className,
+               width=0, height=0, roundCorners=0})
+  {
+    const rootElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rootElement.x.baseVal.value = topLeft.x;
+    rootElement.y.baseVal.value = topLeft.y
+    if (!(topLeft instanceof Point) || topLeft.followPoint)
+      topLeft = new Point({
+        svgLenXRef: rootElement.x.baseVal,
+        svgLenYRef: rootElement.y.baseVal,
+        followPoint:topLeft
+      });
+    else {
+      topLeft._x._lenRef = rootElement.x.baseVal;
+      topLeft._y._lenRef = rootElement.y.baseVal;
+    }
+
+    super({parentElement,rootElement,points:[topLeft],className});
+
+    this._width._lenRef = rootElement.width.baseVal;
+    this._height._lenRef = rootElement.height.baseVal;
+
+    this._roundCorners._x._lenRef = rootElement.rx.baseVal;
+    this._roundCorners._y._lenRef = rootElement.ry.baseVal;
+
+    this.width = width;
+    this.height = height;
+    this.roundedCorners = roundCorners;
+  }
+
+  get width(){
+    return this._width.length;
+  }
+
+  set width(newWidth) {
+    if (newWidth >= 0) {
+      this._width.length = newWidth;
+      const corner = this.roundedCorners;
+      if (corner > newWidth / 2)
+        this.roundedCorners = Math.round(newWidth / 2);
+    }
+  }
+
+  get height(){
+    return this._height.length;
+  }
+
+  set height(newHeight) {
+    if (newHeight >= 0) {
+      this._height.length = newHeight;
+      const corner = this.roundedCorners;
+      if (corner > newHeight / 2)
+        this.roundedCorners = Math.round(newHeight / 2);
+    }
+  }
+
+  get roundedCorners() {
+    return this._roundCorners.x;
+  }
+
+  set roundedCorners(newRoundness) {
+    this._roundCorners.point = [newRoundness, newRoundness];
+  }
+}

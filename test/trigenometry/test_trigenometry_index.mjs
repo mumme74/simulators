@@ -1,22 +1,27 @@
 "use strict";
 
 import { Point } from "../../elements/point.mjs";
-import { Circle, Triangle, Square } from "../../elements/trigenometry/index.mjs";
+import { Circle, Triangle, Square, Rect } from "../../elements/trigenometry/index.mjs";
 
 const glbl = {
   shape: null,
+  shapes: [],
   parentElement: document.querySelector("svg"),
   point: null,
+  cleanup: ()=>{
+    if (glbl.shape)
+      glbl.shape.node.parentElement.removeChild(glbl.shape.node);
+    while(glbl.shapes.length) {
+      const shp = glbl.shapes.pop();
+      shp.node.parentElement.removeChild(shp.node);
+    }
+    glbl.shape = null;
+    glbl.point = null;
+  }
 };
 
 registerTestSuite("testCircle", ()=>{
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   const createCircle = (radii, centerPoint, className)=>{
     return glbl.shape = new Circle({
@@ -84,13 +89,7 @@ registerTestSuite("testCircle", ()=>{
 
 
 registerTestSuite("testTriangle", ()=>{
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   const createTriangle = (points, className)=>{
     return glbl.shape = new Triangle({
@@ -162,13 +161,7 @@ registerTestSuite("testTriangle", ()=>{
 });
 
 registerTestSuite("testSquare", ()=>{
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   const createSquare = (width, startPoint, className)=>{
     return glbl.shape = new Square({
@@ -251,5 +244,180 @@ registerTestSuite("testSquare", ()=>{
       expect(square.points[3]).toBeObj({x:10,y:15});
     });
   });
-
 });
+
+registerTestSuite("testRect", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createRect = ({topLeft, className, width, height, roundCorners})=>{
+    glbl.shapes.push(new Rect({
+      parentElement: glbl.parentElement,
+      topLeft, height, roundCorners,
+      width, className
+    }));
+    return glbl.shapes[glbl.shapes.length-1];
+  };
+
+  describe("Test constructor", ()=>{
+    it("Should construct default 0,0 all props 0", ()=>{
+      const rect = createRect({});
+      expect(rect.offset).toBeObj({x:0,y:0});
+      expect(rect.node.x.baseVal.value).toBe(0);
+      expect(rect.node.y.baseVal.value).toBe(0);
+      expect(rect.width).toBe(0);
+      expect(rect.node.width.baseVal.value).toBe(0);
+      expect(rect.height).toBe(0);
+      expect(rect.node.height.baseVal.value).toBe(0);
+      expect(rect.roundedCorners).toBe(0);
+      expect(rect.node.rx.baseVal.value).toBe(0);
+      expect(rect.node.ry.baseVal.value).toBe(0);
+    });
+    it("Should construct 10,20", ()=>{
+      const rect = createRect({topLeft:{x:10,y:20}});
+      expect(rect.offset).toBeObj({x:10,y:20});
+      expect(rect.node.x.baseVal.value).toBe(10);
+      expect(rect.node.y.baseVal.value).toBe(20);
+      expect(rect.width).toBe(0);
+      expect(rect.node.width.baseVal.value).toBe(0);
+      expect(rect.height).toBe(0);
+      expect(rect.node.height.baseVal.value).toBe(0);
+      expect(rect.roundedCorners).toBe(0);
+      expect(rect.node.rx.baseVal.value).toBe(0);
+      expect(rect.node.ry.baseVal.value).toBe(0);
+    });
+    it("Should construct with point 10,20", ()=>{
+      const pt = new Point({x:10,y:20});
+      const rect = createRect({topLeft:pt});
+      expect(rect.offset).toBeObj({x:10,y:20});
+      expect(rect.node.x.baseVal.value).toBe(10);
+      expect(rect.node.y.baseVal.value).toBe(20);
+      pt.point = [15,25];
+      expect(rect.offset).toBeObj({x:15,y:25});
+      expect(rect.node.x.baseVal.value).toBe(15);
+      expect(rect.node.y.baseVal.value).toBe(25);
+    });
+    it("Should construct width 100, height 200r ", ()=>{
+      const rect = createRect({width:100, height:200});
+      expect(rect.width).toBe(100);
+      expect(rect.node.width.baseVal.value).toBe(100);
+      expect(rect.height).toBe(200);
+      expect(rect.node.height.baseVal.value).toBe(200);
+      expect(rect.roundedCorners).toBe(0);
+      expect(rect.node.rx.baseVal.value).toBe(0);
+      expect(rect.node.ry.baseVal.value).toBe(0);
+    });
+    it("Should construct roundedcorners width 100 height 200", ()=>{
+      const rect = createRect({roundCorners:10, height:25, width:20});
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+      expect(rect.height).toBe(25);
+      expect(rect.node.height.baseVal.value).toBe(25);
+      expect(rect.roundedCorners).toBe(10);
+      expect(rect.node.rx.baseVal.value).toBe(10);
+      expect(rect.node.ry.baseVal.value).toBe(10);
+    });
+  });
+
+  describe("Test width", ()=>{
+    it("Should get width", ()=>{
+      const rect = createRect({width:20});
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+    });
+    it("Should set width", ()=>{
+      const rect = createRect({});
+      expect(rect.width).toBe(0);
+      expect(rect.node.width.baseVal.value).toBe(0);
+      rect.width = 20;
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+    });
+    it("Should should not set negative width", ()=>{
+      const rect = createRect({width:20});
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+      rect.width = -10;
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+    });
+    it("Should reduce rounded corners", ()=>{
+      const rect = createRect({width:20, height:20, roundCorners:10});
+      expect(rect.width).toBe(20);
+      expect(rect.node.width.baseVal.value).toBe(20);
+      expect(rect.roundedCorners).toBe(10);
+      rect.width = 10;
+      expect(rect.width).toBe(10);
+      expect(rect.node.width.baseVal.value).toBe(10);
+      expect(rect.roundedCorners).toBe(5)
+      expect(rect.node.rx.baseVal.value).toBe(5);
+      expect(rect.node.ry.baseVal.value).toBe(5);
+    });
+  });
+  describe("Test height", ()=>{
+    it("Should get height", ()=>{
+      const rect = createRect({height:10});
+      expect(rect.height).toBe(10);
+      expect(rect.node.height.baseVal.value).toBe(10);
+    });
+    it("Should set height", ()=>{
+      const rect = createRect({});
+      expect(rect.height).toBe(0);
+      expect(rect.node.height.baseVal.value).toBe(0);
+      rect.height = 10;
+      expect(rect.height).toBe(10);
+      expect(rect.node.height.baseVal.value).toBe(10);
+    });
+    it("Should not set negative height ", ()=>{
+      const rect = createRect({height:20});
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+      rect.height = -10;
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+    });
+    it("Should should reduce rounded corners", ()=>{
+      const rect = createRect({height:20, width:25, roundCorners:10});
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+      expect(rect.roundedCorners).toBe(10);
+      rect.height = 10;
+      expect(rect.height).toBe(10);
+      expect(rect.node.height.baseVal.value).toBe(10);
+      expect(rect.roundedCorners).toBe(5);
+      expect(rect.node.rx.baseVal.value).toBe(5);
+      expect(rect.node.ry.baseVal.value).toBe(5);
+    });
+  });
+  describe("Test roundConers", ()=>{
+    it("Should get roundedCorners", ()=>{
+      const rect = createRect({height:20, width:25, roundCorners:10});
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+      expect(rect.roundedCorners).toBe(10);
+    });
+    it("Should set roundedCorners", ()=>{
+      const rect = createRect({height:20, width:25});
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+      expect(rect.roundedCorners).toBe(0);
+      expect(rect.node.rx.baseVal.value).toBe(0);
+      expect(rect.node.ry.baseVal.value).toBe(0);
+      rect.roundedCorners = 5;
+      expect(rect.roundedCorners).toBe(5);
+      expect(rect.node.rx.baseVal.value).toBe(5);
+      expect(rect.node.ry.baseVal.value).toBe(5);
+    });
+    it("Should not set roundedCorner > (width/height) / 2", ()=>{
+      const rect = createRect({height:20, width:25, roundCorners:10});
+      expect(rect.height).toBe(20);
+      expect(rect.node.height.baseVal.value).toBe(20);
+      expect(rect.roundedCorners).toBe(10);
+      expect(rect.node.rx.baseVal.value).toBe(10);
+      expect(rect.node.ry.baseVal.value).toBe(10);
+      rect.roundCorners = 20;
+      expect(rect.roundedCorners).toBe(10);
+      expect(rect.node.rx.baseVal.value).toBe(10);
+      expect(rect.node.ry.baseVal.value).toBe(10);
+    });
+  });
+})
