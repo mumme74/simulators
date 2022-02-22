@@ -2,10 +2,56 @@
 
 import { Point } from "./point.mjs";
 
-function lookupSvgRoot(svgElem) {
+export function lookupSvgRoot(svgElem) {
   while(svgElem && svgElem.tagName !== 'svg')
     svgElem = svgElem.parentElement;
   return svgElem;
+}
+
+/**
+ * A class for sizes
+ * @property {Point} centerPoint The center point of this rectangle
+ * @property {{x:number, y:number}} topLeft The top left of this rect
+ * @property {{x:number, y:number}} topRight The top right of this rect
+ * @property {{x:number, y:number}} bottomLeft The bottom left of this rect
+ * @property {{x:number, y:number}} bottomRight The bottom right of this rect
+ * @property {number} left The x at left
+ * @property {number} top The y at top
+ * @property {number} right The x at right
+ * @property {number} bottom The y at bottom
+ */
+export class SizeRect {
+  constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0}) {
+    if (topLeft)
+      centerPoint = new Point({x:topLeft.x + width /2, y:topLeft.y+height/2});
+    this.height = height;
+    this.width = width;
+    this.centerPoint = centerPoint;
+  }
+  get left(){
+    return this.centerPoint.x-this.width/2;
+  }
+  get right(){
+    return this.centerPoint.x+this.width/2;
+  }
+  get top(){
+    return this.centerPoint.y-this.height/2;
+  }
+  get bottom(){
+    return this.centerPoint.y+this.height/2;
+  }
+  get topLeft() {
+    return {x:this.left, y:this.top};
+  }
+  get topRight(){
+    return {x:this.right, y:this.top};
+  }
+  get bottomLeft(){
+    return {x:this.left, y:this.bottom};
+  }
+  get bottomRight(){
+    return {x:this.right, y:this.bottom};
+  }
 }
 
 /**

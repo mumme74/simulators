@@ -1,7 +1,8 @@
 "use strict";
 
 import { BasePointsShape, BaseShape,
-         Polygon, Polyline, Line, Text } from "../elements/base.mjs";
+         Polygon, Polyline, Line,
+         Text, SizeRect } from "../elements/base.mjs";
 import { Point } from "../elements/point.mjs"
 
 const glbl = {
@@ -9,7 +10,132 @@ const glbl = {
   shapes: [],
   parentElement: document.querySelector("svg"),
   point: null,
+  cleanup: ()=>{
+    if (glbl.shape)
+      glbl.shape.node.parentElement.removeChild(glbl.shape.node);
+    while(glbl.shapes.length) {
+      const shp = glbl.shapes.pop();
+      shp.node.parentElement.removeChild(shp.node);
+    }
+    glbl.point = null;
+    glbl.shape = null;
+  }
 };
+
+registerTestSuite("testSizeRect", ()=>{
+  describe("Test construction ", ()=>{
+    it("Should construct default at 0,0", ()=>{
+      const sz = new SizeRect({});
+      expect(sz.centerPoint).toBeObj({x:0,y:0});
+      expect(sz.height).toBe(0);
+      expect(sz.width).toBe(0);
+    });
+    it("Should construct centerPoint at 10,20", ()=>{
+      const sz = new SizeRect({centerPoint:{x:10,y:20}});
+      expect(sz.centerPoint).toBeObj({x:10,y:20});
+      expect(sz.height).toBe(0);
+      expect(sz.width).toBe(0);
+    });
+    it("Should construct centerPoint as point 10,20", ()=>{
+      const pt = new Point({x:10,y:20});
+      const sz = new SizeRect({centerPoint:pt});
+      expect(sz.centerPoint).toBeObj({x:10,y:20});
+      expect(sz.height).toBe(0);
+      expect(sz.width).toBe(0);
+    });
+    it("Should construct topLeft at 10,20 width 30 height 40", ()=>{
+      const sz = new SizeRect({topLeft:{x:10,y:20},width:30,height:40});
+      expect(sz.centerPoint).toBeObj({x:25,y:40});
+      expect(sz.height).toBe(40);
+      expect(sz.width).toBe(30);
+    });
+  });
+
+  describe("Test number props", ()=>{
+    it("Should test topLeft 0,0", ()=>{
+      const sz = new SizeRect({topLeft:{x:0,y:0}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:20,y:10});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.left).toBe(0);
+      expect(sz.right).toBe(40);
+      expect(sz.top).toBe(0);
+      expect(sz.bottom).toBe(20);
+    });
+    it("Should center 0,0", ()=>{
+      const sz = new SizeRect({centerPoint:{x:0,y:0}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:0,y:0});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.left).toBe(-20);
+      expect(sz.right).toBe(20);
+      expect(sz.top).toBe(-10);
+      expect(sz.bottom).toBe(10);
+    });
+    it("Should get when center is at 50,100", ()=>{
+      const sz = new SizeRect({centerPoint:{x:50,y:100}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:50,y:100});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.left).toBe(30);
+      expect(sz.right).toBe(70);
+      expect(sz.top).toBe(90);
+      expect(sz.bottom).toBe(110);
+    });
+    it("Should get when topLeft is 50,100", ()=>{
+      const sz = new SizeRect({topLeft:{x:50,y:100}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:70,y:110});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.left).toBe(50);
+      expect(sz.right).toBe(90);
+      expect(sz.top).toBe(100);
+      expect(sz.bottom).toBe(120);
+    });
+  });
+  describe('Test point props', ()=>{
+    it("Should get topLeft at 0,0", ()=>{
+      const sz = new SizeRect({topLeft:{x:0,y:0}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:20,y:10});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.topLeft).toBeObj({x:0,y:0});
+      expect(sz.topRight).toBeObj({x:40,y:0});
+      expect(sz.bottomLeft).toBeObj({x:0,y:20});
+      expect(sz.bottomRight).toBeObj({x:40,y:20});
+    });
+    it("Should get when centerpoint at 0,0 ", ()=>{
+      const sz = new SizeRect({centerPoint:{x:0,y:0}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:0,y:0});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.topLeft).toBeObj({x:-20,y:-10});
+      expect(sz.topRight).toBeObj({x:20,y:-10});
+      expect(sz.bottomLeft).toBeObj({x:-20,y:10});
+      expect(sz.bottomRight).toBeObj({x:20,y:10});
+    });
+    it("Should get when cneterpoint is at 5,100", ()=>{
+      const sz = new SizeRect({centerPoint:{x:50,y:100}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:50,y:100});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.topLeft).toBeObj({x:30,y:90});
+      expect(sz.topRight).toBeObj({x:70,y:90});
+      expect(sz.bottomLeft).toBeObj({x:30,y:110});
+      expect(sz.bottomRight).toBeObj({x:70,y:110});
+    });
+    it("Should get when topLeft at 50,100", ()=>{
+      const sz = new SizeRect({topLeft:{x:50,y:100}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:70,y:110});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.topLeft).toBeObj({x:50,y:100});
+      expect(sz.topRight).toBeObj({x:90,y:100});
+      expect(sz.bottomLeft).toBeObj({x:50,y:120});
+      expect(sz.bottomRight).toBeObj({x:90,y:120});
+    });
+  });
+})
 
 registerTestSuite("testBaseShape", ()=>{
   const createShape = (points = [{x:0,y:0}], className)=>{
@@ -24,13 +150,7 @@ registerTestSuite("testBaseShape", ()=>{
     return glbl.shape;
   };
 
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test BaseShape constructor", ()=>{
     it("Should construct a shape with offset 0,0", ()=>{
@@ -323,13 +443,7 @@ registerTestSuite("testBasePointsShape", ()=>{
     });
   };
 
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test constructing BasePointsShape", ()=>{
     it("Should construct a line", ()=>{
@@ -680,13 +794,7 @@ registerTestSuite("testPolygon", ()=>{
     });
   };
 
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test Constructing Polygon", ()=>{
     it("Should construct a Line", ()=>{
@@ -774,13 +882,7 @@ registerTestSuite("testPolyLine", ()=>{
     });
   };
 
-  afterEach(()=>{
-    if (glbl.shape) {
-      glbl.parentElement.removeChild(glbl.shape.node);
-      glbl.shape = null;
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test PolyLine construction", ()=>{
     it("Should construct with a point", ()=>{
@@ -865,13 +967,7 @@ registerTestSuite("testLine", ()=>{
     return glbl.shapes[glbl.shapes.length-1];
   };
 
-  afterEach(()=>{
-    if (glbl.shapes) {
-      while(glbl.shapes.length)
-        glbl.parentElement.removeChild(glbl.shapes.pop().node)
-      glbl.point = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test line construction", ()=>{
     it("Should construct with default [0,0]", ()=>{
@@ -1015,30 +1111,23 @@ registerTestSuite("testLine", ()=>{
 
 registerTestSuite("testText", ()=>{
   const createLine = (point1, point2, className)=>{
-    return glbl.line = new Line({
+    glbl.shapes.push(new Line({
       parentElement: glbl.parentElement,
       point1, point2, className
-    });
+    }));
+    return glbl.shapes[glbl.shapes.length-1];
   };
 
   const createText = (point, text, className, followPoint, offsetX, offsetY) => {
-    return glbl.text = new Text({
+    glbl.shapes.push(new Text({
       parentElement: glbl.parentElement,
       point, text, className, followPoint,
       offsetX, offsetY
-    });
+    }));
+    return glbl.shapes[glbl.shapes.length-1];
   }
 
-  afterEach(()=>{
-    if (glbl.line) {
-      glbl.parentElement.removeChild(glbl.line.node);
-      glbl.line = null;
-    }
-    if (glbl.text) {
-      glbl.parentElement.removeChild(glbl.text.node);
-      glbl.text = null;
-    }
-  });
+  afterEach(glbl.cleanup);
 
   describe("Test Text construction", ()=>{
     it("Should construct with {0,0} as default", ()=>{
@@ -1225,4 +1314,4 @@ registerTestSuite("testText", ()=>{
       expect(shp.node.y.baseVal[0].value).toBe(50);
     });
   });
-})
+});
