@@ -9,7 +9,9 @@ import {
   ElectricNet,
   Fuse,
   Lamp,
-  Switch
+  Switch,
+  Resistor,
+  Capacitor
 } from "../../elements/electrical/electric_schematic.mjs";
 
 const glbl = {
@@ -411,4 +413,95 @@ registerTestSuite("testBattery", ()=>{
       expect(comp.soc).toBe(1, 2);
     });
   });
-})
+});
+
+registerTestSuite("testResistor", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createResistor = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Resistor(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createResistor({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toEqualOrGt(50);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(3);
+      expect(comp.resistance).toBe(1);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createResistor({centerPoint:{x:50,y:50},name:"resistor",className:"nofill", resistance:10});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("resistor");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(3);
+      expect(comp.resistance).toBe(10);
+    });
+  });
+});
+
+registerTestSuite("testCapacitor", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createCapacitor = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Capacitor(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createCapacitor({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(40);
+      expect(comp.size.height).toBe(25);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.resistance).toBe(0.05);
+      expect(comp.capacitance).toBe(0.001);
+      expect(comp.polarized).toBe(false);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createCapacitor({centerPoint:{x:50,y:50},
+        name:"capacitor",className:"nofill", polarized:true, capacitance:0.01, resistance:10});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("capacitor");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(40);
+      expect(comp.size.height).toBe(33);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.resistance).toBe(10);
+      expect(comp.capacitance).toBe(0.01);
+      expect(comp.polarized).toBe(true);
+    });
+  });
+});

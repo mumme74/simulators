@@ -19,12 +19,32 @@ export class ElectricNet extends Net {
  * Base Component class for all electrics
  */
 export class ElectricComponentBase extends ComponentBase {
+  resistance = 0;
+  inductance = 0;
+  capacitance = 0;
+
   constructor({parentElement, centerPoint, name, className, nets, width, height}) {
     if (!Array.isArray(nets))
       nets = [new ElectricNet({name})];
     super({parentElement, centerPoint, name, className, nets, width, height});
     this.node.classList.add("_electric_component")
   }
+
+  /**
+   * Feed is feeding into this component
+   * @param {number} circuitResistance The resistance to this component
+   * @param {number} feedVolt The feed volt by other components
+   * @param {number} ms The number of ms this occurs
+   * @returns {{feeds:number,draws:number}} feeds as voltage feed to circuit, draws as number of amps, negative in power sources
+   */
+  /*feed(circuitResistance=Number.MAX_VALUE, feedVolt=0, ms=1) {
+    const noDrawVolt = this.nominalVolt  + 0.2 * this.soc - 0.1;
+    const amp = (noDrawVolt - feedVolt) / Math.min(
+            Number.MAX_VALUE, (circuitResistance + this.resistance));
+    const volt = (noDrawVolt - feedVolt) - (amp * this.resistance);
+    this.soc -= amp * (1 / (1000 * 3600)) * ms; // make to Ah
+    return {feeds:volt, draws:-amp};
+  }*/
 }
 
 export class Fuse extends ElectricComponentBase {
@@ -276,5 +296,111 @@ export class BatteryCell extends ElectricComponentBase {
     const volt = (noDrawVolt - feedVolt) - (amp * this.resistance);
     this.soc -= amp * (1 / (1000 * 3600)) * ms; // make to Ah
     return {feeds:volt, draws:-amp};
+  }
+}
+
+export class Resistor extends ElectricComponentBase {
+
+  constructor({parentElement, centerPoint, name, className, resistance=1}) {
+    const nets = [new ElectricNet({}), new ElectricNet({})];
+    super({parentElement, centerPoint, name,
+          className, nets, width:16, height:50});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height -= 15;
+
+    this.terminal1 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.top},
+      point2:{x:sz.centerPoint.x,y:sz.top}
+    });
+    this.terminal2 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.bottom},
+      point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.rect = new Rect({
+      parentElement, className, topLeft:sz.topLeft,
+      width:sz.width, height: sz.height
+    });
+
+    this.addShape(this.terminal1);
+    this.addShape(this.terminal2);
+    this.addShape(this.rect);
+
+    this.resistance = resistance;
+  }
+
+  currentThrough(amps) {
+    if (amps > this.rating) {
+      this.state = 1;
+    }
+  }
+
+  get broken() {
+    return this.state !== 0;
+  }
+
+  set broken(broken) {
+    this.state = broken ? 1 : 0;
+  }
+}
+
+/**
+ * A capatcitor class
+ * @prop
+ */
+ export class Capacitor extends ElectricComponentBase {
+  /**
+   * Create a new BatteryCell
+   * @param {SVGElement} parentElement The parent to attach this node to
+   * @param {Point|{x:number,y:number}} centerPoint the center for this component
+   * @param {string} [className] The className string to use
+   * @param {string} [name] The name of this component
+   * @param {number} [capacity] The number of capacitance in Farad
+   * @param {number} [resistance] The internal resitance of this cell
+   * @param {number} [polarized] It capacitor should be polarized
+   */
+  constructor({
+    parentElement, centerPoint, className, name,
+    capacitance=0.001, resistance=0.05, polarized=false
+  }) {
+    const nets = [
+      new ElectricNet({namePrefix:"plus"}),
+      new ElectricNet({namePrefix:"minus"})
+    ];
+    const height = polarized ? 33 : 25
+    super({parentElement, centerPoint, name,
+          className, nets, width:40, height});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height = 8;
+
+    this.terminal1 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.top},
+      point2:{x:sz.centerPoint.x,y:sz.top}
+    });
+    this.plusLine = new Line({parentElement, className:"plusLine",
+      point1:sz.topLeft, point2:sz.topRight
+    });
+
+    sz.centerPoint.y += polarized ? 8 : 5;
+    sz.height = polarized ? 6 : 0;
+    this.terminal2 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.bottom},
+      point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.minusShape = new Polygon({parentElement, className:"minusLine",
+      points: [sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft]
+    });
+
+    this.addShape(this.terminal1);
+    this.addShape(this.terminal2);
+    this.addShape(this.plusLine);
+    this.addShape(this.minusShape);
+
+    this.capacitance = capacitance;
+    this.resistance = resistance;
+    this.polarized = polarized;
   }
 }
