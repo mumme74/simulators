@@ -1,7 +1,8 @@
 "use strict";
 
+import { Polygon } from "../elements/base.mjs";
 import { Point } from "../elements/point.mjs";
-import { Net } from "../elements/schematic.mjs";
+import { ComponentBase, Net } from "../elements/schematic.mjs";
 import { Wire } from "../elements/schematic.mjs";
 
 const glbl = {
@@ -217,6 +218,138 @@ registerTestSuite("testNet", ()=>{
     });
   });
 });
+
+registerTestSuite("testComponentBase", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createComp = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new ComponentBase(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  const createShape = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Polygon(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should contruct with defaults", ()=>{
+      const comp = createComp({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(0);
+      expect(comp.size.width).toBe(0);
+      expect(comp.size.height).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.className.baseVal).toBe("");
+    });
+    it("Should contruct with className", ()=>{
+      const comp = createComp({className:"testClassName"});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.className.baseVal).toBe("testClassName");
+      expect(document.querySelector(".testClassName")).toBe(comp.node);
+    });
+    it("Should contruct with width & height 100,200", ()=>{
+      const comp = createComp({width: 100, height:200});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.size.width).toBe(100);
+      expect(comp.size.height).toBe(200);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+    });
+    it("Should contruct with centerPoint as {1,2}", ()=>{
+      const comp = createComp({centerPoint:{x:1,y:2}});
+      expect(comp.size.centerPoint).toBeObj({x:1,y:2});
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
+    });
+    it("Should contruct with centerPoint as Point", ()=>{
+      const centerPoint = new Point({x:1,y:2});
+      const comp = createComp({centerPoint});
+      expect(comp.size.centerPoint).toBeObj({x:1,y:2});
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
+      centerPoint.point = [3,4];
+      expect(comp.size.centerPoint).toBeObj({x:3,y:4});
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(3);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(4);
+    });
+    it("Should contruct with centerPoint with nets", ()=>{
+      const nets = [new Net({}), new Net({})];
+      const comp = createComp({centerPoint:{x:1,y:2},nets});
+      expect(comp.size.centerPoint).toBeObj({x:1,y:2});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0]).toBe(nets[0]);
+      expect(comp.nets[1]).toBe(nets[1]);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
+    });
+    it("Should construct with name 'test'", ()=>{
+      const comp = createComp({name:"test", height:10, width:20});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("test");
+      expect(comp.size.width).toBe(20);
+      expect(comp.size.height).toBe(10);
+    })
+  });
+
+  describe("Test nets property", ()=>{
+    it("Should get default net", ()=>{
+      const comp = createComp({});
+      expect(comp.nets.length).toBe(0);
+    });
+    it("Should have a net attached", ()=>{
+      const nets = [new Net({}), new Net({})];
+      const comp = createComp({nets});
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0]).toBe(nets[0]);
+      expect(comp.nets[1]).toBe(nets[1]);
+    });
+  })
+
+  describe("Test shapes", ()=>{
+    it("Should get all shapes for component", ()=>{
+      const comp = createComp({});
+      expect(comp.shapes.length).toBe(0);
+      const shp = createShape({points:[{x:20,y:30}]});
+      comp.addShape(shp);
+      expect(comp.shapes[0]).toBe(shp);
+      expect(comp.shapes.length).toBe(1);
+    });
+  });
+
+  describe("Test state", ()=>{
+    it("Should get state", ()=>{
+      const comp = createComp({});
+      expect(comp.state).toBe(0);
+    });
+    it("Should set state", ()=>{
+      const comp = createComp({});
+      expect(comp.state).toBe(0);
+      comp.state = 2;
+      expect(comp.state).toBe(2);
+    });
+    it("Should call _stateChanged()", ()=>{
+      const comp = createComp({});
+      let called = 0, newState = -1;
+      comp._stateChanged = (s)=>{ called++; newState=s;}
+      expect(called).toBe(0);
+      expect(newState).toBe(-1);
+      comp.state = {customObj:true};
+      expect(called).toBe(1);
+      expect(newState).toBeObj({customObj:true});
+      comp.state = {another:1};
+      expect(called).toBe(2);
+      expect(newState).toBeObj({another:1});
+    })
+  });
+})
 
 registerTestSuite("testWire", ()=>{
   afterEach(glbl.cleanup);

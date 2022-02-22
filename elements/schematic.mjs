@@ -1,6 +1,6 @@
 "use strict";
 
-import { Polyline } from "./base.mjs";
+import { BaseShape, lookupSvgRoot, Polyline, SizeRect } from "./base.mjs";
 import { Point } from "./point.mjs";
 
 export class Net {
@@ -116,6 +116,60 @@ export class Net {
 
     const genName = `${namePrefix}${Net._netNames.__cnt++}_${type}`;
     return Net._netNames[type][genName] = {name:genName, type, gen:"autoGen"};
+  }
+}
+
+export class ComponentBase extends BaseShape {
+  _shapes = [];
+  _state = 0;
+
+  constructor({parentElement, className, width, height,
+              centerPoint={x:0,y:0}, name, nets=[]}) {
+    const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const transform = lookupSvgRoot(parentElement).createSVGTransform();
+    transform.matrix.e = centerPoint.x;
+    transform.matrix.f = centerPoint.y;
+    rootElement.transform.baseVal.appendItem(transform);
+
+    if (!(centerPoint instanceof Point))
+      centerPoint = new Point({x:centerPoint.x, y:centerPoint.y});
+
+    centerPoint.addChangeCallback((pnt)=>{
+      transform.matrix.e = pnt.x;
+      transform.matrix.f = pnt.y;
+    })
+
+    super({parentElement, rootElement, points: centerPoint, className});
+
+    this.name = name || "";
+    this._nets =  nets;
+    this.size = new SizeRect({centerPoint, width, height});
+    this.size.centerPoint.followPoint = this.offset;
+  }
+
+  get nets() {
+    return [...this._nets];
+  }
+
+  addShape(shape) {
+    this._shapes.push(shape);
+  }
+
+  get shapes() {
+    return [...this._shapes];
+  }
+
+  get state() {
+    return this._state;
+  }
+
+  set state(newState) {
+    this._state = newState;
+    this._stateChanged(newState);
+  }
+
+  _stateChanged(newState) {
+    /* subclass implement */
   }
 }
 
