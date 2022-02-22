@@ -253,6 +253,11 @@ registerTestSuite("testPoint", ()=>{
       pt1.point = [10,20];
       expect(pt2).toBeObj({x:10,y:20});
     });
+    it("Should not follow self", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      pt1.followPoint = pt1;
+      expect(pt1.followPoint).toNotBe(pt1);
+    });
     it("Should follow point1 and move pt1 when it moves", ()=>{
       const pt1 = new Point({y:4, x:2});
       const pt2 = new Point({y:3, x:1, followPoint:pt1});

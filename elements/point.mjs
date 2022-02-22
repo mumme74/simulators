@@ -20,6 +20,7 @@ export class Point {
    * Creates a new Point
    * @param {number} [x] The X value, if svgPntRef is set it gets this x value
    * @param {number} [y] The y Value, if svgPntRef is set it gets this y value
+   * @param {object} [owner] The instance that owns this point
    * @param {SVGPoint} [svgPntRef] The svgPoint this point is controlling
    * @param {SVGLength} [svgLenXRef] The x svgLength this x value is controlling, ie cx in a svg circle
    * @param {SVGLength} [svgLenYRef] The y svgLength this y value is controlling, ie cy of a svg circle
@@ -107,7 +108,7 @@ export class Point {
   }
 
   set followPoint(point) {
-    if (point instanceof Point) {
+    if (point instanceof Point && point !== this) {
       // clear old point
       if (this._followPoint)
         this.followPoint = null;
@@ -117,6 +118,7 @@ export class Point {
         visited.push(pntIt);
         pntIt = pntIt._followPoint;
       }
+      if (pntIt === this) return;
       this._followPoint = pntIt;
       pntIt._followPoints.push(this);
       this._x.length = this._followPoint._x.length;
