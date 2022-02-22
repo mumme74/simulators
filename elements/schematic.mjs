@@ -3,6 +3,122 @@
 import { Polyline } from "./base.mjs";
 import { Point } from "./point.mjs";
 
+export class Net {
+  static _netNames = {__cnt:0};
+  _points = [];
+
+  constructor({name, namePrefix="net", type="generic", points=[]}) {
+    this._net = Net._name(name, namePrefix, type);
+    if (points?.length)
+      this._points = points.filter(p=>p instanceof Point);
+  }
+
+  get name() {
+    return this._net.name;
+  }
+
+  get type() {
+    return this._net.type;
+  }
+
+  get net() {
+    return {...this._net};
+  }
+
+  get points() {
+    return [...this._points];
+  }
+
+  set points(points) {
+    if (Array.isArray(points)) {
+      const pts = points.filter(p=>p instanceof Point);
+      this._points = [...pts];
+    } else
+      this._points = [];
+  }
+
+  canConnect(point) {
+    if (!point?.owner?._nets ||
+        !(point instanceof Point) ||
+        this._points.indexOf(point) > -1)
+    {
+      return false;
+    }
+    const myPnt = this._findPointAt(point);
+    return myPnt !== undefined;
+  }
+
+  connect(point) {
+    if (this.canConnect(point)) {
+      const myPnt = this._findPointAt(point);
+      if (myPnt) {
+        myPnt.followPoint = point;
+        return true;
+      }
+    }
+    return false;
+  }
+
+  disconnect(point) {
+    let res = false;
+    const conPnts = point.connectedPoints();
+    conPnts.filter(p=>this._points.indexOf(p)>-1).map(p=>{
+      p.followPoint = null;
+      res = true;
+    });
+    return res;
+  }
+
+  /**
+  * Finds all points connected to this and attached wires
+  * @returns {Array.<Point>} All points this net is connected to
+  */
+  connections() {
+    const visited = [], endPts = [];
+    // recursivly look up ends connected to all sub wires
+    const endLookUp = (wire, point) => {
+      for (const pnt of point.connectedPoints()) {
+        if (pnt.owner instanceof Wire) {
+          if (visited.indexOf(pnt) === -1) {
+            visited.push(pnt);
+            if (pnt.owner !== wire) {
+              for (const p of pnt.owner._points)
+                endLookUp(pnt.owner, p);
+            }
+          }
+        } else if (endPts.indexOf(pnt) === -1)
+          endPts.push(pnt);
+      }
+    }
+    for (const p of this._points)
+      endLookUp(this, p);
+
+    return endPts;
+  }
+
+
+  _findPointAt(pnt) {
+    return this._points.find(p=>{
+      return p.x === pnt.x && p.y===pnt.y && p!==pnt;
+    });
+  }
+
+
+  static _name(name, namePrefix, type) {
+    if (!Net._netNames[type])
+      Net._netNames[type] = {};
+
+    if (name) {
+      if (name in Net._netNames[type])
+        throw new Error(`Net name ${name} already taken.`);
+      return Net._netNames[type][name] = {name, type, gen:"userGen"};
+    }
+
+    const genName = `${namePrefix}${Net._netNames.__cnt++}_${type}`;
+    return Net._netNames[type][genName] = {name:genName, type, gen:"autoGen"};
+  }
+}
+
 /**
  * A Wire class, Auto 90deg corners
  * It also gets all endpoints for this and all sequential wires

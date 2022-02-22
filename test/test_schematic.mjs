@@ -1,23 +1,225 @@
 "use strict";
 
 import { Point } from "../elements/point.mjs";
-import { Wire } from "../elements/wire.mjs";
+import { Net } from "../elements/schematic.mjs";
+import { Wire } from "../elements/schematic.mjs";
 
 const glbl = {
   shapes: [],
   parentElement: document.querySelector("svg"),
   point: null,
-};
-
-registerTestSuite("testWire", ()=>{
-  afterEach(()=>{
+  cleanup: ()=>{
     if (glbl.shapes.length) {
       for(const shp of glbl.shapes)
         glbl.parentElement.removeChild(shp.node);
       glbl.shapes = [];
       glbl.point = null;
     }
+  }
+};
+
+registerTestSuite("testNet", ()=>{
+  afterEach(()=>{
+    Net._netNames = {__cnt:0};
+    glbl.cleanup();
   });
+
+  const createNet = ({startPnt, endPnt, betweenPnts, className})=>{
+    /*glbl.shapes.push(new Wire({
+      parentElement: glbl.parentElement,
+      startPnt, endPnt, betweenPnts,
+      className
+    }));
+    return glbl.shapes[glbl.shapes.length-1];*/
+  };
+
+  describe("Test net construction", ()=>{
+    it("Should construct with autogen name and generic typ", ()=>{
+      const net = new Net({});
+      expect(net.name).toBe("net0_generic");
+      expect(net.type).toBe("generic");
+      expect(net.net.gen).toBe("autoGen");
+    });
+    it("Should construct with namePrefix and type", ()=>{
+      const net = new Net({name:"mynet-VCC",type:"electric"});
+      expect(net.name).toBe("mynet-VCC");
+      expect(net.type).toBe("electric");
+      expect(net.net.gen).toBe("userGen");
+    });
+    it("Should allow double name with differing type", ()=>{
+      const net1 = new Net({name:"mynet-VCC",type:"elec"});
+      const net2 = new Net({name:"mynet-VCC",type:"pneu"});
+      expect(net1.name).toBe("mynet-VCC");
+      expect(net1.type).toBe("elec");
+      expect(net1.net.gen).toBe("userGen");
+      expect(net2.name).toBe("mynet-VCC");
+      expect(net2.type).toBe("pneu");
+      expect(net2.net.gen).toBe("userGen");
+    });
+    it("Should not allow double name same type", ()=>{
+      const net1 = new Net({name:"mynet-VCC",type:"elec"});
+      expect(()=>{
+        new Net({name:"mynet-VCC",type:"elec"});
+      }).toThrow();
+    });
+    it("Should create points", ()=>{
+      const points = [new Point({x:1,y:2}), new Point({x:3,y:4})];
+      const net = new Net({points})
+      expect(net.points.length).toBe(2);
+      expect(net.points[0]).toBe(points[0]);
+      expect(net.points[1]).toBe(points[1]);
+    });
+  });
+
+  describe("Test points", ()=>{
+    it("Should add points", ()=>{
+      const points = [new Point({x:1,y:2}), new Point({x:3,y:4})];
+      const net = new Net({})
+      expect(net.points.length).toBe(0);
+      net.points = points;
+      expect(net.points.length).toBe(2);
+      expect(net.points[0]).toBe(points[0]);
+      expect(net.points[1]).toBe(points[1]);
+    });
+    it("Should remove points", ()=>{
+      const points = [new Point({x:1,y:2}), new Point({x:3,y:4})];
+      const net = new Net({points})
+      expect(net.points.length).toBe(2);
+      net.points = null;
+      expect(net.points.length).toBe(0);
+      net.points = points;
+      expect(net.points.length).toBe(2);
+      net.points = 0;
+      expect(net.points.length).toBe(0);
+    });
+  });
+
+  describe("Test canConnect",()=>{
+    it("Should test non net owned point", ()=>{
+      const pt0 = new Point({x:0,y:1}),
+            pt1 = new Point({x:3,y:4}),
+            pt2 = new Point({x:5,y:6});
+      const net = new Net({points:[pt1,pt2]});
+      expect(net.canConnect(pt0)).toBe(false);
+    });
+    it("Should test a net owned point, contained net", ()=>{
+      const net0 = new Net({});
+      const owner = {_nets:[net0]};
+      const pt0 = new Point({x:0,y:1, owner}),
+            pt1 = new Point({x:3,y:4}),
+            pt2 = new Point({x:5,y:6});
+      net0.points = [pt0];
+
+      const net1 = new Net({points:[pt1,pt2]});
+      expect(net1.canConnect(pt0)).toBe(false);
+      pt0.point = [3,4];
+      expect(net1.canConnect(pt0)).toBe(true);
+      pt0.point = [3,3];
+      expect(net1.canConnect(pt0)).toBe(false);
+    });
+    it("Should test a net owned point, contained net my point", ()=>{
+      const net0 = new Net({}), net1 = new Net({});
+      const owner0 = {_nets:[net0]}, owner1 = {_nets:[net1]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:0,y:1, owner:owner0}),
+            pt2 = new Point({x:0,y:1, owner:owner1});
+      net0.points = [pt0, pt1]; net1.points = [pt2];
+      expect(net1.canConnect(pt0)).toBe(true);
+      expect(net1.canConnect(pt1)).toBe(true);
+      expect(net1.canConnect(pt2)).toBe(false);
+    });
+  });
+
+  describe("Test connect", ()=>{
+    it("Should reject, non net point", ()=>{
+      const pt0 = new Point({x:0,y:1}),
+            pt1 = new Point({x:3,y:4}),
+            pt2 = new Point({x:5,y:6});
+      const net = new Net({points:[pt1,pt2]});
+      expect(net.connect(pt0)).toBe(false);
+    });
+    it("Should reject, my point", ()=>{
+      const net0 = new Net({});
+      const owner0 = {_nets:[net0]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:0,y:1, owner:owner0});
+      net0.points = [pt0, pt1];
+      expect(net0.connect(pt0)).toBe(false);
+      expect(net0.connect(pt1)).toBe(false);
+    });
+    it("Should connect 0,1", ()=>{
+      const net0 = new Net({}), net1 = new Net({});
+      const owner0 = {_nets:[net0]}, owner1 = {_nets:[net1]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:1,y:2, owner:owner0}),
+            pt2 = new Point({x:0,y:1, owner:owner1});
+      net0.points = [pt0, pt1]; net1.points = [pt2];
+      expect(net0.connect(pt2)).toBe(true);
+      expect(pt0.followPoint).toBe(pt2);
+    });
+    it("Should connect 1,2", ()=>{
+      const net0 = new Net({}), net1 = new Net({});
+      const owner0 = {_nets:[net0]}, owner1 = {_nets:[net1]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:1,y:2, owner:owner0}),
+            pt2 = new Point({x:1,y:2, owner:owner1});
+      net0.points = [pt0, pt1]; net1.points = [pt2];
+      expect(net0.connect(pt2)).toBe(true);
+      expect(pt1.followPoint).toBe(pt2);
+    });
+  });
+
+  describe("Test disconnect", ()=>{
+    it("Should fail, no followPoint", ()=>{
+      const net0 = new Net({}), net1 = new Net({});
+      const owner0 = {_nets:[net0]}, owner1 = {_nets:[net1]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:1,y:2, owner:owner0}),
+            pt2 = new Point({x:1,y:2, owner:owner1});
+      net0.points = [pt0, pt1]; net1.points = [pt2];
+      expect(net0.disconnect(pt2)).toBe(false);
+    });
+    it("Should fail, not connected to me", ()=>{
+      const net0 = new Net({}),
+            net1 = new Net({}),
+            net2 = new Net({});
+      const owner0 = {_nets:[net0]},
+            owner1 = {_nets:[net1]},
+            owner2 = {_nets:[net2]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:1,y:2, owner:owner1}),
+            pt2 = new Point({x:1,y:2, owner:owner2}),
+            pt3 = new Point({x:1,y:2, owner:owner2});
+      net0.points = [pt0, pt1]; net1.points = [pt3]
+      expect(net1.connect(pt2)).toBe(true);
+      expect(net0.disconnect(pt2)).toBe(false);
+      expect(net2.disconnect(pt2)).toBe(false);
+      expect(net1.disconnect(pt2)).toBe(true);
+    });
+    it("Should succeed", ()=>{
+      const net0 = new Net({}), net1 = new Net({});
+      const owner0 = {_nets:[net0]}, owner1 = {_nets:[net1]};
+      const pt0 = new Point({x:0,y:1, owner:owner0}),
+            pt1 = new Point({x:1,y:2, owner:owner0}),
+            pt2 = new Point({x:1,y:2, owner:owner1});
+      net0.points = [pt0, pt1]; net1.points = [pt2];
+      expect(net0.connect(pt2)).toBe(true);
+      expect(net0.disconnect(pt2)).toBe(true);
+    });
+  });
+
+  describe("Test connections", ()=>{
+    it("Should get this nets end points", ()=>{
+
+    });
+    it("Should get this nets and connected nets end points", ()=>{
+
+    });
+  });
+});
+
+registerTestSuite("testWire", ()=>{
+  afterEach(glbl.cleanup);
 
   const createWire = ({startPnt, endPnt, betweenPnts, className})=>{
     glbl.shapes.push(new Wire({

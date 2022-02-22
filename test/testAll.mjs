@@ -6,7 +6,7 @@ export const allTests = [
   "test_point.mjs",
   "test_rotation.mjs",
   "test_base.mjs",
-  "test_wire.mjs",
+  "test_schematic.mjs",
   "trigenometry/test_trigenometry_index.mjs",
   "diagrams/test_diagrams_index.mjs",
 ];
