@@ -1,0 +1,10 @@
+/* These are the css that is need to make electrocal components work*/
+._electric_component, ._electric_component * {
+  fill: none;
+  stroke: black;
+}
+
+._electric_component .litUp {
+  fill: rgb(243, 220, 13);
+  opacity: 1.0;
+}
