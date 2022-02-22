@@ -203,3 +203,78 @@ export class Lamp extends ElectricComponentBase {
     this.lightNode.node.style.opacity = newState >= 0 ? newState : 0.0;
   }
 }
+
+/**
+ * A battery cell class
+ * @prop
+ */
+export class BatteryCell extends ElectricComponentBase {
+  /**
+   * Create a new BatteryCell
+   * @param {SVGElement} parentElement The parent to attach this node to
+   * @param {Point|{x:number,y:number}} centerPoint the center for this component
+   * @param {string} [className] The className string to use
+   * @param {string} [name] The name of this component
+   * @param {number} [capacity] The number of Ah of this cell
+   * @param {number} [voltage] Nominal Volt of this cell
+   * @param {number} [soc] The State of charge
+   * @param {number} [resistance] The internal resitance of this cell
+   */
+  constructor({
+    parentElement, centerPoint, className, name,
+    capacity=100, voltage=2, soc=1.0, resistance=0.01
+  }) {
+    const nets = [
+      new ElectricNet({namePrefix:"plus"}),
+      new ElectricNet({namePrefix:"minus"})
+    ];
+    super({parentElement, centerPoint, name,
+          className, nets, width:40, height:20});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height -= 12;
+
+    this.terminal1 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.top},
+      point2:{x:sz.centerPoint.x,y:sz.top}
+    });
+    this.terminal2 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.bottom},
+      point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.plusLine = new Line({parentElement, className:"plusLine",
+      point1:sz.topLeft, point2:sz.topRight
+    });
+    sz.width -= 12;
+    this.minusLine = new Line({parentElement, className:"minusLine",
+      point1: sz.bottomLeft, point2:sz.bottomRight
+    });
+
+    this.addShape(this.terminal1);
+    this.addShape(this.terminal2);
+    this.addShape(this.plusLine);
+    this.addShape(this.minusLine);
+
+    this.nominalVolt = voltage;
+    this.soc = soc;
+    this.capacity = capacity;
+    this.resistance = resistance;
+  }
+
+  /**
+   * Feed is feeding into this component
+   * @param {number} circuitResistance The resistance to this component
+   * @param {number} feedVolt The feed volt by other components
+   * @param {number} ms The number of ms this occurs
+   * @returns {{feeds:number,draws:number}} feeds as voltage feed to circuit, draws as number of amps, negative in power sources
+   */
+  feed(circuitResistance=Number.MAX_VALUE, feedVolt=0, ms=1) {
+    const noDrawVolt = this.nominalVolt  + 0.2 * this.soc - 0.1;
+    const amp = (noDrawVolt - feedVolt) / Math.min(
+            Number.MAX_VALUE, (circuitResistance + this.resistance));
+    const volt = (noDrawVolt - feedVolt) - (amp * this.resistance);
+    this.soc -= amp * (1 / (1000 * 3600)) * ms; // make to Ah
+    return {feeds:volt, draws:-amp};
+  }
+}

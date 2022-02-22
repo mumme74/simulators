@@ -4,6 +4,7 @@ import { Point } from "../../elements/point.mjs"
 import { Net } from "../../elements/schematic.mjs";
 import { Polygon } from "../../elements/base.mjs";
 import {
+  BatteryCell,
   ElectricComponentBase,
   ElectricNet,
   Fuse,
@@ -318,6 +319,96 @@ registerTestSuite("testLamp", ()=>{
       expect(+comp.lightNode.node.style.opacity).toBe(0);
       comp.currentThrough(comp.rating/12);
       expect(+comp.lightNode.node.style.opacity).toBe(0);
+    });
+  });
+})
+
+registerTestSuite("testBattery", ()=>{
+  afterEach(glbl.cleanup);
+
+
+  const createCell = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new BatteryCell(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createCell({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(40);
+      expect(comp.size.height).toBe(20);
+      expect(comp.nominalVolt).toBe(2);
+      expect(comp.soc).toBe(1);
+      expect(comp.capacity).toBe(100);
+      expect(comp.resistance).toBe(0.01);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createCell({soc:0.5,capacity:20,
+        centerPoint:{x:50,y:50},name:"cell",
+        className:"nofill", voltage:3.7, resistance:0.1
+      });
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("cell");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(40);
+      expect(comp.size.height).toBe(20);
+      expect(comp.nominalVolt).toBe(3.7);
+      expect(comp.soc).toBe(0.5);
+      expect(comp.capacity).toBe(20);
+      expect(comp.resistance).toBe(0.1);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+    });
+  });
+
+  describe("Test feed", ()=>{
+    it("Should get unloaded voltage", ()=>{
+      const comp = createCell({});
+      expect(comp.feed()).toBeObj({feeds:2.1, draws:0}, 2);
+    });
+    it("Should get lower with soc 50%", ()=>{
+      const comp = createCell({soc:0.5});
+      expect(comp.feed()).toBeObj({feeds:2.0, draws:0}, 2);
+    });
+    it("Should get lower with soc 0%", ()=>{
+      const comp = createCell({soc:0});
+      expect(comp.feed()).toBeObj({feeds:1.9, draws:0}, 2);
+    });
+    it("Should get lower volt when drawing amps", ()=>{
+      const comp = createCell({resistance:1,soc:0.5});
+      expect(comp.feed(1)).toBeObj({feeds:1, draws:-1}, 2);
+    });
+    it("Should get lower volt when drawing amps charged", ()=>{
+      const comp = createCell({resistance:1,soc:1.0});
+      expect(comp.feed(1)).toBeObj({feeds:1.05, draws:-1.05}, 2);
+    });
+    it("Should decrease soc", ()=>{
+      const comp = createCell({resistance:1,soc:1.0,capacity:1});
+      expect(comp.feed(1, 0, 30*60*1000)).toBeObj({feeds:1.05, draws:-1.05}, 2);
+      expect(comp.soc).toBe(0.5, 2);
+      expect(comp.feed(1, 0, 30*60*1000)).toBeObj({feeds:1.0, draws:-1.0}, 2);
+      expect(comp.soc).toBe(0, 2);
+    });
+    it("Should increase soc", ()=>{
+      const comp = createCell({resistance:1,soc:0,capacity:1});
+      expect(comp.feed(1, 2.1, 30*60*10000)).toBeObj({feeds:-0.1, draws:0.1}, 2);
+      expect(comp.soc).toBe(0.5, 2);
+      expect(comp.feed(1, 2.2, 30*60*10000)).toBeObj({feeds:-0.1, draws:0.1}, 2);
+      expect(comp.soc).toBe(1, 2);
     });
   });
 })
