@@ -307,6 +307,19 @@ class Suite {
           return res.fail(value, "Did not throw");
         }
         res.fail(value, "Not a function");
+      },
+
+      toNotThrow: function(){
+        const res = result("toNotThrow", "");
+        if (value instanceof Function) {
+          try {
+            value();
+          } catch (e) {
+            return res.fail(value, "Did throw");
+          }
+          return res.pass();
+        }
+        res.fail(value, "Not a function");
       }
     }
   }
