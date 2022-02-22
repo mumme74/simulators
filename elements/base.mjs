@@ -15,13 +15,20 @@ export function lookupSvgRoot(svgElem) {
  * @property {{x:number, y:number}} topRight The top right of this rect
  * @property {{x:number, y:number}} bottomLeft The bottom left of this rect
  * @property {{x:number, y:number}} bottomRight The bottom right of this rect
+ * @property {SizeRect} cloneFromRect Clone this rect for values
  * @property {number} left The x at left
  * @property {number} top The y at top
  * @property {number} right The x at right
  * @property {number} bottom The y at bottom
  */
 export class SizeRect {
-  constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0}) {
+  constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0, cloneFromRect}) {
+    if (cloneFromRect) {
+      topLeft = cloneFromRect.topLeft;
+      width = cloneFromRect.width;
+      height = cloneFromRect.height;
+    }
+
     if (topLeft)
       centerPoint = new Point({x:topLeft.x + width /2, y:topLeft.y+height/2});
     this.height = height;

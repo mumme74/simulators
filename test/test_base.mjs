@@ -49,6 +49,13 @@ registerTestSuite("testSizeRect", ()=>{
       expect(sz.height).toBe(40);
       expect(sz.width).toBe(30);
     });
+    it("Should clone from another rect", ()=>{
+      const sz0 = new SizeRect({topLeft:{x:10,y:20},width:30,height:40});
+      const sz = new SizeRect({cloneFromRect:sz0});
+      expect(sz.centerPoint).toBeObj({x:25,y:40});
+      expect(sz.height).toBe(40);
+      expect(sz.width).toBe(30);
+    });
   });
 
   describe("Test number props", ()=>{
