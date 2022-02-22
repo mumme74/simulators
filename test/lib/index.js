@@ -294,6 +294,19 @@ class Suite {
         } else if (matched === 1)
           return res.pass();
         res.fail();
+      },
+
+      toThrow: function() {
+        const res = result("toThrow", "");
+        if (value instanceof Function) {
+          try {
+            value();
+          } catch (e) {
+            return res.pass();
+          }
+          return res.fail(value, "Did not throw");
+        }
+        res.fail(value, "Not a function");
       }
     }
   }
