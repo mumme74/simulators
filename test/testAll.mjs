@@ -9,6 +9,7 @@ export const allTests = [
   "test_schematic.mjs",
   "trigenometry/test_trigenometry_index.mjs",
   "diagrams/test_diagrams_index.mjs",
+  "electrical/test_electric_schematic.mjs",
 ];
 
 const hashStr = location.hash.replace(/^#/, "").trim();
