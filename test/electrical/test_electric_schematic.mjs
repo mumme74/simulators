@@ -6,7 +6,8 @@ import { Polygon } from "../../elements/base.mjs";
 import {
   ElectricComponentBase,
   ElectricNet,
-  Fuse
+  Fuse,
+  Switch
 } from "../../elements/electrical/electric_schematic.mjs";
 
 const glbl = {
@@ -174,6 +175,70 @@ registerTestSuite("testFuse", ()=>{
       expect(fuse.broken).toBe(false);
       fuse.currentThrough(1.5);
       expect(fuse.broken).toBe(true);
+    });
+  });
+});
+
+registerTestSuite("testSwitch", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createSwitch = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Switch(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createSwitch({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toEqualOrGt(50);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toEqualOrGt(3);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createSwitch({centerPoint:{x:50,y:50},open:false,name:"switch",className:"nofill"});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("switch");
+      expect(comp.open).toBe(false);
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toEqualOrGt(3);
+    });
+  })
+
+  describe("Test open/close", ()=>{
+    it("Should be open", ()=>{
+      const comp = createSwitch({});
+      expect(comp.open).toBe(true);
+    });
+    it("Should be closed", ()=>{
+      const comp = createSwitch({open:false});
+      expect(comp.open).toBe(false);
+    });
+    it("Should test set open and closed", ()=>{
+      const comp = createSwitch({centerPoint:{x:50,y:50}});
+      expect(comp.open).toBe(true);
+      comp.open = false;
+      expect(comp.open).toBe(false);
+      expect(comp.closed).toBe(true);
+      expect(comp.contact.point2.x).toBe(comp.terminal2.point2.x);
+      comp.closed = false;
+      expect(comp.closed).toBe(false);
+      expect(comp.open).toBe(true);
+      expect(comp.contact.point2.x).toNotBe(comp.terminal2.point2.x);
     });
   });
 });
