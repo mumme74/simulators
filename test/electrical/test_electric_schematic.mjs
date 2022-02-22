@@ -7,6 +7,7 @@ import {
   ElectricComponentBase,
   ElectricNet,
   Fuse,
+  Lamp,
   Switch
 } from "../../elements/electrical/electric_schematic.mjs";
 
@@ -130,12 +131,13 @@ registerTestSuite("testFuse", ()=>{
       expect(comp.name).toBe("");
       expect(comp.nets.length).toBe(2);
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toEqualOrGt(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
-      expect(comp.shapes.length).toEqualOrGt(3);
+      expect(comp.shapes.length).toBe(3);
     });
     it("Should construct with options", ()=>{
       const comp = createFuse({centerPoint:{x:50,y:50},name:"fuse",className:"nofill"});
@@ -149,7 +151,7 @@ registerTestSuite("testFuse", ()=>{
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
-      expect(comp.shapes.length).toEqualOrGt(3);
+      expect(comp.shapes.length).toBe(3);
     });
   });
 
@@ -195,12 +197,13 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.name).toBe("");
       expect(comp.nets.length).toBe(2);
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
-      expect(comp.size.height).toEqualOrGt(50);
+      expect(comp.size.height).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
-      expect(comp.shapes.length).toEqualOrGt(3);
+      expect(comp.shapes.length).toBe(3);
     });
     it("Should construct with options", ()=>{
       const comp = createSwitch({centerPoint:{x:50,y:50},open:false,name:"switch",className:"nofill"});
@@ -215,7 +218,7 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
-      expect(comp.shapes.length).toEqualOrGt(3);
+      expect(comp.shapes.length).toBe(3);
     });
   })
 
@@ -242,3 +245,79 @@ registerTestSuite("testSwitch", ()=>{
     });
   });
 });
+
+registerTestSuite("testLamp", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createLamp = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Lamp(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createLamp({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(35);
+      expect(comp.size.height).toBe(50);
+      expect(comp.rating).toBe(5);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(6);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createLamp({centerPoint:{x:50,y:50},broken:true,name:"lamp",className:"nofill", rating:10});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("lamp");
+      expect(comp.broken).toBe(true);
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(35);
+      expect(comp.size.height).toBe(50);
+      expect(comp.rating).toBe(10);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(6);
+    });
+  });
+  describe("Test broken", ()=>{
+    it("Should be intact", ()=>{
+      const comp = createLamp({});
+      expect(comp.broken).toBe(false);
+    });
+    it("Should test set broken and reset", ()=>{
+      const comp = createLamp({centerPoint:{x:50,y:50}});
+      expect(comp.broken).toBe(false);
+      comp.currentThrough(comp.rating/12);
+      expect(+comp.lightNode.node.style.opacity).toBe(1);
+      comp.broken = true;
+      expect(comp.broken).toBe(true);
+      expect(+comp.lightNode.node.style.opacity).toBe(0);
+      comp.currentThrough(comp.rating/12);
+      expect(+comp.lightNode.node.style.opacity).toBe(0);
+      comp.broken = false;
+      expect(comp.broken).toBe(false);
+      expect(+comp.lightNode.node.style.opacity).toBe(0);
+      comp.currentThrough (comp.rating / 24);
+      expect(+comp.lightNode.node.style.opacity).toBe(0.5);
+    });
+    it("Should trip and set comp as broken", ()=>{
+      const comp = createLamp({});
+      comp.currentThrough(comp.rating/12);
+      expect(+comp.lightNode.node.style.opacity).toBe(1);
+      comp.currentThrough(comp.rating/12+0.1);
+      expect(comp.broken).toBe(true);
+      expect(+comp.lightNode.node.style.opacity).toBe(0);
+      comp.currentThrough(comp.rating/12);
+      expect(+comp.lightNode.node.style.opacity).toBe(0);
+    });
+  });
+})
