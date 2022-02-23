@@ -311,7 +311,21 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.nets[0]).toBe(nets[0]);
       expect(comp.nets[1]).toBe(nets[1]);
     });
-  })
+  });
+
+  describe("Test components", ()=>{
+    it("Should get default components", ()=>{
+      const comp = createComp({});
+      expect(comp.components.length).toBe(0);
+    });
+    it("Should add a component", ()=>{
+      const comp = createComp({}),
+            comp1 = createComp({});
+      expect(comp.components.length).toBe(0);
+      comp.addComponent(comp1);
+      expect(comp.components[0]).toBe(comp1);
+    });
+  });
 
   describe("Test shapes", ()=>{
     it("Should get all shapes for component", ()=>{

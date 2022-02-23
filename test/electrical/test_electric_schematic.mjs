@@ -12,7 +12,8 @@ import {
   Switch,
   Resistor,
   Capacitor,
-  Solenoid
+  Solenoid,
+  Relay,
 } from "../../elements/electrical/electric_schematic.mjs";
 
 const glbl = {
@@ -526,7 +527,7 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(30);
-      expect(comp.size.height).toBe(40);
+      expect(comp.size.height).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
@@ -543,7 +544,7 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(30);
-      expect(comp.size.height).toBe(40);
+      expect(comp.size.height).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
@@ -553,3 +554,50 @@ registerTestSuite("testSolenoid", ()=>{
     });
   });
 });
+
+registerTestSuite("testRelay", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createRelay = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Relay(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createRelay({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(30);
+      expect(comp.size.height).toBe(40);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(1);
+      expect(comp.resistance).toBe(100);
+      expect(comp.components.length).toBeObj(2);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createRelay({centerPoint:{x:50,y:50},
+        name:"capacitor",className:"nofill", resistance:10});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("capacitor");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(30);
+      expect(comp.size.height).toBe(40);
+      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
+      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(1);
+      expect(comp.resistance).toBe(10);
+      expect(comp.components.length).toBeObj(2);
+    });
+  });
+});
+

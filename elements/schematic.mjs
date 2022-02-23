@@ -121,14 +121,15 @@ export class Net {
 
 export class ComponentBase extends BaseShape {
   _shapes = [];
+  _components = [];
   _state = 0;
 
   constructor({parentElement, className, width, height,
               centerPoint={x:0,y:0}, name, nets=[]}) {
     const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
     const transform = lookupSvgRoot(parentElement).createSVGTransform();
-    transform.matrix.e = centerPoint.x;
-    transform.matrix.f = centerPoint.y;
+    //transform.matrix.e = centerPoint.x;
+    //transform.matrix.f = centerPoint.y;
     rootElement.transform.baseVal.appendItem(transform);
 
     if (!(centerPoint instanceof Point))
@@ -153,6 +154,14 @@ export class ComponentBase extends BaseShape {
 
   addShape(shape) {
     this._shapes.push(shape);
+  }
+
+  addComponent(component) {
+    this._components.push(component);
+  }
+
+  get components(){
+    return [...this._components];
   }
 
   get shapes() {

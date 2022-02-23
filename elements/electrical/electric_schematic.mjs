@@ -436,11 +436,11 @@ export class Resistor extends ElectricComponentBase {
       new ElectricNet({})
     ];
     super({parentElement, centerPoint, name,
-          className, nets, width:30, height:40});
+          className, nets, width:30, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
-    sz.height -= 18;
+    sz.height -= 28;
 
     this.terminal1 = new Line({parentElement,
       point1:{x:sz.centerPoint.x,y:this.size.top},
@@ -465,5 +465,45 @@ export class Resistor extends ElectricComponentBase {
 
     this.inductance = inductance;
     this.resistance = resistance;
+  }
+}
+
+
+export class Relay extends ElectricComponentBase {
+
+  constructor({parentElement, centerPoint, name, className, resistance}) {
+    const nets = [new ElectricNet({}), new ElectricNet({})];
+    super({parentElement, centerPoint, name,
+          className, nets, width:60, height:50});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height -= 15; sz.width -= 5;
+
+    this.rect = new Polygon({
+      parentElement, className:"outline", points:[
+        sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft
+      ]
+    });
+
+    this.addShape(this.rect);
+    sz.width -= 30; sz.centerPoint.x += 3;
+    this.switch = new Switch({parentElement,
+      centerPoint:{x:sz.right, y:sz.centerPoint.y}
+    });
+    this.solenoid = new Solenoid({parentElement,
+      centerPoint:{x:sz.left, y:sz.centerPoint.y}, resistance
+    });
+
+    this.addComponent(this.switch);
+    this.addComponent(this.solenoid);
+  }
+
+  get resistance() {
+    this.solenoid.resistance;
+  }
+
+  set resistance(resistance) {
+    this.solenoid.resistance = this.resistance
   }
 }

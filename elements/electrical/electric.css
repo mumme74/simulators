@@ -12,3 +12,7 @@
 ._electric_component .dot {
   fill: #000;
 }
+
+._electric_component .outline {
+  stroke-dasharray: 2mm;
+}
