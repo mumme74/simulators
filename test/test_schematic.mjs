@@ -363,6 +363,35 @@ registerTestSuite("testComponentBase", ()=>{
       expect(newState).toBeObj({another:1});
     })
   });
+
+  describe("Test add* and get*", ()=>{
+    it("Should add a shape",()=>{
+      const comp = createComp({});
+      expect(comp.shapes.length).toBe(0);
+      const shp = createShape({points:[{x:0,y:0}]});
+      comp.addShape(shp);
+      expect(comp.shapes.length).toBe(1);
+      expect(comp.shapes[0]).toBe(shp);
+    });
+    it("Should add a component",()=>{
+      const comp = createComp({});
+      expect(comp.components.length).toBe(0);
+      const comp2 = createComp({});
+      comp.addComponent(comp2);
+      expect(comp.components.length).toBe(1);
+      expect(comp.components[0]).toBe(comp2);
+    });
+    it("Should add a terminal",()=>{
+      const comp = createComp({});
+      const net = new Net({});
+      expect(comp.terminals.length).toBe(0);
+      const shp = createShape({points:[{x:0,y:0}]});
+      comp.addTerminal(shp, net);
+      expect(comp.terminals.length).toBe(1);
+      expect(comp.shapes.length).toBe(1);
+      expect(comp.terminals[0]).toBeObj({terminal:shp,net});
+    });
+  })
 })
 
 registerTestSuite("testWire", ()=>{

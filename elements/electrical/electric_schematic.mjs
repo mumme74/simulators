@@ -92,8 +92,8 @@ export class Fuse extends ElectricComponentBase {
       width:sz.width, height: sz.height
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.rect);
   }
 
@@ -150,9 +150,9 @@ export class Switch extends ElectricComponentBase {
       }
     });
 
-    this.addShape(this.terminal1);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.dot1);
-    this.addShape(this.terminal2);
     this.addShape(this.dot2);
     this.addShape(this.contact);
 
@@ -217,8 +217,8 @@ export class Lamp extends ElectricComponentBase {
       point1:linePts[2], point2:linePts[3]
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.outerCircle);
     this.addShape(this.lightNode);
     this.addShape(this.lineCross1);
@@ -300,8 +300,8 @@ export class BatteryCell extends ElectricComponentBase {
       point1: sz.bottomLeft, point2:sz.bottomRight
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.plusLine);
     this.addShape(this.minusLine);
 
@@ -352,8 +352,8 @@ export class Resistor extends ElectricComponentBase {
       width:sz.width, height: sz.height
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.rect);
 
     this.resistance = resistance;
@@ -423,8 +423,8 @@ export class Resistor extends ElectricComponentBase {
       points: [sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft]
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.plusLine);
     this.addShape(this.minusShape);
 
@@ -479,8 +479,8 @@ export class Resistor extends ElectricComponentBase {
       point1:sz.bottomLeft, point2:sz.topRight
     });
 
-    this.addShape(this.terminal1);
-    this.addShape(this.terminal2);
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
     this.addShape(this.lineCross1);
     this.addShape(this.rectShape);
 

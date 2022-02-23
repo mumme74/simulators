@@ -122,6 +122,7 @@ export class Net {
 export class ComponentBase extends BaseShape {
   _shapes = [];
   _components = [];
+  _terminals = [];
   _state = 0;
 
   constructor({parentElement, className, width, height,
@@ -161,6 +162,11 @@ export class ComponentBase extends BaseShape {
     this._components.push(component);
   }
 
+  addTerminal(terminal, net) {
+    this._terminals.push({terminal, net});
+    this.addShape(terminal);
+  }
+
   get components(){
     return [...this._components];
   }
@@ -171,6 +177,10 @@ export class ComponentBase extends BaseShape {
 
   get state() {
     return this._state;
+  }
+
+  get terminals() {
+    return [...this._terminals];
   }
 
   set state(newState) {
