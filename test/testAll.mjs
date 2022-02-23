@@ -1,6 +1,6 @@
 "use strict";
 
-export const allTests = [
+export const allFiles = [
   "helpers/test_helpers_index.mjs",
   "test_length.mjs",
   "test_point.mjs",
@@ -12,16 +12,15 @@ export const allTests = [
   "electrical/test_electric_schematic.mjs",
 ];
 
+/*
 const hashStr = location.hash.replace(/^#/, "").trim();
-const filterIn = hashStr.length ? hashStr.split(",") : [...allTests];
-const testToRun = allTests.filter(t=>filterIn.indexOf(t) > -1);
+const filterIn = hashStr.length ? hashStr.split(",") : [...allFiles];
+const testToRun = allFiles.filter(t=>filterIn.indexOf(t) > -1);
+const filterFiles = hashStr.length ? hashStr.split(',') : undefined;
+
 
 document.addEventListener("DOMContentLoaded", async ()=>{
   setTestResultToHtml(document.getElementById("testResult"));
-  for(const t of testToRun) {
-    console.log("running test", t);
-    await import(`./${t}`);
-  };
-  runAllTestSuites();
-  showTestsResults();
+  await globalThis.loadAndRun({allFiles, pathPrefix:'../', filterFiles});
 });
+*/

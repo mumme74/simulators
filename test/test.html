@@ -29,6 +29,10 @@
   </style>
   <script src="lib/index.js"></script>
   <script type="module" src="testAll.mjs"></script>
+  <script type="module">
+    import { allFiles } from './testAll.mjs';
+    runTestsInBrowser(document.getElementById("testResult"), allFiles);
+  </script>
 </head>
 <body>
   <h3>Testing</h3>

@@ -240,8 +240,13 @@ registerTestSuite("test_toFraction", ()=>{
 });
 
 registerTestSuite("testStateFromHash", ()=>{
-  afterEach(()=>{
+  let locHash = location.hash;
+
+  beforeEach(()=>{
     location.hash = "";
+  });
+  afterAll(()=>{
+    location.hash = locHash;
   });
 
   describe("Test constructor", ()=>{
