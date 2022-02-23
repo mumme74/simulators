@@ -40,9 +40,13 @@ registerTestSuite("testLength", ()=>{
       const len = new Length({});
       expect(len.length).toBe(0);
     });
-    it("Should constructconstruct a point len 10", ()=>{
+    it("Should construct a length len 10", ()=>{
       const len = new Length({length:10});
       expect(len.length).toBe(10);
+    });
+    it("Should construct a length followOffset 10", ()=>{
+      const len = new Length({followOffset:10});
+      expect(len.followOffset).toBe(10);
     });
   });
 
@@ -93,12 +97,25 @@ registerTestSuite("testLength", ()=>{
       expect(len1.length).toBe(3);
       expect(len2.length).toBe(3);
     });
-    it("Should follow other length fromFollowLength", ()=>{
+    it("Should follow other length with offset", ()=>{
+      const len1 = new Length({length: 1}),
+            len2 = new Length({length:3, followLength:len1, followOffset:10});
+      expect(len1.length).toBe(1);
+      expect(len2.length).toBe(11);
+      len1.length = 2;
+      expect(len1.length).toBe(2);
+      expect(len2.length).toBe(12);
+      len2.followOffset = 0;
+      len2.length = 3;
+      expect(len1.length).toBe(3);
+      expect(len2.length).toBe(3);
+    });
+    it("Should follow other length from followLength", ()=>{
       const len1 = new Length({length: 1}),
             len2 = new Length({length:3});
       expect(len1.length).toBe(1);
       expect(len2.length).toBe(3);
-      len2.followLength(len1);
+      len2.followLength = len1;
       expect(len2.length).toBe(1);
       len1.length = 2;
       expect(len1.length).toBe(2);
@@ -134,7 +151,7 @@ registerTestSuite("testLength", ()=>{
       len1.length = 2;
       expect(len1.length).toBe(2);
       expect(len2.length).toBe(2);
-      len2.followLength(null);
+      len2.followLength = null;
       len2.length = 3;
       expect(len1.length).toBe(2);
       expect(len2.length).toBe(3);
@@ -153,7 +170,7 @@ registerTestSuite("testLength", ()=>{
       expect(len1.length).toBe(2);
       expect(len2.length).toBe(2);
       expect(len3.length).toBe(4);
-      len2.followLength(len3);
+      len2.followLength = len3;
       expect(len1.length).toBe(2);
       expect(len2.length).toBe(4);
       expect(len3.length).toBe(4);
