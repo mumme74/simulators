@@ -64,10 +64,14 @@ registerTestSuite("testSizeRect", ()=>{
       expect(sz.centerPoint).toBeObj({x:20,y:10});
       expect(sz.height).toBe(20);
       expect(sz.width).toBe(40);
+      expect(sz.leftPoint).toBeObj({x:0,y:10});
       expect(sz.left).toBe(0);
       expect(sz.right).toBe(40);
+      expect(sz.rightPoint).toBeObj({x:40,y:10});
       expect(sz.top).toBe(0);
+      expect(sz.topPoint).toBeObj({x:20,y:0});
       expect(sz.bottom).toBe(20);
+      expect(sz.bottomPoint).toBeObj({x:20,y:20});
     });
     it("Should center 0,0", ()=>{
       const sz = new SizeRect({centerPoint:{x:0,y:0}, height:20, width:40});
@@ -140,6 +144,123 @@ registerTestSuite("testSizeRect", ()=>{
       expect(sz.topRight).toBeObj({x:90,y:100});
       expect(sz.bottomLeft).toBeObj({x:50,y:120});
       expect(sz.bottomRight).toBeObj({x:90,y:120});
+    });
+    it("Should get coords as points topLeft 30,40", ()=>{
+      const sz = new SizeRect({topLeft:{x:30,y:40}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:50,y:50});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.leftPoint).toBeObj({x:30,y:50});
+      expect(sz.topLeftPoint).toBeObj({x:30,y:40});
+      expect(sz.left).toBe(30);
+      expect(sz.right).toBe(70);
+      expect(sz.rightPoint).toBeObj({x:70,y:50});
+      expect(sz.topRightPoint).toBeObj({x:70,y:40});
+      expect(sz.top).toBe(40);
+      expect(sz.topPoint).toBeObj({x:50,y:40});
+      expect(sz.bottomLeftPoint).toBeObj({x:30,y:60});
+      expect(sz.bottom).toBe(60);
+      expect(sz.bottomPoint).toBeObj({x:50,y:60});
+      expect(sz.bottomRightPoint).toBeObj({x:70,y:60});
+    });
+    it("Should coords as points tcenterPoint 50,50", ()=>{
+      const sz = new SizeRect({centerPoint:{x:50,y:50}, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:50,y:50});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(sz.leftPoint).toBeObj({x:30,y:50});
+      expect(sz.topLeftPoint).toBeObj({x:30,y:40});
+      expect(sz.left).toBe(30);
+      expect(sz.right).toBe(70);
+      expect(sz.rightPoint).toBeObj({x:70,y:50});
+      expect(sz.topRightPoint).toBeObj({x:70,y:40});
+      expect(sz.top).toBe(40);
+      expect(sz.topPoint).toBeObj({x:50,y:40});
+      expect(sz.bottomLeftPoint).toBeObj({x:30,y:60});
+      expect(sz.bottom).toBe(60);
+      expect(sz.bottomPoint).toBeObj({x:50,y:60});
+      expect(sz.bottomRightPoint).toBeObj({x:70,y:60});
+    });
+  });
+
+  describe("Test point move", ()=>{
+    it("Should move topLeft to 30,40", ()=>{
+      const topLeft = new Point({x:0,y:0});
+      const sz = new SizeRect({topLeft, width:40, height:20});
+      expect(sz.centerPoint).toBeObj({x:20,y:10});
+      const centerPoint = sz.centerPoint,
+            leftPoint = sz.leftPoint,
+            rightPoint = sz.rightPoint,
+            topPoint = sz.topPoint,
+            bottomPoint = sz.bottomPoint,
+            topLeftPoint = sz.topLeftPoint,
+            topRightPoint = sz.topRightPoint,
+            bottomLeftPoint = sz.bottomLeftPoint,
+            bottomRightPoint = sz.bottomRightPoint;
+      leftPoint.addChangeCallback((pnt)=>{
+        console.log(pnt)
+      })
+      topLeft.point = [30,40];
+      expect(sz.centerPoint).toBeObj({x:50,y:50});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(leftPoint).toBeObj({x:30,y:50});
+      expect(topLeftPoint).toBeObj({x:30,y:40});
+      expect(rightPoint).toBeObj({x:70,y:50});
+      expect(topRightPoint).toBeObj({x:70,y:40});
+      expect(topPoint).toBeObj({x:50,y:40});
+      expect(bottomLeftPoint).toBeObj({x:30,y:60});
+      expect(bottomPoint).toBeObj({x:50,y:60});
+      expect(bottomRightPoint).toBeObj({x:70,y:60});
+    });
+    it("Should move centerPoint 0,0", ()=>{
+      const cp = new Point({x:0,y:0});
+      const sz = new SizeRect({centerPoint:cp, height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:0,y:0});
+      const centerPoint = sz.centerPoint,
+            leftPoint = sz.leftPoint,
+            rightPoint = sz.rightPoint,
+            topPoint = sz.topPoint,
+            bottomPoint = sz.bottomPoint,
+            topLeftPoint = sz.topLeftPoint,
+            topRightPoint = sz.topRightPoint,
+            bottomLeftPoint = sz.bottomLeftPoint,
+            bottomRightPoint = sz.bottomRightPoint;
+      centerPoint.point = [50,50];
+      expect(sz.centerPoint).toBeObj({x:50,y:50});
+      expect(sz.height).toBe(20);
+      expect(sz.width).toBe(40);
+      expect(leftPoint).toBeObj({x:30,y:50});
+      expect(topLeftPoint).toBeObj({x:30,y:40});
+      expect(rightPoint).toBeObj({x:70,y:50});
+      expect(topRightPoint).toBeObj({x:70,y:40});
+      expect(topPoint).toBeObj({x:50,y:40});
+      expect(bottomLeftPoint).toBeObj({x:30,y:60});
+      expect(bottomPoint).toBeObj({x:50,y:60});
+      expect(bottomRightPoint).toBeObj({x:70,y:60});
+    });
+    it("Should move centerPoint from default point", ()=>{
+      const sz = new SizeRect({height:20, width:40});
+      expect(sz.centerPoint).toBeObj({x:0,y:0});
+      const centerPoint = sz.centerPoint,
+            leftPoint = sz.leftPoint,
+            rightPoint = sz.rightPoint,
+            topPoint = sz.topPoint,
+            bottomPoint = sz.bottomPoint,
+            topLeftPoint = sz.topLeftPoint,
+            topRightPoint = sz.topRightPoint,
+            bottomLeftPoint = sz.bottomLeftPoint,
+            bottomRightPoint = sz.bottomRightPoint;
+      sz.centerPoint.point = [50,50];
+      expect(sz.centerPoint).toBeObj({x:50,y:50});
+      expect(leftPoint).toBeObj({x:30,y:50});
+      expect(topLeftPoint).toBeObj({x:30,y:40});
+      expect(rightPoint).toBeObj({x:70,y:50});
+      expect(topRightPoint).toBeObj({x:70,y:40});
+      expect(topPoint).toBeObj({x:50,y:40});
+      expect(bottomLeftPoint).toBeObj({x:30,y:60});
+      expect(bottomPoint).toBeObj({x:50,y:60});
+      expect(bottomRightPoint).toBeObj({x:70,y:60});
     });
   });
 })

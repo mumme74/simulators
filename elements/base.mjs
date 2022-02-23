@@ -11,15 +11,25 @@ export function lookupSvgRoot(svgElem) {
 /**
  * A class for sizes
  * @property {Point} centerPoint The center point of this rectangle
+ * @property {number} width The width of this rect
+ * @property {number} height The height of this rect
  * @property {{x:number, y:number}} topLeft The top left of this rect
  * @property {{x:number, y:number}} topRight The top right of this rect
  * @property {{x:number, y:number}} bottomLeft The bottom left of this rect
  * @property {{x:number, y:number}} bottomRight The bottom right of this rect
+ * @property {Point} topLeftPoint A point that follows centerpoint but at topLeft
+ * @property {Point} topRightPoint A point that follows centerpoint but at topRight
+ * @property {Point} bottomLeftPoint A point that follows centerpoint but at bottomLeft
+ * @property {Point} bottomRightPoint A point that follows centerpoint but at bottomRight
  * @property {SizeRect} cloneFromRect Clone this rect for values
  * @property {number} left The x at left
  * @property {number} top The y at top
  * @property {number} right The x at right
  * @property {number} bottom The y at bottom
+ * @property {Point} leftPoint A point that follows centerpoint but at left
+ * @property {Point} rightPoint A point that follows centerpoint but at right
+ * @property {Point} topPoint A point that follows centerpoint but at top
+ * @property {Point} bottomPoint A point that follows centerpoint but at bottom
  */
 export class SizeRect {
   constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0, cloneFromRect}) {
@@ -29,36 +39,83 @@ export class SizeRect {
       height = cloneFromRect.height;
     }
 
-    if (topLeft)
-      centerPoint = new Point({x:topLeft.x + width /2, y:topLeft.y+height/2});
     this.height = height;
     this.width = width;
+
+    if (topLeft) {
+      let arg = {x:topLeft.x + this._xOffset(), y:topLeft.y + this._yOffset()};
+      if (topLeft instanceof Point)
+        centerPoint = new Point({followPoint:topLeft, followOffset: {x:arg.x, y:arg.y}});
+      else
+        centerPoint = new Point(arg);
+    } else if (centerPoint instanceof Point)
+      centerPoint = new Point({followPoint:centerPoint});
+    else
+      centerPoint = new Point(centerPoint);
+
     this.centerPoint = centerPoint;
   }
-  get left(){
-    return this.centerPoint.x-this.width/2;
+  get left() {
+    return this.centerPoint.x-this._xOffset();
+  }
+  get leftPoint() {
+    const offset = {x:-this._xOffset()};
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
   }
   get right(){
-    return this.centerPoint.x+this.width/2;
+    return this.centerPoint.x+this._xOffset();
   }
-  get top(){
-    return this.centerPoint.y-this.height/2;
+  get rightPoint() {
+    const offset = {x:this._xOffset()};
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
   }
-  get bottom(){
-    return this.centerPoint.y+this.height/2;
+  get top() {
+    return this.centerPoint.y-this._yOffset();
+  }
+  get topPoint() {
+    const offset = {y:-this._yOffset()};
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
+  }
+  get bottom() {
+    return this.centerPoint.y+this._yOffset();
+  }
+  get bottomPoint() {
+    const offset = {y:this._yOffset()};
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
   }
   get topLeft() {
     return {x:this.left, y:this.top};
   }
-  get topRight(){
+  get topLeftPoint() {
+    const offset = { x:-this._xOffset(), y:-this._yOffset() };
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
+  }
+  get topRight() {
     return {x:this.right, y:this.top};
   }
-  get bottomLeft(){
+  get topRightPoint() {
+    const offset = { x:this._xOffset(), y:-this._yOffset() };
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
+  }
+  get bottomLeft() {
     return {x:this.left, y:this.bottom};
   }
-  get bottomRight(){
+  get bottomLeftPoint() {
+    const offset = { x:-this._xOffset(), y:this._yOffset() };
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
+  }
+  get bottomRight() {
     return {x:this.right, y:this.bottom};
   }
+  get bottomRightPoint() {
+    const offset = {
+      x:this.right - this.centerPoint.x,
+      y:this.bottom - this.centerPoint.y
+    };
+    return new Point({followPoint:this.centerPoint, followOffset:offset});
+  }
+  _yOffset() { return this.height / 2; }
+  _xOffset() { return this.width / 2; }
 }
 
 /**
