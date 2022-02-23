@@ -273,7 +273,7 @@ class InfoDisplay {
 
   _createExplainRows(parent){
     const tr = {sun: "Solhjul", carrier: "Planethjulshållare", ring:"Ringhjul"};
-    const takenKeys = [state.forceIn, state.locked];
+    const takenKeys = [state.forceIn, state.lock];
     const outKey = Object.keys(tr).find(k=>takenKeys.indexOf(k)<0);
     return [
       {txt:"Låst", cssCls:"locked", stateKey:"lock"},
