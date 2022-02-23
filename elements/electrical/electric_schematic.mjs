@@ -346,18 +346,18 @@ export class Resistor extends ElectricComponentBase {
 }
 
 /**
- * A capatcitor class
+ * A capacitor class
  * @prop
  */
  export class Capacitor extends ElectricComponentBase {
   /**
-   * Create a new BatteryCell
+   * Create a new Capacitor
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
    * @param {string} [className] The className string to use
    * @param {string} [name] The name of this component
    * @param {number} [capacity] The number of capacitance in Farad
-   * @param {number} [resistance] The internal resitance of this cell
+   * @param {number} [resistance] The internal resitance
    * @param {number} [polarized] It capacitor should be polarized
    */
   constructor({
@@ -402,5 +402,60 @@ export class Resistor extends ElectricComponentBase {
     this.capacitance = capacitance;
     this.resistance = resistance;
     this.polarized = polarized;
+  }
+}
+
+/**
+ * A Solenoid class
+ * @prop
+ */
+ export class Solenoid extends ElectricComponentBase {
+  /**
+   * Create a new Solenoid
+   * @param {SVGElement} parentElement The parent to attach this node to
+   * @param {Point|{x:number,y:number}} centerPoint the center for this component
+   * @param {string} [className] The className string to use
+   * @param {string} [name] The name of this component
+   * @param {number} [inductance] The number of capacitance in Farad
+   * @param {number} [resistance] The internal resitance
+   */
+  constructor({
+    parentElement, centerPoint, className, name,
+    inductance=0.001, resistance=100
+  }) {
+    const nets = [
+      new ElectricNet({}),
+      new ElectricNet({})
+    ];
+    super({parentElement, centerPoint, name,
+          className, nets, width:30, height:40});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height -= 18;
+
+    this.terminal1 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.top},
+      point2:{x:sz.centerPoint.x,y:sz.top}
+    });
+    this.terminal2 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.bottom},
+      point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.rectShape = new Polygon({parentElement,
+      points: [sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft]
+    });
+    sz.width /= 2;
+    this.lineCross1 = new Line({parentElement,
+      point1:sz.bottomLeft, point2:sz.topRight
+    });
+
+    this.addShape(this.terminal1);
+    this.addShape(this.terminal2);
+    this.addShape(this.lineCross1);
+    this.addShape(this.rectShape);
+
+    this.inductance = inductance;
+    this.resistance = resistance;
   }
 }
