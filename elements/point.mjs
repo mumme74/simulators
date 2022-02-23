@@ -7,6 +7,7 @@ import { Length } from "./length.mjs";
  * @property {number} x The x value
  * @property {number} y The y value
  * @property {Point|null} followPoint The point this point is attached to follows when it moves
+ * @property {{x:number, y:number}} followOffset Follow point with this offset
  */
 export class Point {
   _x = new Length({});
@@ -26,10 +27,11 @@ export class Point {
    * @param {SVGLength} [svgLenYRef] The y svgLength this y value is controlling, ie cy of a svg circle
    * @param {function} [onChangeCallback] A callback thats called when this point moves
    * @param {Point} [followPoint] A point to follow and move with
+   * @param {{x:number,y:number}} [followOffset] Follow point with this offset
    */
   constructor({x, y, svgPntRef = null, owner=null,
-              svgLenXRef, svgLenYRef,
-              onChangeCallback, followPoint}) {
+              svgLenXRef, svgLenYRef, onChangeCallback,
+              followPoint, followOffset}) {
     this.owner = owner;
     if (svgLenXRef) {
       this._x._lenRef = svgLenXRef;
@@ -53,6 +55,8 @@ export class Point {
     if (onChangeCallback)
       this._onChangeCallbacks.push(onChangeCallback);
 
+    if (followOffset)
+      this.followOffset = followOffset;
     if (followPoint)
       this.followPoint = followPoint;
   }
@@ -62,27 +66,25 @@ export class Point {
   }
 
   set point(arg) {
-    if (this._followPoint)
-      this._followPoint.point = arg;
-    else if (Array.isArray(arg)) {
-      if (this._x.length !== arg[0] || this._y.length !== arg[1]) {
-        this._x.length = arg[0];
-        this._y.length = arg[1];
-        this._updated();
+    const pt = Array.isArray(arg) ? [arg[0] || 0, arg[1] || 0] : [arg.x || 0, arg.y || 0];
+    if (this._x.length !== pt[0] || this._y.length !== pt[1]) {
+      if (this._followPoint) {
+        this._followPoint._x.length = pt[0] - this._x.followOffset;
+        this._followPoint._y.length = pt[1] - this._y.followOffset;
+        this._followPoint._updated();
       }
-    } else {
-      if (this._x.length !== arg.x || this._y.length !== arg.y) {
-        this._x.length = arg.x;
-        this._y.length = arg.y;
-        this._updated();
-      }
+      this._x.length = pt[0];
+      this._y.length = pt[1];
+      this._updated();
     }
   }
 
   set x(xVlu) {
-    if (this._followPoint)
-      this._followPoint.x = xVlu;
-    else if (this._x.length !== xVlu) {
+    if (this._x.length !== xVlu) {
+      if (this._followPoint) {
+        this._followPoint._x.length = xVlu - this._x.followOffset;
+        this._followPoint._updated();
+      }
       this._x.length = xVlu;
       this._updated();
     }
@@ -92,9 +94,11 @@ export class Point {
   }
 
   set y(yVlu) {
-    if (this._followPoint)
-      this._followPoint.y = yVlu;
-    else if (this._y.length !== yVlu) {
+    if (this._y.length !== yVlu) {
+      if (this._followPoint) {
+        this._followPoint._y.length = yVlu - this._y.followOffset;
+        this._followPoint._updated();
+      }
       this._y.length = yVlu;
       this._updated();
     }
@@ -121,8 +125,8 @@ export class Point {
       if (pntIt === this) return;
       this._followPoint = pntIt;
       pntIt._followPoints.push(this);
-      this._x.length = this._followPoint._x.length;
-      this._y.length = this._followPoint._y.length;
+      this._x.length = this._followPoint._x.length + this._x.followOffset;
+      this._y.length = this._followPoint._y.length + this._y.followOffset;
       this._updated();
     } else if (!point && this._followPoint) {
       const idx = this._followPoint._followPoints.indexOf(this);
@@ -130,6 +134,17 @@ export class Point {
         this._followPoint._followPoints.splice(idx);
       this._followPoint = null;
     }
+  }
+
+  get followOffset() {
+    return {x:this._x._followOffset, y:this._y._followOffset};
+  }
+
+  set followOffset(offset) {
+    if (offset?.x)
+      this._x.followOffset = offset.x;
+    if (offset?.y)
+      this._y.followOffset = offset.y
   }
 
   /**
@@ -193,8 +208,8 @@ export class Point {
     // update all our points that follow this point
     if (this._followPoints.length) {
       for(const pt of this._followPoints) {
-        pt._x.length = this._x.length;
-        pt._y.length = this._y.length;
+        pt._x.length = this._x.length + pt._x.followOffset;
+        pt._y.length = this._y.length + pt._y.followOffset;
         pt._updated();
       }
     }

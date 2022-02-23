@@ -40,6 +40,27 @@ registerTestSuite("testPoint", ()=>{
       const pt = new Point({x:1,y:2, owner});
       expect(pt.owner).toBe(owner);
     });
+    it("Should construct a point with followOffset.x ", ()=>{
+      const pt1 = new Point({x:1,y:2}),
+            pt2 = new Point({followPoint:pt1, followOffset:{x:5}})
+      expect(pt2).toBeObj({x:6,y:2});
+      expect(pt1.followOffset).toBeObj({x:0,y:0})
+      expect(pt2.followOffset).toBeObj({x:5,y:0});
+    });
+    it("Should construct a point with followOffset.y ", ()=>{
+      const pt1 = new Point({x:1,y:2}),
+            pt2 = new Point({followPoint:pt1, followOffset:{y:5}})
+      expect(pt2).toBeObj({x:1,y:7});
+      expect(pt1.followOffset).toBeObj({x:0,y:0})
+      expect(pt2.followOffset).toBeObj({x:0,y:5});
+    });
+    it("Should construct a point with followOffset ", ()=>{
+      const pt1 = new Point({x:1,y:2}),
+            pt2 = new Point({followPoint:pt1, followOffset:{x:10,y:5}})
+      expect(pt2).toBeObj({x:11,y:7});
+      expect(pt1.followOffset).toBeObj({x:0,y:0})
+      expect(pt2.followOffset).toBeObj({x:10,y:5});
+    });
     it("Should construct a point with svgPntRef set x,y from svgPnt ", ()=>{
       const svgNode = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       const svgPnt = svgNode.createSVGPoint();
@@ -223,7 +244,7 @@ registerTestSuite("testPoint", ()=>{
     })
   });
 
-  describe("Test friend points", ()=>{
+  describe("Test followPoint", ()=>{
     const createShape = (points = [{x:0,y:0}]) => {
       return glbl.polygon = new Polygon({
         parentElement:glbl.parentElement,
@@ -271,6 +292,26 @@ registerTestSuite("testPoint", ()=>{
       expect(pt2).toBeObj({x:5,y:20});
       pt2.y -= 5;
       expect(pt1).toBeObj({x:5,y:15});
+      expect(pt2).toBeObj({x:5,y:15});
+    });
+    it("Should follow point1 with followOffset", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, followPoint:pt1, followOffset:{x:10,y:5}});
+      expect(pt1).toBeObj({x:2,y:4});
+      expect(pt2).toBeObj({x:12,y:9});
+      pt2.point = [10,20]
+      expect(pt1).toBeObj({x:0,y:15});
+      expect(pt2).toBeObj({x:10,y:20});
+      pt2.point = {x:30,y:50}
+      expect(pt1).toBeObj({x:20,y:45});
+      expect(pt2).toBeObj({x:30,y:50});
+      pt2.followOffset = {x:-10}
+      pt2.x = 5;
+      expect(pt1).toBeObj({x:15,y:45});
+      expect(pt2).toBeObj({x:5,y:50});
+      pt2.followOffset = {y:-10}
+      pt2.y = 15;
+      expect(pt1).toBeObj({x:15,y:25});
       expect(pt2).toBeObj({x:5,y:15});
     });
     it("Should follow with multiple points and move with pt1", ()=>{
