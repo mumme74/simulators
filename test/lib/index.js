@@ -274,14 +274,16 @@ class ExpectChecks {
   }
 
   toBeInstanceOf (expected){
-    const res = this.result("toBeInstanceOf", expected);
+    const expName = expected.toString().replace(/\{*\s*\n.*/g, "");
+    const res = this.result("toBeInstanceOf", expName);
     if (this.value instanceof expected)
       return res.pass();
     res.fail();
   }
 
   toNotBeInstanceOf(expected) {
-    const res = this.result("toBeInstanceOf", expected);
+    const expName = expected.toString().replace(/\{*\s*\n.*/g, "");
+    const res = this.result("toBeInstanceOf", expName);
     if (this.value instanceof expected)
       return res.pass();
     res.fail();
