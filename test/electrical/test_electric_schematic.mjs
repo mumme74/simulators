@@ -207,7 +207,7 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
-      expect(comp.shapes.length).toBe(3);
+      expect(comp.shapes.length).toBe(5);
     });
     it("Should construct with options", ()=>{
       const comp = createSwitch({centerPoint:{x:50,y:50},open:false,name:"switch",className:"nofill"});
@@ -222,7 +222,7 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
-      expect(comp.shapes.length).toBe(3);
+      expect(comp.shapes.length).toBe(5);
     });
   })
 

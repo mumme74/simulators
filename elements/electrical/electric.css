@@ -8,3 +8,7 @@
   fill: rgb(243, 220, 13);
   opacity: 1.0;
 }
+
+._electric_component .dot {
+  fill: #000;
+}

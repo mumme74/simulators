@@ -111,9 +111,15 @@ export class Switch extends ElectricComponentBase {
       point1:{x:sz.centerPoint.x,y:this.size.top},
       point2:{x:sz.centerPoint.x,y:sz.top}
     });
+    this.dot1 = new Circle({parentElement, className:"dot",
+      centerPoint:this.terminal1.point2, radii:2
+    });
     this.terminal2 = new Line({parentElement,
       point1:{x:sz.centerPoint.x,y:this.size.bottom},
       point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.dot2 = new Circle({parentElement, className:"dot",
+      centerPoint:this.terminal2.point2, radii:2
     });
     this.contact = new Line({parentElement,
       point1:this.terminal1.point2,
@@ -124,7 +130,9 @@ export class Switch extends ElectricComponentBase {
     });
 
     this.addShape(this.terminal1);
+    this.addShape(this.dot1);
     this.addShape(this.terminal2);
+    this.addShape(this.dot2);
     this.addShape(this.contact);
 
     this.open = open;
