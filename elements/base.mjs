@@ -559,14 +559,23 @@ export class Text extends BaseShape {
 }
 
 /***
- * A compound group of other shapes
+ * A compound group of other shapes, Base class
  * @property {Array.<BaseShape>} shapes All shapes contained in this object
  * @property {number} angle The rotation angle of this object
+ * @property {SizeRect} size The size of this shape, set by width, height at construction
  */
 export class Group extends BaseShape {
   _shapes = [];
   _rot = null;
 
+  /**
+   * Create a new Group, can contain many shapes
+   * @param {SVGElement} parentElement The svg node to connect this shape to
+   * @param {Point|{x:number,y:number}} centerPoint The centerPoint for this class
+   * @param {number} [width] The width of this shape
+   * @param {number} [height] The height of this shape
+   * @param {string} [className] The css class name of this shape
+   */
   constructor({parentElement, centerPoint={x:0,y:0}, width, height, className}) {
     const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
@@ -593,16 +602,28 @@ export class Group extends BaseShape {
     this._rot = new Rotation({point:centerPoint});
   }
 
+  /**
+   * Scale this and all contained shapes
+   * @param {number} factor The factor to scale with
+   * @param {number} [xFactor] The factor to scale X with
+   * @param {number} [yFactor] The factor to scale Y with
+   */
   scale({factor=1, xFactor=null, yFactor=null}) {
     super.scale.apply(this, arguments);
     for (const shp of this._shapes)
       shp.scale.apply(shp, arguments);
     xFactor = xFactor !== null && !isNaN(xFactor) ? xFactor : factor;
     yFactor = yFactor !== null && !isNaN(yFactor) ? yFactor : factor;
-    this.size.width *= xFactor;
-    this.size.height *= yFactor;
+    const w = this.size.width * xFactor,
+          h = this.size.height * yFactor;
+    this.size.width = Math.max(w, -w);
+    this.size.height = Math.max(h, -h);
   }
 
+  /**
+   * Move this and all contained shapes
+   * @param {Point|{x:number,y:number}} newPoint Move to this pos
+   */
   move(newPoint) {
     const newX = Array.isArray(newPoint) ? newPoint[0] : newPoint.x,
           newY = Array.isArray(newPoint) ? newPoint[1] : newPoint.y;
@@ -616,6 +637,24 @@ export class Group extends BaseShape {
     }
   }
 
+  /**
+   * Flip this and all contained shapes at X axis
+   */
+  flipX() {
+    this.scale({xFactor:-1});
+  }
+
+  /**
+   * Flip this and all contained shapes at Y axis
+   */
+  flipY(){
+    this.scale({yFactor:-1});
+  }
+
+  /**
+   * Add a Shape to this group
+   * @param {BaseShape} shape The shape to add
+   */
   addShape(shape) {
     this._shapes.push(shape);
     this._rot.addRotateShape(shape);
