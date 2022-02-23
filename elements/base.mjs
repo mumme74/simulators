@@ -175,15 +175,17 @@ export class BaseShape {
    * @param {number} [factor=1] Scale X and Y by this factor
    * @param {number} [xFactor] Scale only X by this factor
    * @param {number} [yFactor] Scale only Y by this factor
+   * @param {Point|{x:number,y:number}} anchorPt The centerpoint for the scaling
    */
-  scale({factor=1, xFactor=null, yFactor=null}) {
+  scale({factor=1, xFactor=null, yFactor=null, anchorPt}) {
     xFactor = xFactor === null ? factor : xFactor;
     yFactor = yFactor === null ? factor : yFactor;
 
     // dont move our scaled object, only scale it, point0 is considered center
-    const anchorPt = this._points[0];
+    if (!anchorPt)
+      anchorPt = this._points[0];
 
-    for(const pt of this._points.slice(1)) {
+    for(const pt of this._points) {
       const offsetX = pt.x - anchorPt.x,
             offsetY = pt.y - anchorPt.y;
       pt.point = [
@@ -590,13 +592,13 @@ export class Group extends BaseShape {
 
     centerPoint.addChangeCallback((pnt)=>{
       this.shapes.forEach(shp=>{
-        const offset = {
-          x:shp.offset.x - oldPos.x,
-          y:shp.offset.y - oldPos.y
+        const pt = {
+          x:pnt.x + shp.offset.x - oldPos.x,
+          y:pnt.y + shp.offset.y - oldPos.y
         };
-        oldPos.x = pnt.x; oldPos.y = pnt.y;
-        shp.move(offset);
-      })
+        shp.move(pt);
+      });
+      oldPos.x = pnt.x; oldPos.y = pnt.y;
     })
     this.size = new SizeRect({centerPoint, width, height});
     this._rot = new Rotation({point:centerPoint});
@@ -607,11 +609,18 @@ export class Group extends BaseShape {
    * @param {number} factor The factor to scale with
    * @param {number} [xFactor] The factor to scale X with
    * @param {number} [yFactor] The factor to scale Y with
+   * @param {Point|{x:number,y:number}} anchorPt The centerpoint for the scaling
    */
-  scale({factor=1, xFactor=null, yFactor=null}) {
-    super.scale.apply(this, arguments);
+  scale({factor=1, xFactor=null, yFactor=null, anchorPt}, _recurseCnt=0) {
+    if (!anchorPt)
+      anchorPt = this.offset;
+
+    if (_recurseCnt < 2)
+      super.scale({factor, xFactor, yFactor, anchorPt});
+
     for (const shp of this._shapes)
-      shp.scale.apply(shp, arguments);
+      shp.scale({factor, xFactor, yFactor, anchorPt}, ++_recurseCnt);
+
     xFactor = xFactor !== null && !isNaN(xFactor) ? xFactor : factor;
     yFactor = yFactor !== null && !isNaN(yFactor) ? yFactor : factor;
     const w = this.size.width * xFactor,
@@ -630,6 +639,7 @@ export class Group extends BaseShape {
     const xDiff = !isNaN(newX) ? newX - this.offset.x : 0,
           yDiff = !isNaN(newY) ? newY - this.offset.y : 0;
     super.move.apply(this, arguments);
+    return;
 
     for(const shp of this._shapes) {
       const pnt = [shp.offset.x + xDiff, shp.offset.y + yDiff];
@@ -670,5 +680,7 @@ export class Group extends BaseShape {
 
   set angle(newAngle){
     this._rot.angle = newAngle;
+    for(const shp of this._shapes)
+      shp.angle = newAngle;
   }
 }

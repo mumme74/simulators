@@ -519,6 +519,11 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(10);
       expect(comp.inductance).toBe(0.01);
+      comp.move([100,89])
+      comp.move([250,89])
+      comp.flipX();
+      comp.flipY();
+      comp.angle = 60;
     });
   });
 });
@@ -543,7 +548,7 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.size.width).toBe(60);
       expect(comp.size.height).toBe(50);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
-      expect(comp.shapes.length).toBe(1);
+      expect(comp.shapes.length).toBe(3);
       expect(comp.resistance).toBe(100);
       expect(comp.components.length).toBeObj(2);
     });
@@ -558,9 +563,13 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.size.width).toBe(60);
       expect(comp.size.height).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
-      expect(comp.shapes.length).toBe(1);
+      expect(comp.shapes.length).toBe(3);
       expect(comp.resistance).toBe(10);
       expect(comp.components.length).toBeObj(2);
+      comp.move([250,89])
+      comp.flipX();
+      comp.flipY();
+      comp.angle = 60;
     });
   });
 });

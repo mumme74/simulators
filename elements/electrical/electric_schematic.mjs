@@ -143,7 +143,7 @@ export class Switch extends ElectricComponentBase {
       centerPoint:this.terminal2.point2, radii:2
     });
     this.contact = new Line({parentElement,
-      point1:this.terminal1.point2,
+      point1:new Point(this.terminal1.point2),
       point2:{
         x: open ? sz.right : sz.centerPoint.x,
         y:sz.bottom

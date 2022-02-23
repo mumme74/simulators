@@ -345,6 +345,7 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.components.length).toBe(0);
       const comp2 = createComp({});
       comp.addComponent(comp2);
+      expect(comp.shapes.length).toBe(1);
       expect(comp.components.length).toBe(1);
       expect(comp.components[0]).toBe(comp2);
     });
@@ -358,7 +359,27 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.shapes.length).toBe(1);
       expect(comp.terminals[0]).toBeObj({terminal:shp,net});
     });
-  })
+  });
+  describe("Move, rotate and scale", ()=>{
+    it("Should move a component",()=>{
+      const comp = createComp({});
+      const comp2 = createComp({centerPoint:{x:5,y:15}});
+      comp.addComponent(comp2);
+      expect(comp2.offset).toBeObj({x:5,y:15});
+      comp.move([10,20])
+      expect(comp2.offset).toBeObj({x:15,y:35});
+    });
+    it("Should rotate components",()=>{
+      const comp = createComp({});
+      const comp2 = createComp({centerPoint:{x:5,y:15}});
+      comp.addComponent(comp2);
+      expect(comp2.offset).toBeObj({x:5,y:15});
+      comp.angle = 180;
+      expect(comp2.offset).toBeObj({x:-5,y:-15},2);
+      expect(comp2.angle).toBe(180);
+    });
+  });
+
 })
 
 registerTestSuite("testWire", ()=>{

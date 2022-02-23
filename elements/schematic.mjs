@@ -140,6 +140,7 @@ export class ComponentBase extends Group {
 
   addComponent(component) {
     this._components.push(component);
+    this.addShape(component)
   }
 
   addTerminal(terminal, net) {

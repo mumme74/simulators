@@ -1519,11 +1519,11 @@ registerTestSuite("testGroup", ()=>{
       expect(shp.shapes[0]).toBe(shp2);
       expect(shp2.offset).toBeObj({x:-10,y:-20});
       shp.scale({factor:2});
-      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      expect(shp2.offset).toBeObj({x:-20,y:-40});
       expect(shp.size.width).toBe(20);
       expect(shp.size.height).toBe(40);
-      expect(shp2.points[0]).toBeObj({x:-10,y:-20});
-      expect(shp2.points[1]).toBeObj({x:30,y:60});
+      expect(shp2.points[0]).toBeObj({x:-20,y:-40});
+      expect(shp2.points[1]).toBeObj({x:20,y:40});
     });
     it("Should rotate shapes", ()=>{
       const shp = createGroup({width:10,height:20});
@@ -1549,11 +1549,11 @@ registerTestSuite("testGroup", ()=>{
       expect(shp.shapes[0]).toBe(shp2);
       expect(shp2.offset).toBeObj({x:-10,y:-20});
       shp.flipX();
-      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      expect(shp2.offset).toBeObj({x:10,y:-20});
       expect(shp.size.width).toBe(10);
       expect(shp.size.height).toBe(20);
-      expect(shp2.points[0]).toBeObj({x:-10,y:-20});
-      expect(shp2.points[1]).toBeObj({x:-30,y:20});
+      expect(shp2.points[0]).toBeObj({x:10,y:-20});
+      expect(shp2.points[1]).toBeObj({x:-10,y:20});
     });
     it("Should flip shapes at Y", ()=>{
       const shp = createGroup({width:10,height:20});
@@ -1564,11 +1564,11 @@ registerTestSuite("testGroup", ()=>{
       expect(shp.shapes[0]).toBe(shp2);
       expect(shp2.offset).toBeObj({x:-10,y:-20});
       shp.flipY();
-      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      expect(shp2.offset).toBeObj({x:-10,y:20});
       expect(shp.size.width).toBe(10);
       expect(shp.size.height).toBe(20);
-      expect(shp2.points[0]).toBeObj({x:-10,y:-20});
-      expect(shp2.points[1]).toBeObj({x:10,y:-60});
+      expect(shp2.points[0]).toBeObj({x:-10,y:20});
+      expect(shp2.points[1]).toBeObj({x:10,y:-20});
     });
   })
 });
