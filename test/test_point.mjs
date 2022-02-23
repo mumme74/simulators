@@ -391,14 +391,61 @@ registerTestSuite("testPoint", ()=>{
       expect(pt2).toBeObj({x:10,y:20});
       expect(pt3).toBeObj({x:10,y:20});
     });
+  });
+
+  describe("Test connectedPoints", ()=>{
+    it("Should connect to point point1", ()=>{
+      const pt1 = new Point({y:4, x:2});
+      const pt2 = new Point({y:3, x:1, connect:pt1});
+      expect(pt1.connectedPoints).toBeObj([pt1,pt2]);
+      expect(pt2.connectedPoints).toBeObj([pt1,pt2]);
+    });
     it("Should return all connected points", ()=>{
       const pt1 = new Point({x:0,y:1});
-      const pt2 = new Point({x:2,y:3, followPoint: pt1});
-      const pt3 = new Point({x:4,y:5, followPoint: pt2});
+      const pt2 = new Point({x:2,y:3, connect: pt1});
+      const pt3 = new Point({x:4,y:5, connect: pt2});
       pt1.idx =1; pt2.idx=2; pt3.idx =3;
-      expect(pt1.connectedPoints()).toBeObj([pt1,pt2,pt3]);
-      expect(pt2.connectedPoints()).toBeObj([pt1,pt2,pt3]);
-      expect(pt3.connectedPoints()).toBeObj([pt1,pt2,pt3]);
-    })
+      expect(pt1.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt2.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt3.connectedPoints).toBeObj([pt1,pt2,pt3]);
+    });
+    it("Should return all connected points", ()=>{
+      const pt1 = new Point({x:0,y:1});
+      const pt2 = new Point({x:2,y:3});
+      const pt3 = new Point({x:4,y:5});
+      pt1.idx =1; pt2.idx=2; pt3.idx =3;
+      pt2.connect(pt1);
+      pt3.connect(pt2);
+      expect(pt1.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt2.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt3.connectedPoints).toBeObj([pt1,pt2,pt3]);
+    });
+    it("Should disconnect", ()=>{
+      const pt1 = new Point({x:0,y:1});
+      const pt2 = new Point({x:2,y:3, connect: pt1});
+      const pt3 = new Point({x:4,y:5, connect: pt2});
+      pt1.idx =1; pt2.idx=2; pt3.idx =3;
+      expect(pt1.connectedTo).toBe(null);
+      expect(pt2.connectedTo).toBe(pt1);
+      expect(pt3.connectedTo).toBe(pt2);
+      pt2.disconnect();
+      pt3.disconnect();
+      expect(pt1.connectedPoints.length).toBeObj(0);
+      expect(pt2.connectedPoints.length).toBeObj(0);
+      expect(pt3.connectedPoints.length).toBeObj(0);
+    });
+    it("Should disconnect all points", ()=>{
+      const pt1 = new Point({x:0,y:1});
+      const pt2 = new Point({x:2,y:3, connect: pt1});
+      const pt3 = new Point({x:4,y:5, connect: pt2});
+      pt1.idx =1; pt2.idx=2; pt3.idx =3;
+      expect(pt1.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt2.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      expect(pt3.connectedPoints).toBeObj([pt1,pt2,pt3]);
+      pt1.detachEverything();
+      expect(pt1.connectedPoints).toBeObj([]);
+      expect(pt2.connectedPoints).toBeObj([]);
+      expect(pt3.connectedPoints).toBeObj([]);
+    });
   });
-})
+});

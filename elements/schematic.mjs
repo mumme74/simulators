@@ -52,7 +52,7 @@ export class Net {
     if (this.canConnect(point)) {
       const myPnt = this._findPointAt(point);
       if (myPnt) {
-        myPnt.followPoint = point;
+        myPnt.connect(point)
         return true;
       }
     }
@@ -61,9 +61,9 @@ export class Net {
 
   disconnect(point) {
     let res = false;
-    const conPnts = point.connectedPoints();
+    const conPnts = point.connectedPoints;
     conPnts.filter(p=>this._points.indexOf(p)>-1).map(p=>{
-      p.followPoint = null;
+      p.disconnect();
       res = true;
     });
     return res;
@@ -128,11 +128,13 @@ export class ComponentBase extends BaseShape {
               centerPoint={x:0,y:0}, name, nets=[]}) {
     const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
     const transform = lookupSvgRoot(parentElement).createSVGTransform();
-    //transform.matrix.e = centerPoint.x;
-    //transform.matrix.f = centerPoint.y;
+    transform.matrix.e = centerPoint.x;
+    transform.matrix.f = centerPoint.y;
     rootElement.transform.baseVal.appendItem(transform);
 
-    if (!(centerPoint instanceof Point))
+    if (centerPoint instanceof Point)
+      centerPoint = new Point({followPoint:centerPoint});
+    else
       centerPoint = new Point({x:centerPoint.x, y:centerPoint.y});
 
     centerPoint.addChangeCallback((pnt)=>{
@@ -145,7 +147,6 @@ export class ComponentBase extends BaseShape {
     this.name = name || "";
     this._nets =  nets;
     this.size = new SizeRect({centerPoint, width, height});
-    this.size.centerPoint.followPoint = this.offset;
   }
 
   get nets() {
@@ -204,10 +205,13 @@ export class Wire extends Polyline {
       new Point({x: startPnt.x, y: startPnt.y}),
       new Point({x: endPnt.x, y: endPnt.y})
     ];
-    if (startPnt instanceof Point)
-      points[0].followPoint = startPnt;
-    if (endPnt instanceof Point)
-      points[1].followPoint = endPnt;
+    // connect to points
+    [startPnt, endPnt].forEach((p,i)=>{
+      if (p instanceof Point) {
+        points[i].followPoint = p;
+        points[i].connect(p);
+      }
+    });
 
     super({parentElement, points, className});
 
@@ -221,9 +225,10 @@ export class Wire extends Polyline {
     if (idx < 0 || idx > this.points.length) return;
     const myPnt = this.points[idx];
     const isPnt = newPoint instanceof Point;
-    if (myPnt.followPoint || isPnt)
+    if (myPnt.followPoint || isPnt) {
       myPnt.followPoint = isPnt ? newPoint : null;
-    else
+      myPnt[isPnt ? "connect" : "disconnect"](newPoint)
+    } else
       myPnt.point = newPoint;
   }
 
@@ -283,7 +288,7 @@ export class Wire extends Polyline {
     const visited = [], endPts = [];
     // recursivly look up ends connected to all sub wires
     const endLookUp = (wire, point) => {
-      for (const pnt of point.connectedPoints()) {
+      for (const pnt of point.connectedPoints) {
         if (pnt.owner instanceof Wire) {
           if (visited.indexOf(pnt) === -1) {
             visited.push(pnt);

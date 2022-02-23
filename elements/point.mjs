@@ -16,6 +16,8 @@ export class Point {
   _onChangeCallbacks = [];
   _followPoint = null;
   _followPoints = [];
+  _connectedToPoint = null;
+  _connectedPoints = [];
 
   /**
    * Creates a new Point
@@ -28,10 +30,11 @@ export class Point {
    * @param {function} [onChangeCallback] A callback thats called when this point moves
    * @param {Point} [followPoint] A point to follow and move with
    * @param {{x:number,y:number}} [followOffset] Follow point with this offset
+   * @param {Point} [connect] Connect logically to this point, used for schematics etc
    */
   constructor({x, y, svgPntRef = null, owner=null,
               svgLenXRef, svgLenYRef, onChangeCallback,
-              followPoint, followOffset}) {
+              followPoint, followOffset, connect}) {
     this.owner = owner;
     if (svgLenXRef) {
       this._x._lenRef = svgLenXRef;
@@ -59,6 +62,8 @@ export class Point {
       this.followOffset = followOffset;
     if (followPoint)
       this.followPoint = followPoint;
+    if (connect)
+      this.connect(connect);
   }
 
   get point() {
@@ -116,15 +121,8 @@ export class Point {
       // clear old point
       if (this._followPoint)
         this.followPoint = null;
-      // move up tree to attach to the root most point
-      let pntIt = point, visited = [];
-      while(pntIt._followPoint && visited.indexOf(pntIt) === -1){
-        visited.push(pntIt);
-        pntIt = pntIt._followPoint;
-      }
-      if (pntIt === this) return;
-      this._followPoint = pntIt;
-      pntIt._followPoints.push(this);
+      this._followPoint = point;
+      point._followPoints.push(this);
       this._x.length = this._followPoint._x.length + this._x.followOffset;
       this._y.length = this._followPoint._y.length + this._y.followOffset;
       this._updated();
@@ -145,6 +143,59 @@ export class Point {
       this._x.followOffset = offset.x;
     if (offset?.y)
       this._y.followOffset = offset.y
+  }
+
+  /**
+   * Gets all points attached to this point and it's followPoint
+   * @returns {Array.<Point>} All points attached to this and its followPoint
+   */
+  get connectedPoints() {
+    if (this._connectedToPoint)
+      return [
+        this._connectedToPointHandler,
+        ...this._connectedToPointHandler._connectedPoints
+      ];
+    else if (this._connectedPoints.length)
+      return [this, ...this._connectedPoints];
+    return [];
+  }
+
+  get connectedTo() {
+    return this._connectedToPoint;
+  }
+
+  connect(point) {
+    if (point !== this && point instanceof Point) {
+      if (this._connectedPoints.indexOf(point) < 0) {
+        this.disconnect();
+        // move up tree to attach to the root most point
+        let pntIt = point, visited = [];
+        while(pntIt._connectedToPoint && visited.indexOf(pntIt) === -1){
+          visited.push(pntIt);
+          pntIt = pntIt._connectedToPoint;
+        }
+
+        if (pntIt !== this) {
+          this._connectedToPointHandler = pntIt;
+          this._connectedToPoint = point;
+          pntIt._connectedPoints.push(this);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  disconnect() {
+    if (this._connectedToPointHandler) {
+      // disconnect from current point
+      const idx = this._connectedToPointHandler._connectedPoints.indexOf(this);
+      this._connectedToPointHandler._connectedPoints.splice(idx, 1);
+      this._connectedToPoint = null;
+      this._connectedToPointHandler = null;
+      return true;
+    }
+    return false;
   }
 
   /**
@@ -183,16 +234,6 @@ export class Point {
       trackPt._followPoint = null;
     this._followPoints.splice(0);
     this._onChangeCallbacks.splice(0);
-  }
-
-  /**
-   * Gets all points attached to this point and it's followPoint
-   * @returns {Array.<Point>} All points attached to this and its followPoint
-   */
-  connectedPoints() {
-    if (this._followPoint)
-      return [this._followPoint, ...this._followPoint._followPoints];
-    return [this, ...this._followPoints];
   }
 
   _updated() {

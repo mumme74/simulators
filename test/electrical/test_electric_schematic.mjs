@@ -572,8 +572,8 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.nets.length).toBe(2);
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
-      expect(comp.size.width).toBe(30);
-      expect(comp.size.height).toBe(40);
+      expect(comp.size.width).toBe(60);
+      expect(comp.size.height).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
@@ -589,8 +589,8 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.nets.length).toBe(2);
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
-      expect(comp.size.width).toBe(30);
-      expect(comp.size.height).toBe(40);
+      expect(comp.size.width).toBe(60);
+      expect(comp.size.height).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
       expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);

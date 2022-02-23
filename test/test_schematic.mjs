@@ -156,7 +156,7 @@ registerTestSuite("testNet", ()=>{
             pt2 = new Point({x:0,y:1, owner:owner1});
       net0.points = [pt0, pt1]; net1.points = [pt2];
       expect(net0.connect(pt2)).toBe(true);
-      expect(pt0.followPoint).toBe(pt2);
+      expect(pt0.connectedTo).toBe(pt2);
     });
     it("Should connect 1,2", ()=>{
       const net0 = new Net({}), net1 = new Net({});
@@ -166,7 +166,7 @@ registerTestSuite("testNet", ()=>{
             pt2 = new Point({x:1,y:2, owner:owner1});
       net0.points = [pt0, pt1]; net1.points = [pt2];
       expect(net0.connect(pt2)).toBe(true);
-      expect(pt1.followPoint).toBe(pt2);
+      expect(pt1.connectedTo).toBe(pt2);
     });
   });
 
