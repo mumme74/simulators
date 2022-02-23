@@ -197,9 +197,6 @@ registerTestSuite("testSizeRect", ()=>{
             topRightPoint = sz.topRightPoint,
             bottomLeftPoint = sz.bottomLeftPoint,
             bottomRightPoint = sz.bottomRightPoint;
-      leftPoint.addChangeCallback((pnt)=>{
-        console.log(pnt)
-      })
       topLeft.point = [30,40];
       expect(sz.centerPoint).toBeObj({x:50,y:50});
       expect(sz.height).toBe(20);

@@ -19,8 +19,8 @@ const testToRun = allTests.filter(t=>filterIn.indexOf(t) > -1);
 document.addEventListener("DOMContentLoaded", async ()=>{
   setTestResultToHtml(document.getElementById("testResult"));
   for(const t of testToRun) {
-    await import(`./${t}`);
     console.log("running test", t);
+    await import(`./${t}`);
   };
   runAllTestSuites();
   showTestsResults();

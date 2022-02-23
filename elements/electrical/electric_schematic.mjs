@@ -19,15 +19,36 @@ export class ElectricNet extends Net {
  * Base Component class for all electrics
  */
 export class ElectricComponentBase extends ComponentBase {
-  resistance = 0;
-  inductance = 0;
-  capacitance = 0;
+  _resistance = 0;
+  _inductance = 0;
+  _capacitance = 0;
 
   constructor({parentElement, centerPoint, name, className, nets, width, height}) {
     if (!Array.isArray(nets))
       nets = [new ElectricNet({name})];
     super({parentElement, centerPoint, name, className, nets, width, height});
     this.node.classList.add("_electric_component")
+  }
+
+  get resistance() {
+    return this._resistance;
+  }
+  set resistance(resistance) {
+    this._resistance = resistance;
+  }
+
+  get inductance() {
+    return this._inductance;
+  }
+  set inductance(inductance) {
+    this._inductance = inductance;
+  }
+
+  get capacitance() {
+    return this._capacitance;
+  }
+  set capacitance(capacitance) {
+    this._capacitance = capacitance;
   }
 
   /**
@@ -300,8 +321,8 @@ export class BatteryCell extends ElectricComponentBase {
   feed(circuitResistance=Number.MAX_VALUE, feedVolt=0, ms=1) {
     const noDrawVolt = this.nominalVolt  + 0.2 * this.soc - 0.1;
     const amp = (noDrawVolt - feedVolt) / Math.min(
-            Number.MAX_VALUE, (circuitResistance + this.resistance));
-    const volt = (noDrawVolt - feedVolt) - (amp * this.resistance);
+            Number.MAX_VALUE, (circuitResistance + this._resistance));
+    const volt = (noDrawVolt - feedVolt) - (amp * this._resistance);
     this.soc -= amp * (1 / (1000 * 3600)) * ms; // make to Ah
     return {feeds:volt, draws:-amp};
   }
@@ -471,7 +492,7 @@ export class Resistor extends ElectricComponentBase {
 
 export class Relay extends ElectricComponentBase {
 
-  constructor({parentElement, centerPoint, name, className, resistance}) {
+  constructor({parentElement, centerPoint, name, className, resistance=100}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
           className, nets, width:60, height:50});
@@ -500,10 +521,10 @@ export class Relay extends ElectricComponentBase {
   }
 
   get resistance() {
-    this.solenoid.resistance;
+    return this.solenoid.resistance;
   }
 
   set resistance(resistance) {
-    this.solenoid.resistance = this.resistance
+    this.solenoid.resistance = resistance
   }
 }
