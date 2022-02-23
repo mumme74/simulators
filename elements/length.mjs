@@ -54,7 +54,7 @@ export class Length {
     if (length instanceof Length) {
       // clear old length
       if (this._followLength)
-        this.followLength = null;
+        this.followLength = null; // recurse
       this._followLength = length;
       length._followLengths.push(this);
       this._len = length._len + this._followOffset;
@@ -76,8 +76,11 @@ export class Length {
   }
 
   set followOffset(offset) {
-    if (!isNaN(offset))
+    if (!isNaN(offset)) {
+      this._len += offset - this._followOffset;
       this._followOffset = offset;
+      this._updated();
+    }
   }
 
   _updated() {

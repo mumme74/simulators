@@ -106,6 +106,8 @@ registerTestSuite("testLength", ()=>{
       expect(len1.length).toBe(2);
       expect(len2.length).toBe(12);
       len2.followOffset = 0;
+      expect(len1.length).toBe(2);
+      expect(len2.length).toBe(2);
       len2.length = 3;
       expect(len1.length).toBe(3);
       expect(len2.length).toBe(3);
