@@ -96,8 +96,6 @@ registerTestSuite("testElectricComponentBase", ()=>{
       expect(comp.nets[0] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(0);
       expect(comp.size.height).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.className.baseVal).toBe("_electric_component");
     });
     it("Should contruct with options", ()=>{
@@ -113,8 +111,6 @@ registerTestSuite("testElectricComponentBase", ()=>{
       expect(comp.nets[1]).toBe(nets[1]);
       expect(comp.size.width).toBe(40);
       expect(comp.size.height).toBe(30);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
       expect(comp.node.className.baseVal).toBe("_electric_component testClassName");
     });
   });
@@ -139,8 +135,6 @@ registerTestSuite("testFuse", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toEqualOrGt(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(3);
     });
@@ -153,8 +147,6 @@ registerTestSuite("testFuse", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(3);
     });
@@ -205,8 +197,6 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(5);
     });
@@ -220,8 +210,6 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(5);
     });
@@ -271,8 +259,6 @@ registerTestSuite("testLamp", ()=>{
       expect(comp.size.width).toBe(35);
       expect(comp.size.height).toBe(50);
       expect(comp.rating).toBe(5);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(6);
     });
@@ -287,8 +273,6 @@ registerTestSuite("testLamp", ()=>{
       expect(comp.size.width).toBe(35);
       expect(comp.size.height).toBe(50);
       expect(comp.rating).toBe(10);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(6);
     });
@@ -351,8 +335,6 @@ registerTestSuite("testBattery", ()=>{
       expect(comp.soc).toBe(1);
       expect(comp.capacity).toBe(100);
       expect(comp.resistance).toBe(0.01);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(4);
     });
@@ -372,8 +354,6 @@ registerTestSuite("testBattery", ()=>{
       expect(comp.soc).toBe(0.5);
       expect(comp.capacity).toBe(20);
       expect(comp.resistance).toBe(0.1);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(4);
     });
@@ -436,8 +416,6 @@ registerTestSuite("testResistor", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toEqualOrGt(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(3);
       expect(comp.resistance).toBe(1);
@@ -451,8 +429,6 @@ registerTestSuite("testResistor", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(16);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(3);
       expect(comp.resistance).toBe(10);
@@ -479,8 +455,6 @@ registerTestSuite("testCapacitor", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(40);
       expect(comp.size.height).toBe(25);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(0.05);
@@ -497,8 +471,6 @@ registerTestSuite("testCapacitor", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(40);
       expect(comp.size.height).toBe(33);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(10);
@@ -528,8 +500,6 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(30);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(100);
@@ -545,8 +515,6 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(30);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(10);
@@ -574,8 +542,6 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(60);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.classList.contains('_electric_component')).toBe(true);
       expect(comp.shapes.length).toBe(1);
       expect(comp.resistance).toBe(100);
@@ -591,8 +557,6 @@ registerTestSuite("testRelay", ()=>{
       expect(comp.nets[1] instanceof ElectricNet).toBe(true);
       expect(comp.size.width).toBe(60);
       expect(comp.size.height).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(50);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(50);
       expect(comp.node.classList.contains('nofill')).toBe(true);
       expect(comp.shapes.length).toBe(1);
       expect(comp.resistance).toBe(10);

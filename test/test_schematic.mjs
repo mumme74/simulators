@@ -242,15 +242,11 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.nets.length).toBe(0);
       expect(comp.size.width).toBe(0);
       expect(comp.size.height).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.className.baseVal).toBe("");
     });
     it("Should contruct with className", ()=>{
       const comp = createComp({className:"testClassName"});
       expect(comp.size.centerPoint).toBeObj({x:0,y:0});
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
       expect(comp.node.className.baseVal).toBe("testClassName");
       expect(document.querySelector(".testClassName")).toBe(comp.node);
     });
@@ -259,25 +255,17 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.size.centerPoint).toBeObj({x:0,y:0});
       expect(comp.size.width).toBe(100);
       expect(comp.size.height).toBe(200);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(0);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(0);
     });
     it("Should contruct with centerPoint as {1,2}", ()=>{
       const comp = createComp({centerPoint:{x:1,y:2}});
       expect(comp.size.centerPoint).toBeObj({x:1,y:2});
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
     });
     it("Should contruct with centerPoint as Point", ()=>{
       const centerPoint = new Point({x:1,y:2});
       const comp = createComp({centerPoint});
       expect(comp.size.centerPoint).toBeObj({x:1,y:2});
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
       centerPoint.point = [3,4];
       expect(comp.size.centerPoint).toBeObj({x:3,y:4});
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(3);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(4);
     });
     it("Should contruct with centerPoint with nets", ()=>{
       const nets = [new Net({}), new Net({})];
@@ -287,8 +275,6 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.nets.length).toBe(2);
       expect(comp.nets[0]).toBe(nets[0]);
       expect(comp.nets[1]).toBe(nets[1]);
-      expect(comp.node.transform.baseVal[0].matrix.e).toBe(1);
-      expect(comp.node.transform.baseVal[0].matrix.f).toBe(2);
     });
     it("Should construct with name 'test'", ()=>{
       const comp = createComp({name:"test", height:10, width:20});
@@ -327,17 +313,6 @@ registerTestSuite("testComponentBase", ()=>{
     });
   });
 
-  describe("Test shapes", ()=>{
-    it("Should get all shapes for component", ()=>{
-      const comp = createComp({});
-      expect(comp.shapes.length).toBe(0);
-      const shp = createShape({points:[{x:20,y:30}]});
-      comp.addShape(shp);
-      expect(comp.shapes[0]).toBe(shp);
-      expect(comp.shapes.length).toBe(1);
-    });
-  });
-
   describe("Test state", ()=>{
     it("Should get state", ()=>{
       const comp = createComp({});
@@ -365,14 +340,6 @@ registerTestSuite("testComponentBase", ()=>{
   });
 
   describe("Test add* and get*", ()=>{
-    it("Should add a shape",()=>{
-      const comp = createComp({});
-      expect(comp.shapes.length).toBe(0);
-      const shp = createShape({points:[{x:0,y:0}]});
-      comp.addShape(shp);
-      expect(comp.shapes.length).toBe(1);
-      expect(comp.shapes[0]).toBe(shp);
-    });
     it("Should add a component",()=>{
       const comp = createComp({});
       expect(comp.components.length).toBe(0);

@@ -2,7 +2,7 @@
 
 import { BasePointsShape, BaseShape,
          Polygon, Polyline, Line,
-         Text, SizeRect } from "../elements/base.mjs";
+         Text, SizeRect, Group } from "../elements/base.mjs";
 import { Point } from "../elements/point.mjs"
 
 const glbl = {
@@ -1439,4 +1439,107 @@ registerTestSuite("testText", ()=>{
       expect(shp.node.y.baseVal[0].value).toBe(50);
     });
   });
+});
+
+registerTestSuite("testGroup", ()=>{
+  const createGroup = (args)=>{
+    args.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Group(args));
+    return glbl.shapes[glbl.shapes.length-1];
+  };
+  const createShape = (args)=>{
+    args.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Polygon(args));
+    return glbl.shapes[glbl.shapes.length-1];
+  };
+
+  afterEach(glbl.cleanup);
+
+  describe("Test Group construction", ()=>{
+    it("Should construct with default [0,0]", ()=>{
+      const shp = createGroup({});
+      expect(shp.points.length).toBe(1);
+      expect(shp.points[0]).toBeObj({x:0,y:0});
+      expect(shp.size).toBeInstanceOf(SizeRect);
+      expect(shp.size.height).toBe(0);
+      expect(shp.size.width).toBe(0);
+      expect(shp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(shp.node.className.baseVal).toBe('');
+    });
+    it("Should construct with  [1,2]", ()=>{
+      const shp = createGroup({centerPoint:{x:1,y:2},width:10,height:20,className:"testClassName"});
+      expect(shp.points.length).toBe(1);
+      expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.size).toBeInstanceOf(SizeRect);
+      expect(shp.size.height).toBe(20);
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.centerPoint).toBeObj({x:1,y:2});
+      expect(shp.node.className.baseVal).toBe('testClassName');
+    });
+    it("Should construct with Point(1,2)", ()=>{
+      const pt = new Point({x:1,y:2});
+      const shp = createGroup({centerPoint:pt});
+      expect(shp.points.length).toBe(1);
+      expect(shp.points[0]).toBeObj({x:1,y:2});
+      expect(shp.size).toBeInstanceOf(SizeRect);
+      expect(shp.size.centerPoint).toBeObj({x:1,y:2});
+      pt.point = [10,20];
+      expect(shp.size.centerPoint).toBeObj({x:10,y:20});
+      expect(shp.offset).toBeObj({x:10,y:20});
+    });
+  });
+
+  describe("Test shapes", ()=>{
+    it("Should add shape", ()=>{
+      const shp = createGroup({});
+      const shp2 = createShape({points:[{x:-10,y:-10},{x:10,y:10}]});
+      expect(shp.shapes.length).toBe(0);
+      shp.addShape(shp2);
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.shapes[0]).toBe(shp2);
+    });
+    it("Should move shapes", ()=>{
+      const shp = createGroup({});
+      const shp2 = createShape({points:[{x:-10,y:-10},{x:10,y:10}]});
+      expect(shp.shapes.length).toBe(0);
+      shp.addShape(shp2);
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.shapes[0]).toBe(shp2);
+      expect(shp2.offset).toBeObj({x:-10,y:-10});
+      shp.move([20,30]);
+      expect(shp2.offset).toBeObj({x:10,y:20});
+
+    });
+    it("Should scale shapes", ()=>{
+      const shp = createGroup({width:10,height:20});
+      const shp2 = createShape({points:[{x:-10,y:-20},{x:10,y:20}]});
+      expect(shp.shapes.length).toBe(0);
+      shp.addShape(shp2);
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.shapes[0]).toBe(shp2);
+      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      shp.scale({factor:2});
+      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      expect(shp.size.width).toBe(20);
+      expect(shp.size.height).toBe(40);
+      expect(shp2.points[0]).toBeObj({x:-10,y:-20});
+      expect(shp2.points[1]).toBeObj({x:30,y:60});
+    });
+    it("Should rotate shapes", ()=>{
+      const shp = createGroup({width:10,height:20});
+      const shp2 = createShape({points:[{x:-10,y:-20},{x:10,y:20}]});
+      expect(shp.shapes.length).toBe(0);
+      shp.addShape(shp2);
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.shapes[0]).toBe(shp2);
+      expect(shp2.offset).toBeObj({x:-10,y:-20});
+      shp.angle = 180
+      expect(shp2.offset).toBeObj({x:10,y:20}, 2);
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+      expect(shp2.points[0]).toBeObj({x:10,y:20}, 2);
+      expect(shp2.points[1]).toBeObj({x:-10,y:-20}, 2);
+    });
+
+  })
 });

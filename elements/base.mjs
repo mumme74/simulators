@@ -1,6 +1,7 @@
 "use strict";
 
 import { Point } from "./point.mjs";
+import { Rotation } from "./rotation.mjs";
 
 export function lookupSvgRoot(svgElem) {
   while(svgElem && svgElem.tagName !== 'svg')
@@ -179,16 +180,15 @@ export class BaseShape {
     xFactor = xFactor === null ? factor : xFactor;
     yFactor = yFactor === null ? factor : yFactor;
 
-    // dont move our scaled object, only scale it
+    // dont move our scaled object, only scale it, point0 is considered center
     const anchorPt = this._points[0];
-    const xDiff = (anchorPt.x * xFactor) - anchorPt.x,
-          yDiff = (anchorPt.y * yFactor) - anchorPt.y;
 
-    for(let i = 1; i < this._points.length; ++i) {
-      const pt = this._points[i];
+    for(const pt of this._points.slice(1)) {
+      const offsetX = pt.x - anchorPt.x,
+            offsetY = pt.y - anchorPt.y;
       pt.point = [
-        pt.x * xFactor - xDiff,
-        pt.y * yFactor - yDiff
+        offsetX * xFactor + anchorPt.x,
+        offsetY * yFactor + anchorPt.y
       ];
     }
   }
@@ -555,5 +555,81 @@ export class Text extends BaseShape {
       this._followPoint.x + this._offsetX,
       this._followPoint.y + this._offsetY
     ];
+  }
+}
+
+/***
+ * A compound group of other shapes
+ * @property {Array.<BaseShape>} shapes All shapes contained in this object
+ * @property {number} angle The rotation angle of this object
+ */
+export class Group extends BaseShape {
+  _shapes = [];
+  _rot = null;
+
+  constructor({parentElement, centerPoint={x:0,y:0}, width, height, className}) {
+    const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+    if (centerPoint instanceof Point)
+      centerPoint = new Point({followPoint:centerPoint});
+    else
+      centerPoint = new Point({x:centerPoint.x, y:centerPoint.y});
+
+    super({parentElement, rootElement, points: [centerPoint], className});
+
+    let oldPos = {x:centerPoint.x, y:centerPoint.y};
+
+    centerPoint.addChangeCallback((pnt)=>{
+      this.shapes.forEach(shp=>{
+        const offset = {
+          x:shp.offset.x - oldPos.x,
+          y:shp.offset.y - oldPos.y
+        };
+        oldPos.x = pnt.x; oldPos.y = pnt.y;
+        shp.move(offset);
+      })
+    })
+    this.size = new SizeRect({centerPoint, width, height});
+    this._rot = new Rotation({point:centerPoint});
+  }
+
+  scale({factor=1, xFactor=null, yFactor=null}) {
+    super.scale.apply(this, arguments);
+    for (const shp of this._shapes)
+      shp.scale.apply(shp, arguments);
+    xFactor = xFactor !== null && !isNaN(xFactor) ? xFactor : factor;
+    yFactor = yFactor !== null && !isNaN(yFactor) ? yFactor : factor;
+    this.size.width *= xFactor;
+    this.size.height *= yFactor;
+  }
+
+  move(newPoint) {
+    const newX = Array.isArray(newPoint) ? newPoint[0] : newPoint.x,
+          newY = Array.isArray(newPoint) ? newPoint[1] : newPoint.y;
+    const xDiff = !isNaN(newX) ? newX - this.offset.x : 0,
+          yDiff = !isNaN(newY) ? newY - this.offset.y : 0;
+    super.move.apply(this, arguments);
+
+    for(const shp of this._shapes) {
+      const pnt = [shp.offset.x + xDiff, shp.offset.y + yDiff];
+      shp.move(pnt);
+    }
+  }
+
+  addShape(shape) {
+    this._shapes.push(shape);
+    this._rot.addRotateShape(shape);
+  }
+
+  get shapes() {
+    return [...this._shapes];
+  }
+
+  get angle(){
+    return this._rot.angle;
+  }
+
+  set angle(newAngle){
+    this._rot.angle = newAngle;
   }
 }

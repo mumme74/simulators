@@ -1,6 +1,6 @@
 "use strict";
 
-import { BaseShape, lookupSvgRoot, Polyline, SizeRect } from "./base.mjs";
+import { BaseShape, Group, lookupSvgRoot, Polyline, SizeRect } from "./base.mjs";
 import { Point } from "./point.mjs";
 
 export class Net {
@@ -119,7 +119,7 @@ export class Net {
   }
 }
 
-export class ComponentBase extends BaseShape {
+export class ComponentBase extends Group {
   _shapes = [];
   _components = [];
   _terminals = [];
@@ -127,35 +127,15 @@ export class ComponentBase extends BaseShape {
 
   constructor({parentElement, className, width, height,
               centerPoint={x:0,y:0}, name, nets=[]}) {
-    const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    const transform = lookupSvgRoot(parentElement).createSVGTransform();
-    transform.matrix.e = centerPoint.x;
-    transform.matrix.f = centerPoint.y;
-    rootElement.transform.baseVal.appendItem(transform);
 
-    if (centerPoint instanceof Point)
-      centerPoint = new Point({followPoint:centerPoint});
-    else
-      centerPoint = new Point({x:centerPoint.x, y:centerPoint.y});
-
-    centerPoint.addChangeCallback((pnt)=>{
-      transform.matrix.e = pnt.x;
-      transform.matrix.f = pnt.y;
-    })
-
-    super({parentElement, rootElement, points: centerPoint, className});
+    super({parentElement, centerPoint, className, width, height});
 
     this.name = name || "";
     this._nets =  nets;
-    this.size = new SizeRect({centerPoint, width, height});
   }
 
   get nets() {
     return [...this._nets];
-  }
-
-  addShape(shape) {
-    this._shapes.push(shape);
   }
 
   addComponent(component) {
@@ -169,10 +149,6 @@ export class ComponentBase extends BaseShape {
 
   get components(){
     return [...this._components];
-  }
-
-  get shapes() {
-    return [...this._shapes];
   }
 
   get state() {
