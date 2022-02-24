@@ -129,9 +129,9 @@ class ExpectChecks {
       for(let i = 0; i < expected.length; ++i) {
         if (this.value[i] !== expected[i]) {
           if (precision !== undefined && !isNaN(this.value[i]) &&
-              Math.round(this.value[i]*10*precision) === expected[i]*10*precision)
-              return res.pass();
-          return res.fail();
+              Math.round(this.value[i]*10*precision) === expected[i]*10*precision);
+          else
+            return res.fail();
         }
       }
       res.pass();
@@ -141,9 +141,9 @@ class ExpectChecks {
       for(const [key, vlu] of Object.entries(expected)) {
         if (key in this.value && this.value[key] !== vlu){
           if (precision !== undefined && !isNaN(this.value[key]) &&
-              Math.round(this.value[key]*10*precision) === vlu*10*precision)
-              return res.pass();
-          return res.fail(vlu, this.value[key]);
+              Math.round(this.value[key]*10*precision) === vlu*10*precision);
+          else
+            return res.fail(vlu, this.value[key]);
         }
       }
       res.pass();
@@ -174,9 +174,9 @@ class ExpectChecks {
       for(let i = 0; i < expected.length; ++i) {
         if (this.value[i] != expected[i])
           if (precision !== undefined && !isNaN(this.value[i]) &&
-            Math.round(this.value[i]*10*precision) == expected[i]*10*precision)
-          return res.pass();
-        return res.fail();
+            Math.round(this.value[i]*10*precision) == expected[i]*10*precision);
+          else
+            return res.fail();
       }
       res.pass();
     } else if (expected !== null && typeof expected === 'object') {
@@ -185,9 +185,9 @@ class ExpectChecks {
       for(const [key, vlu] of Object.entries(expected)) {
         if (key in this.value && this.value[key] != vlu)
           if (precision !== undefined && !isNaN(value[key]) &&
-             Math.round(this.value[key]*10*precision) == vlu*10*precision)
-            return res.pass();
-         return res.fail(vlu, this.value[key]);
+             Math.round(this.value[key]*10*precision) == vlu*10*precision);
+          else
+            return res.fail(vlu, this.value[key]);
       }
       res.pass();
     }
