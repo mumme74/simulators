@@ -162,16 +162,6 @@ registerTestSuite("testRotation", ()=>{
       expect(called).toBe(1);
       expect(rotCb).toBe(rot);
     });
-    it("Should call onChangeCallback on point", ()=>{
-      const rot = new Rotation({onChangeCallback});
-      expect(called).toBe(0);
-      expect(rotCb).toBe(undefined);
-      rot.point = [10,12];
-      expect(called).toBe(1);
-      expect(rotCb).toBe(rot);
-      rot.point = {x:1,y:2};
-      expect(called).toBe(2);
-    });
     it("Should call onChangeCallback on angle", ()=>{
       const rot = new Rotation({onChangeCallback});
       expect(called).toBe(0);

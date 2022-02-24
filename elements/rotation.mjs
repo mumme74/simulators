@@ -75,7 +75,6 @@ export class Rotation {
     if (nX !== this._x || nY !== this._y) {
       this._x = nX;
       this._y = nY;
-      this._updated();
     }
   }
 
