@@ -111,7 +111,7 @@ class ExpectChecks {
     if (this.value === expected)
       return res.pass();
     if (precision !== undefined && !isNaN(this.value) &&
-        Math.round(this.value*10*precision) == expected*10*precision)
+        Math.round(this.value*(precision+1)) == Math.round(expected*(precision+1)))
       return res.pass();
     res.fail();
   }
@@ -129,7 +129,7 @@ class ExpectChecks {
       for(let i = 0; i < expected.length; ++i) {
         if (this.value[i] !== expected[i]) {
           if (precision !== undefined && !isNaN(this.value[i]) &&
-              Math.round(this.value[i]*10*precision) === expected[i]*10*precision);
+              Math.round(this.value[i]*(precision+1)) === Math.round(expected[i]*(precision+1)));
           else
             return res.fail();
         }
@@ -141,7 +141,7 @@ class ExpectChecks {
       for(const [key, vlu] of Object.entries(expected)) {
         if (key in this.value && this.value[key] !== vlu){
           if (precision !== undefined && !isNaN(this.value[key]) &&
-              Math.round(this.value[key]*10*precision) === vlu*10*precision);
+              Math.round(this.value[key]*(precision+1)) === Math.round(vlu*(precision+1)));
           else
             return res.fail(vlu, this.value[key]);
         }
@@ -156,7 +156,7 @@ class ExpectChecks {
     if (this.value == expected)
       return res.pass();
     if (precision !== undefined && !isNaN(this.value) &&
-        Math.round(this.value*10*precision) == expected*10*precision)
+        Math.round(this.value*(precision+1)) == Math.round(expected*(precision+1)))
       return res.pass();
     res.fail();
   }
@@ -174,7 +174,7 @@ class ExpectChecks {
       for(let i = 0; i < expected.length; ++i) {
         if (this.value[i] != expected[i])
           if (precision !== undefined && !isNaN(this.value[i]) &&
-            Math.round(this.value[i]*10*precision) == expected[i]*10*precision);
+            Math.round(this.value[i]*(precision+1)) == Math.round(expected[i]*(precision+1)));
           else
             return res.fail();
       }
@@ -185,7 +185,7 @@ class ExpectChecks {
       for(const [key, vlu] of Object.entries(expected)) {
         if (key in this.value && this.value[key] != vlu)
           if (precision !== undefined && !isNaN(value[key]) &&
-             Math.round(this.value[key]*10*precision) == vlu*10*precision);
+             Math.round(this.value[key]*(precision+1)) == Math.round(vlu*(precision+1)));
           else
             return res.fail(vlu, this.value[key]);
       }
