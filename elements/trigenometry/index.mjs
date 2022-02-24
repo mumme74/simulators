@@ -1,6 +1,6 @@
 "use strict";
 
-import { BaseShape, Polygon } from "../base.mjs";
+import { BaseShape, Group, Line, Polygon } from "../base.mjs";
 import { Length } from "../length.mjs";
 import { Point } from "../point.mjs";
 
@@ -182,5 +182,91 @@ export class Rect extends BaseShape {
 
   set roundedCorners(newRoundness) {
     this._roundCorners.point = [newRoundness, newRoundness];
+  }
+}
+
+export class Arrow extends Group {
+  constructor({parentElement, point1, point2, className, end1=false, end2=true, size=10}) {
+    const topLeft = {x:0,y:0}, bottomRight = {x:0,y:0}, centerPoint = new Point({});
+    const arrHeadAngle = (30/180)*Math.PI, adj = Math.cos(arrHeadAngle)*size;
+    let width, height, angle;
+
+    point1 = (point1 instanceof Point)
+           ? new Point({followPoint:point1})
+           : new Point(point1);
+    point2 = (point2 instanceof Point)
+           ? new Point({followPoint:point2})
+           : new Point(point2);
+    const pnt1_arr1 = new Point({}),
+          pnt1_arr2 = new Point({}),
+          pnt2_arr1 = new Point({}),
+          pnt2_arr2 = new Point({});
+
+    let   pnt1_line = new Point({}),
+          pnt2_line = new Point({});
+
+    const recalculate = (self)=>{
+      topLeft.x = Math.min(point1.x, point2.x);
+      topLeft.y = Math.min(point1.y, point2.y);
+      bottomRight.x = Math.max(point1.x, point2.x);
+      bottomRight.y = Math.max(point1.y, point2.y);
+
+      width = bottomRight.x - topLeft.x,
+      height = bottomRight.y - topLeft.y,
+      centerPoint.point = {x:topLeft.x + width / 2, y:topLeft.y + height/2};
+
+      // get the angle between the points
+      angle = Math.atan2(height, width);
+      pnt1_arr1.point = {
+        x:point1.x + Math.cos(angle+arrHeadAngle)*size,
+        y:point1.y + Math.sin(angle+arrHeadAngle)*size};
+      pnt1_arr2.point = {
+        x:point1.x + Math.cos(angle-arrHeadAngle)*size,
+        y:point1.y + Math.sin(angle-arrHeadAngle)*size};
+      pnt1_line.point = {
+        x:point1.x + Math.cos(angle)*adj,
+        y:point1.y + Math.sin(angle)*adj};
+      pnt2_arr1.point = {
+        x:point2.x + Math.cos(angle+arrHeadAngle+Math.PI)*size,
+        y:point2.y + Math.sin(angle+arrHeadAngle+Math.PI)*size};
+      pnt2_arr2.point = {
+        x:point2.x + Math.cos(angle-arrHeadAngle+Math.PI)*size,
+        y:point2.y + Math.sin(angle-arrHeadAngle+Math.PI)*size};
+      pnt2_line.point = {
+        x:point2.x + Math.cos(angle+Math.PI)*adj,
+        y:point2.y + Math.sin(angle+Math.PI)*adj};
+
+      if (self) {
+        self.size.height = height;
+        self.size.width = width;
+        self.angle = angle;
+      }
+    }
+
+    recalculate();
+
+    super({parentElement, width, height, centerPoint, className});
+
+    className = className ? className : "";
+
+    if (end1) {
+      this.pnt1Arrow = new Polygon({parentElement, points:[point1, pnt1_arr1, pnt1_arr2],
+        className:className + " arrowHead"});
+      this.addShape(this.pnt1Arrow);
+    } else
+      pnt1_line = point1;
+
+    if (end2) {
+      this.pnt2Arrow = new Polygon({parentElement, points:[point2, pnt2_arr1, pnt2_arr2],
+        className:className + " arrowHead"});
+        this.addShape(this.pnt2Arrow);
+    } else
+      pnt2_line = point2;
+
+    this.line = new Line({parentElement, className, point1:pnt1_line, point2:pnt2_line});
+    this.addShape(this.line);
+
+    point1.addChangeCallback(()=>{recalculate(this)});
+    point2.addChangeCallback(()=>{recalculate(this)});
   }
 }

@@ -1,7 +1,11 @@
 "use strict";
 
 import { Point } from "../../elements/point.mjs";
-import { Circle, Triangle, Square, Rect } from "../../elements/trigenometry/index.mjs";
+import { Circle,
+         Triangle,
+         Square,
+         Rect,
+         Arrow } from "../../elements/trigenometry/index.mjs";
 
 const glbl = {
   shape: null,
@@ -14,6 +18,9 @@ const glbl = {
     while(glbl.shapes.length) {
       const shp = glbl.shapes.pop();
       shp.node.parentElement.removeChild(shp.node);
+      if (shp.shapes)
+        for(const sub of shp.shapes)
+          sub.node.parentElement.removeChild(sub.node);
     }
     glbl.shape = null;
     glbl.point = null;
@@ -419,5 +426,98 @@ registerTestSuite("testRect", ()=>{
       expect(rect.node.rx.baseVal.value).toBe(10);
       expect(rect.node.ry.baseVal.value).toBe(10);
     });
+  });
+})
+
+registerTestSuite("testArrow", ()=>{
+
+  const args = {point1:{x:0,y:0}, point2:{x:10,y:20}};
+  beforeEach(()=>{
+    for(const key of Object.keys(args))
+      delete args[key];
+    args.point1 = {x:0,y:0};
+    args.point2 = {x:10,y:20};
+  });
+
+  afterEach(glbl.cleanup);
+
+  const createArrow = (args)=>{
+    args.parentElement = glbl.parentElement
+    glbl.shapes.push(new Arrow(args));
+    return glbl.shapes[glbl.shapes.length-1];
+  };
+
+  describe("Test construction", ()=>{
+    it("Should construct with defaults", ()=>{
+      const shp = createArrow(args);
+      expect(shp.line.offset).toBeObj(args.point1);
+      expect(shp.shapes.length).toBe(2);
+      expect(shp.pnt2Arrow.offset).toBeObj(args.point2);
+      expect(shp.pnt1Arrow).toBe(undefined);
+      expect(shp.node.className.baseVal).toBe("");
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+    });
+    it("Should construct with className", ()=>{
+      args.className = "testClassName"
+      const shp = createArrow(args);
+      expect(shp.line.offset).toBeObj(args.point1);
+      expect(shp.shapes.length).toBe(2);
+      expect(shp.pnt2Arrow.offset).toBeObj(args.point2);
+      expect(shp.pnt1Arrow).toBe(undefined);
+      expect(shp.node.className.baseVal).toBe("testClassName");
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+    });
+    it("Should construct with arrow at end1", ()=>{
+      args.end1 = true; args.end2 = false;
+      const shp = createArrow(args);
+      expect(shp.line.points[1]).toBeObj(args.point2);
+      expect(shp.shapes.length).toBe(2);
+      expect(shp.pnt1Arrow.offset).toBeObj(args.point1);
+      expect(shp.pnt2Arrow).toBe(undefined);
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+    });
+    it("Should construct with arrow at no end", ()=>{
+      args.end1 = false; args.end2 = false;
+      const shp = createArrow(args);
+      expect(shp.line.points[1]).toBeObj(args.point2);
+      expect(shp.line.points[0]).toBeObj(args.point1);
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.pnt1Arrow).toBe(undefined);
+      expect(shp.pnt2Arrow).toBe(undefined);
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+    });
+    it("Should construct with arrow at both ends", ()=>{
+      args.end1 = true; args.end2 = true;
+      const shp = createArrow(args);
+      expect(shp.line.points[1]).toBeObj({x:6.1,y:12.3}, 1);
+      expect(shp.line.points[0]).toBeObj({x:3.9,y:7.7},1);
+      expect(shp.shapes.length).toBe(3);
+      expect(shp.pnt1Arrow).toNotBe(undefined);
+      expect(shp.pnt2Arrow).toNotBe(undefined);
+      expect(shp.size.width).toBe(10);
+      expect(shp.size.height).toBe(20);
+    });
+    it("Should construct with size 50", ()=>{
+      const shp = createArrow(args);
+      args.point1.x += 10; args.point2.x += 10;
+      args.end1 = true; args.end2 = false;
+      const shp1 = createArrow(args);
+      args.point1.x += 10; args.point2.x += 10;
+      args.end1 = false; args.end2 = false;
+      const shp2 = createArrow(args);
+      args.point1.x += 10; args.point2.x += 10;
+      args.end1 = true; args.end2 = true;
+      const shp3 = createArrow(args);
+    });
+  });
+
+  describe("Test move", ()=>{
+    it("Should move arrows and line", ()=>{});
+    it("Should move and recalculate height, width", ()=>{});
+    it("Should move and recalculate angle", ()=>{});
   });
 })
