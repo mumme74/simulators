@@ -207,6 +207,15 @@ export class Point {
   }
 
   /**
+   * Move this point from where it is by this much
+   * @param {number} x Move X by this much
+   * @param {number} y Move y by this much
+   */
+  moveBy({x=0,y=0}) {
+    this.point = [this._x.length + x, this._y.length + y];
+  }
+
+  /**
    * Add a callback that gets called when this point moves
    * @param {function} cb A callback function
    */

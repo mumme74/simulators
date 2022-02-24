@@ -448,4 +448,43 @@ registerTestSuite("testPoint", ()=>{
       expect(pt3.connectedPoints).toBeObj([]);
     });
   });
+
+  describe("Test move", ()=>{
+    it("Should move right", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({x:5});
+      expect(pnt).toBeObj({x:15,y:20});
+    });
+    it("Should move left", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({x:-5});
+      expect(pnt).toBeObj({x:5,y:20});
+    });
+    it("Should move up", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({y:-5});
+      expect(pnt).toBeObj({x:10,y:15});
+    });
+    it("Should move down", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({y:5});
+      expect(pnt).toBeObj({x:10,y:25});
+    });
+    it("Should move up right", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({y:-5,x:5});
+      expect(pnt).toBeObj({x:15,y:15});
+    });
+    it("Should move down left", ()=>{
+      const pnt = new Point({x:10,y:20});
+      expect(pnt).toBeObj({x:10,y:20});
+      pnt.moveBy({y:5,x:-5});
+      expect(pnt).toBeObj({x:5,y:25});
+    });
+  })
 });
