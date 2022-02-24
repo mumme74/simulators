@@ -33,7 +33,17 @@ export function lookupSvgRoot(svgElem) {
  * @property {Point} bottomPoint A point that follows centerpoint but at bottom
  */
 export class SizeRect {
-  constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0, cloneFromRect}) {
+  /**
+   * Create a new SizeRect
+   * @param {Point|{x:number,y:number}} [topLeft] The top left to construct from
+   * @param {Point|{x:number,y:number}} [centerPoint] The centerpoint of this rect
+   * @param {number} [width] The width of this Rect
+   * @param {number} [height] The height of this Rect
+   * @param {SizeRect} [cloneFromRect] clone this rect
+   * @param {Point} [followPoint] A point to follow this rect, moves this centerPoint
+   * @param {{x:number,y:number}} [followOffset] If followOffset track this centerpoint
+   */
+  constructor({topLeft, centerPoint={x:0,y:0}, width=0, height=0, cloneFromRect, followPoint, followOffset, }) {
     if (cloneFromRect) {
       topLeft = cloneFromRect.topLeft;
       width = cloneFromRect.width;
@@ -43,15 +53,12 @@ export class SizeRect {
     this.height = height;
     this.width = width;
 
-    if (topLeft) {
+    if (followPoint)
+      centerPoint = new Point({followPoint, followOffset});
+    else if (topLeft) {
       let arg = {x:topLeft.x + this._xOffset(), y:topLeft.y + this._yOffset()};
-      if (topLeft instanceof Point)
-        centerPoint = new Point({followPoint:topLeft, followOffset: {x:arg.x, y:arg.y}});
-      else
-        centerPoint = new Point(arg);
-    } else if (centerPoint instanceof Point)
-      centerPoint = new Point({followPoint:centerPoint});
-    else
+      centerPoint = new Point(arg);
+    } else
       centerPoint = new Point(centerPoint);
 
     this.centerPoint = centerPoint;
@@ -634,17 +641,19 @@ export class Group extends BaseShape {
    * @param {Point|{x:number,y:number}} newPoint Move to this pos
    */
   move(newPoint) {
+    const moveOperation = (shp, isMoving) => {
+      shp._isMoving = isMoving;
+      shp._shapes?.forEach(s=>{ moveOperation(s, isMoving); });
+    }
+    moveOperation(this, true);
+
     const newX = Array.isArray(newPoint) ? newPoint[0] : newPoint.x,
           newY = Array.isArray(newPoint) ? newPoint[1] : newPoint.y;
     const xDiff = !isNaN(newX) ? newX - this.offset.x : 0,
           yDiff = !isNaN(newY) ? newY - this.offset.y : 0;
     super.move.apply(this, arguments);
-    return;
 
-    for(const shp of this._shapes) {
-      const pnt = [shp.offset.x + xDiff, shp.offset.y + yDiff];
-      shp.move(pnt);
-    }
+    moveOperation(this, false);
   }
 
   /**

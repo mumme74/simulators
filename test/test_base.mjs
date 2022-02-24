@@ -56,6 +56,24 @@ registerTestSuite("testSizeRect", ()=>{
       expect(sz.height).toBe(40);
       expect(sz.width).toBe(30);
     });
+    it("Should construct with followPoint", ()=>{
+      const pt = new Point({x:10,y:20});
+      const sz0 = new SizeRect({followPoint:pt,width:30,height:40});
+      const sz = new SizeRect({cloneFromRect:sz0});
+      expect(sz.centerPoint).toBeObj({x:10,y:20});
+      expect(sz.height).toBe(40);
+      expect(sz.width).toBe(30);
+    });
+    it("Should construct with followPoint and offset", ()=>{
+      const pt = new Point({x:10,y:20});
+      const sz0 = new SizeRect({followPoint:pt, followOffset:{x:20,y:30},width:30,height:40});
+      const sz = new SizeRect({cloneFromRect:sz0,followPoint:sz0.centerPoint});
+      expect(sz.centerPoint).toBeObj({x:30,y:50});
+      expect(sz.height).toBe(40);
+      expect(sz.width).toBe(30);
+      pt.moveBy({x:-5,y:-10});
+      expect(sz.centerPoint).toBeObj({x:25,y:40});
+    });
   });
 
   describe("Test number props", ()=>{
@@ -184,38 +202,11 @@ registerTestSuite("testSizeRect", ()=>{
   });
 
   describe("Test point move", ()=>{
-    it("Should move topLeft to 30,40", ()=>{
-      const topLeft = new Point({x:0,y:0});
-      const sz = new SizeRect({topLeft, width:40, height:20});
-      expect(sz.centerPoint).toBeObj({x:20,y:10});
-      const centerPoint = sz.centerPoint,
-            leftPoint = sz.leftPoint,
-            rightPoint = sz.rightPoint,
-            topPoint = sz.topPoint,
-            bottomPoint = sz.bottomPoint,
-            topLeftPoint = sz.topLeftPoint,
-            topRightPoint = sz.topRightPoint,
-            bottomLeftPoint = sz.bottomLeftPoint,
-            bottomRightPoint = sz.bottomRightPoint;
-      topLeft.point = [30,40];
-      expect(sz.centerPoint).toBeObj({x:50,y:50});
-      expect(sz.height).toBe(20);
-      expect(sz.width).toBe(40);
-      expect(leftPoint).toBeObj({x:30,y:50});
-      expect(topLeftPoint).toBeObj({x:30,y:40});
-      expect(rightPoint).toBeObj({x:70,y:50});
-      expect(topRightPoint).toBeObj({x:70,y:40});
-      expect(topPoint).toBeObj({x:50,y:40});
-      expect(bottomLeftPoint).toBeObj({x:30,y:60});
-      expect(bottomPoint).toBeObj({x:50,y:60});
-      expect(bottomRightPoint).toBeObj({x:70,y:60});
-    });
-    it("Should move centerPoint 0,0", ()=>{
-      const cp = new Point({x:0,y:0});
-      const sz = new SizeRect({centerPoint:cp, height:20, width:40});
+    it("Should move centerPoint with followPoint 0,0", ()=>{
+      const fp = new Point({x:0,y:0});
+      const sz = new SizeRect({followPoint:fp, height:20, width:40});
       expect(sz.centerPoint).toBeObj({x:0,y:0});
-      const centerPoint = sz.centerPoint,
-            leftPoint = sz.leftPoint,
+      const leftPoint = sz.leftPoint,
             rightPoint = sz.rightPoint,
             topPoint = sz.topPoint,
             bottomPoint = sz.bottomPoint,
@@ -223,7 +214,7 @@ registerTestSuite("testSizeRect", ()=>{
             topRightPoint = sz.topRightPoint,
             bottomLeftPoint = sz.bottomLeftPoint,
             bottomRightPoint = sz.bottomRightPoint;
-      centerPoint.point = [50,50];
+      fp.point = [50,50];
       expect(sz.centerPoint).toBeObj({x:50,y:50});
       expect(sz.height).toBe(20);
       expect(sz.width).toBe(40);
@@ -248,7 +239,7 @@ registerTestSuite("testSizeRect", ()=>{
             topRightPoint = sz.topRightPoint,
             bottomLeftPoint = sz.bottomLeftPoint,
             bottomRightPoint = sz.bottomRightPoint;
-      sz.centerPoint.point = [50,50];
+      centerPoint.point = [50,50];
       expect(sz.centerPoint).toBeObj({x:50,y:50});
       expect(leftPoint).toBeObj({x:30,y:50});
       expect(topLeftPoint).toBeObj({x:30,y:40});
