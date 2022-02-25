@@ -13,6 +13,7 @@ import {
   Resistor,
   Capacitor,
   Solenoid,
+  Diode,
   Relay,
 } from "../../elements/electrical/electric_schematic.mjs";
 
@@ -519,6 +520,53 @@ registerTestSuite("testSolenoid", ()=>{
       expect(comp.shapes.length).toBe(4);
       expect(comp.resistance).toBe(10);
       expect(comp.inductance).toBe(0.01);
+      comp.move([100,89])
+      comp.move([250,89])
+      comp.flipX();
+      comp.flipY();
+      comp.angle = 60;
+    });
+  });
+});
+
+registerTestSuite("testDiode", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createDiode = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new Diode(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createDiode({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toBe(40);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.maxCurrent).toBe(1);
+      expect(comp.voltForward).toBe(0.6);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createDiode({centerPoint:{x:50,y:50},
+        name:"diode",className:"nofill", maxCurrent:0.01, voltForward:1});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("diode");
+      expect(comp.nets.length).toBe(2);
+      expect(comp.nets[0] instanceof ElectricNet).toBe(true);
+      expect(comp.nets[1] instanceof ElectricNet).toBe(true);
+      expect(comp.size.width).toBe(16);
+      expect(comp.size.height).toBe(40);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.maxCurrent).toBe(0.01);
+      expect(comp.voltForward).toBe(1);
       comp.move([100,89])
       comp.move([250,89])
       comp.flipX();

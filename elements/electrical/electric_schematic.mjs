@@ -489,6 +489,60 @@ export class Resistor extends ElectricComponentBase {
   }
 }
 
+/**
+ * A Diode class
+ * @prop
+ */
+ export class Diode extends ElectricComponentBase {
+  /**
+   * Create a new Diode
+   * @param {SVGElement} parentElement The parent to attach this node to
+   * @param {Point|{x:number,y:number}} centerPoint the center for this component
+   * @param {string} [className] The className string to use
+   * @param {string} [name] The name of this component
+   * @param {number} [maxCurrent] The number of capacitance in Farad
+   * @param {number} [voltForward] The voltage drop
+   */
+  constructor({
+    parentElement, centerPoint, className, name,
+    maxCurrent=1, voltForward=0.6
+  }) {
+    const nets = [
+      new ElectricNet({}),
+      new ElectricNet({})
+    ];
+    super({parentElement, centerPoint, name,
+          className, nets, width:16, height:40});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+    sz.height -= 28;
+
+    this.terminal1 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.top},
+      point2:{x:sz.centerPoint.x,y:sz.top}
+    });
+    this.terminal2 = new Line({parentElement,
+      point1:{x:sz.centerPoint.x,y:this.size.bottom},
+      point2:{x:sz.centerPoint.x,y:sz.bottom}
+    });
+    this.arrowShape = new Polygon({parentElement,
+      points: [sz.topLeft, sz.topRight, sz.bottomPoint]
+    });
+    this.lineShape = new Line({parentElement,
+      point1:sz.bottomLeft, point2:sz.bottomRight
+    });
+
+    this.addTerminal(this.terminal1, nets[0]);
+    this.addTerminal(this.terminal2, nets[1]);
+    this.addShape(this.lineShape);
+    this.addShape(this.arrowShape);
+
+    this.maxCurrent = maxCurrent;
+    this.voltForward = voltForward;
+  }
+}
+
 
 export class Relay extends ElectricComponentBase {
 
