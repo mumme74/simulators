@@ -79,13 +79,19 @@ registerTestSuite("testRotation", ()=>{
       const rot = new Rotation({onChangeCallback});
       expect(rotCb).toBe(undefined);
       expect(angle).toBe(undefined);
-      rot.x = 1;
+      rot.angle = 3;
       expect(called).toBe(1);
       expect(rotCb).toBe(rot);
-      expect(angle).toBe(0);
-      rot.angle = 3;
-      expect(called).toBe(2);
       expect(angle).toBe(3);
+    });
+    it("Should construct a rotation with onChangeCallback rotate on construction", ()=>{
+      let rotCb, angle, called = 0;
+      const onChangeCallback = (r)=> { called++; rotCb = r; angle = r.angle}
+      const rot = new Rotation({onChangeCallback, angle:3});
+      expect(rotCb).toBe(rot);
+      expect(angle).toBe(3);
+      expect(rot.angle).toBe(3);
+      expect(called).toBe(1);
     });
   });
 
@@ -146,22 +152,6 @@ registerTestSuite("testRotation", ()=>{
     const onChangeCallback = (r)=>{ called++; rotCb=r; }
     afterEach(()=>{ called=0; rotCb=undefined; });
 
-    it("Should call onChangeCallback on x", ()=>{
-      const rot = new Rotation({onChangeCallback});
-      expect(called).toBe(0);
-      expect(rotCb).toBe(undefined);
-      rot.x = 10;
-      expect(called).toBe(1);
-      expect(rotCb).toBe(rot);
-    });
-    it("Should call onChangeCallback on y", ()=>{
-      const rot = new Rotation({onChangeCallback});
-      expect(called).toBe(0);
-      expect(rotCb).toBe(undefined);
-      rot.y = 10;
-      expect(called).toBe(1);
-      expect(rotCb).toBe(rot);
-    });
     it("Should call onChangeCallback on angle", ()=>{
       const rot = new Rotation({onChangeCallback});
       expect(called).toBe(0);
@@ -174,11 +164,11 @@ registerTestSuite("testRotation", ()=>{
       const rot = new Rotation({});
       expect(called).toBe(0);
       expect(rotCb).toBe(undefined);
-      rot.x = 10;
+      rot.angle = 10;
       expect(called).toBe(0);
       expect(rotCb).toBe(undefined);
       rot.addChangeCallback(onChangeCallback);
-      rot.x = 20;
+      rot.angle = 20;
       expect(called).toBe(1);
       expect(rotCb).toBe(rot);
     });

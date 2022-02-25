@@ -31,7 +31,6 @@ export class Rotation {
               rotateShapes=[]}) {
     this._x = !isNaN(x) ? x : point.x;
     this._y = !isNaN(y) ? y : point.y;
-    this._angle = !isNaN(angle) ? angle : 0;
     this.owner = owner;
     this._rotateShapes = rotateShapes;
     this._rotateShapes.rotations = [];
@@ -43,6 +42,8 @@ export class Rotation {
 
     if (onChangeCallback)
       this.addChangeCallback(onChangeCallback);
+
+    this.angle = !isNaN(angle) ? angle : 0;
   }
 
   get x() {
@@ -52,7 +53,6 @@ export class Rotation {
   set x(newX) {
     if (newX !== this._x) {
       this._x = newX;
-      this._updated();
     }
   }
 
@@ -63,7 +63,6 @@ export class Rotation {
   set y(newY) {
     if (this._y !== newY) {
       this._y = newY;
-      this._updated();
     }
   }
 
@@ -149,7 +148,6 @@ export class Rotation {
         this._rotateShapes.rotations.push(beforeRotations);
       }
       const rad = radian - beforeRotations.rot;
-      //const rad = radian;
 
       for (const pnt of shp.points) {
         let x = pnt.x, y = pnt.y;
