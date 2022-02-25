@@ -2,8 +2,8 @@
 
 import { ComponentBase, Net } from "../schematic.mjs";
 import { Point } from "../point.mjs";
-import { Line, Polygon, SizeRect } from "../base.mjs";
-import { Circle, Rect } from "../trigenometry/index.mjs";
+import { Line, Polygon, SizeRect, Group } from "../base.mjs";
+import { Arrow, Circle, Rect } from "../trigenometry/index.mjs";
 
 
 /**
@@ -540,6 +540,80 @@ export class Resistor extends ElectricComponentBase {
 
     this.maxCurrent = maxCurrent;
     this.voltForward = voltForward;
+  }
+}
+
+/**
+ * A npn or pnp class
+ */
+export class BipolarTransistor extends ElectricComponentBase {
+  /**
+   * Create a new Diode
+   * @param {SVGElement} parentElement The parent to attach this node to
+   * @param {Point|{x:number,y:number}} centerPoint the center for this component
+   * @param {string} [className] The className string to use
+   * @param {string} [name] The name of this component
+   * @param {number} [maxCurrent] The number of capacitance in Farad
+   * @param {number} [voltForward] The voltage drop base-emitter
+   * @param {number} [hfe] The gain of this transistor
+   */
+   constructor({
+    parentElement, centerPoint, className, name, isPnp=false,
+    maxCurrent=1, voltForward=0.6, hfe=100
+  }) {
+    const nets = [
+      new ElectricNet({namePrefix:"base"}),
+      new ElectricNet({namePrefix:"collector"}),
+      new ElectricNet({namePrefix:"emitter"})
+    ];
+    super({parentElement, centerPoint, name,
+          className, nets, width:50, height:50});
+
+    parentElement = this.node;
+    const sz = new SizeRect({cloneFromRect:this.size});
+
+    this.base = new Line({parentElement,
+      point1:{x:sz.left,y:this.size.centerPoint.y},
+      point2:{x:sz.centerPoint.x,y:sz.centerPoint.y}
+    });
+    this.collector = new Line({parentElement,
+      point1:sz.centerPoint.point,
+      point2:{x:sz.right,y:isPnp ? sz.bottom : sz.top}
+    });
+
+    const eRec = new SizeRect({topLeft:sz.centerPoint.point,
+      width:isPnp ? (sz.width/2) : (sz.width/3*2),
+      height:isPnp ? (sz.height/2) : (sz.width/3*2)
+    });
+    if (isPnp)
+    eRec.centerPoint.moveBy({x:0,y:-eRec.height});
+    const emitterEndPnt = { x:sz.right, y:isPnp ? sz.top : sz.bottom };
+    this.emitter = new Group({parentElement,
+      shapes:[
+        new Arrow({parentElement,
+          point1: isPnp ? emitterEndPnt : sz.centerPoint.point,
+          point2: isPnp ? eRec.centerPoint.point : eRec.centerPoint.point
+        }),
+        new Line({parentElement,
+          point1: isPnp ? eRec.centerPoint.point : eRec.centerPoint.point,
+          point2: isPnp ? sz.centerPoint.point : sz.bottomRight,
+        })
+      ]
+    });
+    this.lineShape = new Line({parentElement,
+      point1:{x:sz.centerPoint.x, y:sz.top},
+      point2:{x:sz.centerPoint.x, y:sz.bottom}
+    });
+
+    this.addTerminal(this.base, nets[0]);
+    this.addTerminal(this.collector, nets[1]);
+    this.addTerminal(this.emitter, nets[2]);
+    this.addShape(this.lineShape);
+
+    this.maxCurrent = maxCurrent;
+    this.voltForward = voltForward;
+    this.hfe = hfe;
+    this.isPnp = isPnp;
   }
 }
 

@@ -14,6 +14,7 @@ import {
   Capacitor,
   Solenoid,
   Diode,
+  BipolarTransistor,
   Relay,
 } from "../../elements/electrical/electric_schematic.mjs";
 
@@ -575,6 +576,61 @@ registerTestSuite("testDiode", ()=>{
     });
   });
 });
+
+registerTestSuite("testTransistor", ()=>{
+  afterEach(glbl.cleanup);
+
+  const createTransistor = (obj)=>{
+    obj.parentElement = glbl.parentElement;
+    glbl.shapes.push(new BipolarTransistor(obj));
+    return glbl.shapes[glbl.shapes.length-1];
+  }
+
+  describe("Test constructor", ()=>{
+    it("Should construct with defaults", ()=>{
+      const comp = createTransistor({});
+      expect(comp.size.centerPoint).toBeObj({x:0,y:0});
+      expect(comp.name).toBe("");
+      expect(comp.nets.length).toBe(3);
+      expect(comp.nets[0]).toBeInstanceOf(ElectricNet);
+      expect(comp.nets[1]).toBeInstanceOf(ElectricNet);
+      expect(comp.nets[2]).toBeInstanceOf(ElectricNet);
+      expect(comp.size.width).toBe(50);
+      expect(comp.size.height).toBe(50);
+      expect(comp.node.classList.contains('_electric_component')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.maxCurrent).toBe(1);
+      expect(comp.voltForward).toBe(0.6);
+      expect(comp.hfe).toBe(100);
+      expect(comp.isPnp).toBe(false);
+    });
+    it("Should construct with options", ()=>{
+      const comp = createTransistor({centerPoint:{x:50,y:50},
+        name:"transistor",className:"nofill", maxCurrent:0.01,
+        voltForward:1, hfe:200, isPnp:true});
+      expect(comp.size.centerPoint).toBeObj({x:50,y:50});
+      expect(comp.name).toBe("transistor");
+      expect(comp.nets.length).toBe(3);
+      expect(comp.nets[0]).toBeInstanceOf(ElectricNet);
+      expect(comp.nets[1]).toBeInstanceOf(ElectricNet);
+      expect(comp.nets[2]).toBeInstanceOf(ElectricNet);
+      expect(comp.size.width).toBe(50);
+      expect(comp.size.height).toBe(50);
+      expect(comp.node.classList.contains('nofill')).toBe(true);
+      expect(comp.shapes.length).toBe(4);
+      expect(comp.maxCurrent).toBe(0.01);
+      expect(comp.voltForward).toBe(1);
+      expect(comp.hfe).toBe(200);
+      expect(comp.isPnp).toBe(true);
+      comp.move([100,89])
+      comp.move([250,89])
+      comp.flipX();
+      comp.flipY();
+      comp.angle = 60;
+    });
+  });
+});
+
 
 registerTestSuite("testRelay", ()=>{
   afterEach(glbl.cleanup);
