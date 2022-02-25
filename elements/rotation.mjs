@@ -1,14 +1,32 @@
 "use strict";
 
+import { BaseShape } from "./base.mjs";
 import { Point } from "./point.mjs";
 
-
+/**
+ * A class that rotates all shapes and their points
+ * @property {BaseShape} owner The instance that owns this
+ * @property {number} x Rotate around this x
+ * @property {number} y Rotate around this y
+ * @property {number} angle Rotated angle
+ * @property {Point|{x:number,y:number}} point Rotate around this x,y
+ * @property {[{x:number,y:number}]} points Array with this points, ie rotate point
+ */
 export class Rotation {
   _onChangeCallbacks = []
   _x = 0;
   _y = 0;
   _angle = 0;
 
+  /**
+   * Create a new Rotation
+   * @param {number} [x] The x to rotate around
+   * @param {number} [y] The y to rotate around
+   * @param {number} [angle] The angle to rotate
+   * @param {Function} [onChangeCallback] The x to rotate around
+   * @param {BaseShape} [owner] The owner of this rotation
+   * @param {number} [rotateShapes] The shapes to rotate
+   */
   constructor({x, y, point={x:0,y:0}, angle, onChangeCallback, owner,
               rotateShapes=[]}) {
     this._x = !isNaN(x) ? x : point.x;
@@ -78,23 +96,39 @@ export class Rotation {
     }
   }
 
+  /**
+   * Add a callback which is called before any rotation
+   * @param {Function} cb The callback function
+   */
   addChangeCallback(cb) {
     if (this._onChangeCallbacks.indexOf(cb) < 0)
       this._onChangeCallbacks.push(cb);
   }
 
+  /**
+   * Remove a callback from event chain
+   * @param {Function} cb The callback to remove
+   */
   removeChangeCallback(cb) {
     const idx = this._onChangeCallbacks.indexOf(cb);
     if (idx !== null && idx > -1)
       this._onChangeCallbacks.splice(idx, 1);
   }
 
+  /**
+   * Add a shape to be rotated by this rotation object
+   * @param {BaseShape} shape The shape to add
+   */
   addRotateShape(shape) {
     const idx = this._rotateShapes.indexOf(shape);
     if (idx !== null && idx < 0)
       this._rotateShapes.push(shape);
   }
 
+  /**
+   * Remove shape from rotation
+   * @param {BaseShape} shape The shape to remove
+   */
   removeRotateShape(shape) {
     const idx = this._rotateShapes.indexOf(shape);
     if (idx !== null && idx > -1)
