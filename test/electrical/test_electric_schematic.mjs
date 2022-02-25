@@ -383,7 +383,7 @@ registerTestSuite("testBattery", ()=>{
     it("Should decrease soc", ()=>{
       const comp = createCell({resistance:1,soc:1.0,capacity:1});
       expect(comp.feed(1, 0, 30*60*1000)).toBeObj({feeds:1.05, draws:-1.05}, 2);
-      expect(comp.soc).toBe(0.5, 2);
+      expect(comp.soc).toBe(0.5, 1);
       expect(comp.feed(1, 0, 30*60*1000)).toBeObj({feeds:1.0, draws:-1.0}, 2);
       expect(comp.soc).toBe(0, 2);
     });
