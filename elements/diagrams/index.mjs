@@ -19,14 +19,14 @@ export class Wave extends Polygon {
    * Create a new Wave instance
    * @param {SVGElement} parentElement The SVG node to attach this.node to.
    * @param {Point|{x:number,y:number}} offset Where Wave should be placed
-   * @param {string} className The CSS classes this node should have
+   * @param {Array.<string>} [classList] The CSS classes this node should have
    * @param {Array.<number>} dataPoints Initial datapoints of wave
    * @param {number} xScale Scale horizontally by this factor for each datapoint
    * @param {number} yScale Scale each datapoint value verticaly by this factor.
    */
-  constructor({parentElement, offset={x:0,y:0}, className,
+  constructor({parentElement, offset={x:0,y:0}, classList,
               dataPoints=[], xScale=1, yScale=1}) {
-    super({parentElement, points:[offset], className});
+    super({parentElement, points:[offset], classList});
 
     this._xScale = xScale;
     this._yScale = yScale;

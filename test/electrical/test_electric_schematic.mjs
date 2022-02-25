@@ -103,7 +103,7 @@ registerTestSuite("testElectricComponentBase", ()=>{
     it("Should contruct with options", ()=>{
       const nets = [new ElectricNet({}),new ElectricNet({})];
       const comp = createComp({
-        centerPoint:{x:1,y:2}, name:"test",className:"_electric_component testClassName",
+        centerPoint:{x:1,y:2}, name:"test",classList:["_electric_component", "testClassList"],
         nets, width:40, height:30
       });
       expect(comp.size.centerPoint).toBeObj({x:1,y:2});
@@ -113,7 +113,7 @@ registerTestSuite("testElectricComponentBase", ()=>{
       expect(comp.nets[1]).toBe(nets[1]);
       expect(comp.size.width).toBe(40);
       expect(comp.size.height).toBe(30);
-      expect(comp.node.className.baseVal).toBe("_electric_component testClassName");
+      expect(comp.node.className.baseVal).toBe("_electric_component testClassList");
     });
   });
 });
@@ -141,7 +141,7 @@ registerTestSuite("testFuse", ()=>{
       expect(comp.shapes.length).toBe(3);
     });
     it("Should construct with options", ()=>{
-      const comp = createFuse({centerPoint:{x:50,y:50},name:"fuse",className:"nofill"});
+      const comp = createFuse({centerPoint:{x:50,y:50},name:"fuse",classList:["nofill"]});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("fuse");
       expect(comp.nets.length).toBe(2);
@@ -203,7 +203,7 @@ registerTestSuite("testSwitch", ()=>{
       expect(comp.shapes.length).toBe(5);
     });
     it("Should construct with options", ()=>{
-      const comp = createSwitch({centerPoint:{x:50,y:50},open:false,name:"switch",className:"nofill"});
+      const comp = createSwitch({centerPoint:{x:50,y:50},open:false,name:"switch",classList:["nofill"]});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("switch");
       expect(comp.open).toBe(false);
@@ -265,7 +265,7 @@ registerTestSuite("testLamp", ()=>{
       expect(comp.shapes.length).toBe(6);
     });
     it("Should construct with options", ()=>{
-      const comp = createLamp({centerPoint:{x:50,y:50},broken:true,name:"lamp",className:"nofill", rating:10});
+      const comp = createLamp({centerPoint:{x:50,y:50},broken:true,name:"lamp",classList:["nofill"], rating:10});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("lamp");
       expect(comp.broken).toBe(true);
@@ -343,7 +343,7 @@ registerTestSuite("testBattery", ()=>{
     it("Should construct with options", ()=>{
       const comp = createCell({soc:0.5,capacity:20,
         centerPoint:{x:50,y:50},name:"cell",
-        className:"nofill", voltage:3.7, resistance:0.1
+        classList:["nofill"], voltage:3.7, resistance:0.1
       });
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("cell");
@@ -423,7 +423,7 @@ registerTestSuite("testResistor", ()=>{
       expect(comp.resistance).toBe(1);
     });
     it("Should construct with options", ()=>{
-      const comp = createResistor({centerPoint:{x:50,y:50},name:"resistor",className:"nofill", resistance:10});
+      const comp = createResistor({centerPoint:{x:50,y:50},name:"resistor",classList:["nofill"], resistance:10});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("resistor");
       expect(comp.nets.length).toBe(2);
@@ -465,7 +465,7 @@ registerTestSuite("testCapacitor", ()=>{
     });
     it("Should construct with options", ()=>{
       const comp = createCapacitor({centerPoint:{x:50,y:50},
-        name:"capacitor",className:"nofill", polarized:true, capacitance:0.01, resistance:10});
+        name:"capacitor",classList:["nofill"], polarized:true, capacitance:0.01, resistance:10});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("capacitor");
       expect(comp.nets.length).toBe(2);
@@ -509,7 +509,7 @@ registerTestSuite("testSolenoid", ()=>{
     });
     it("Should construct with options", ()=>{
       const comp = createSolenoid({centerPoint:{x:50,y:50},
-        name:"capacitor",className:"nofill", inductance:0.01, resistance:10});
+        name:"capacitor",classList:["nofill"], inductance:0.01, resistance:10});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("capacitor");
       expect(comp.nets.length).toBe(2);
@@ -556,7 +556,7 @@ registerTestSuite("testDiode", ()=>{
     });
     it("Should construct with options", ()=>{
       const comp = createDiode({centerPoint:{x:50,y:50},
-        name:"diode",className:"nofill", maxCurrent:0.01, voltForward:1});
+        name:"diode",classList:["nofill"], maxCurrent:0.01, voltForward:1});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("diode");
       expect(comp.nets.length).toBe(2);
@@ -606,7 +606,7 @@ registerTestSuite("testTransistor", ()=>{
     });
     it("Should construct with options", ()=>{
       const comp = createTransistor({centerPoint:{x:50,y:50},
-        name:"transistor",className:"nofill", maxCurrent:0.01,
+        name:"transistor",classList:["nofill"], maxCurrent:0.01,
         voltForward:1, hfe:200, isPnp:true});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("transistor");
@@ -658,7 +658,7 @@ registerTestSuite("testRelay", ()=>{
     });
     it("Should construct with options", ()=>{
       const comp = createRelay({centerPoint:{x:50,y:50},
-        name:"capacitor",className:"nofill", resistance:10});
+        name:"capacitor",classList:["nofill"], resistance:10});
       expect(comp.size.centerPoint).toBeObj({x:50,y:50});
       expect(comp.name).toBe("capacitor");
       expect(comp.nets.length).toBe(2);

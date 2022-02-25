@@ -14,7 +14,9 @@ const insertToggleBtn = function(node, passed) {
     evt.target.parentNode.classList[evt.target.checked ? "remove" : "add"]("hidden");
   });
   node.appendChild(chkbox);
-  node.className += passed ? "passed hidden" : "failed";
+
+  let classes = passed ? ["passed","hidden"] : ["failed"];
+  classes.forEach(c=>node.classList.add(c));
 }
 
 const insertTestLink = function(node, parts, linkText) {

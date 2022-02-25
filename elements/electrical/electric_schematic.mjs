@@ -23,10 +23,10 @@ export class ElectricComponentBase extends ComponentBase {
   _inductance = 0;
   _capacitance = 0;
 
-  constructor({parentElement, centerPoint, name, className, nets, width, height}) {
+  constructor({parentElement, centerPoint, name, classList, nets, width, height}) {
     if (!Array.isArray(nets))
       nets = [new ElectricNet({name})];
-    super({parentElement, centerPoint, name, className, nets, width, height});
+    super({parentElement, centerPoint, name, classList, nets, width, height});
     this.node.classList.add("_electric_component")
   }
 
@@ -70,10 +70,10 @@ export class ElectricComponentBase extends ComponentBase {
 
 export class Fuse extends ElectricComponentBase {
   rating = 1;
-  constructor({parentElement, centerPoint, name, className}) {
+  constructor({parentElement, centerPoint, name, classList}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
-          className, nets, width:16, height:50});
+          classList, nets, width:16, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -88,7 +88,7 @@ export class Fuse extends ElectricComponentBase {
       point2:{x:sz.centerPoint.x,y:sz.centerPoint.y}
     });
     this.rect = new Rect({
-      parentElement, className, topLeft:sz.topLeft,
+      parentElement, classList, topLeft:sz.topLeft,
       width:sz.width, height: sz.height
     });
 
@@ -118,10 +118,10 @@ export class Fuse extends ElectricComponentBase {
 }
 
 export class Switch extends ElectricComponentBase {
-  constructor({parentElement, centerPoint, open=true, className, name}) {
+  constructor({parentElement, centerPoint, open=true, classList, name}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
-          className, nets, width:16, height:50});
+      classList, nets, width:16, height:50});
 
 
     parentElement = this.node;
@@ -132,14 +132,14 @@ export class Switch extends ElectricComponentBase {
       point1:{x:sz.centerPoint.x,y:this.size.top},
       point2:{x:sz.centerPoint.x,y:sz.top}
     });
-    this.dot1 = new Circle({parentElement, className:"dot",
+    this.dot1 = new Circle({parentElement, classList:["dot"],
       centerPoint:this.terminal1.point2, radii:2
     });
     this.terminal2 = new Line({parentElement,
       point1:{x:sz.centerPoint.x,y:this.size.bottom},
       point2:{x:sz.centerPoint.x,y:sz.bottom}
     });
-    this.dot2 = new Circle({parentElement, className:"dot",
+    this.dot2 = new Circle({parentElement, classList:["dot"],
       centerPoint:this.terminal2.point2, radii:2
     });
     this.contact = new Line({parentElement,
@@ -178,10 +178,10 @@ export class Switch extends ElectricComponentBase {
 
 export class Lamp extends ElectricComponentBase {
   rating = 5;
-  constructor({parentElement, centerPoint, broken=false, rating=5, className, name}) {
+  constructor({parentElement, centerPoint, broken=false, rating=5, classList, name}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
-          className, nets, width:35, height:50});
+      classList, nets, width:35, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -205,7 +205,7 @@ export class Lamp extends ElectricComponentBase {
     this.outerCircle = new Circle({parentElement,
       centerPoint: sz.centerPoint, radii: sz.width / 2
     });
-    this.lightNode = new Circle({parentElement, className:"litUp",
+    this.lightNode = new Circle({parentElement, classList:["litUp"],
       centerPoint:sz.centerPoint, radii: sz.width / 2
     });
     this.lightNode.node.style.stroke = "none";
@@ -262,7 +262,7 @@ export class BatteryCell extends ElectricComponentBase {
    * Create a new BatteryCell
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
-   * @param {string} [className] The className string to use
+   * @param {string} [classList] The css classes to use
    * @param {string} [name] The name of this component
    * @param {number} [capacity] The number of Ah of this cell
    * @param {number} [voltage] Nominal Volt of this cell
@@ -270,7 +270,7 @@ export class BatteryCell extends ElectricComponentBase {
    * @param {number} [resistance] The internal resitance of this cell
    */
   constructor({
-    parentElement, centerPoint, className, name,
+    parentElement, centerPoint, classList, name,
     capacity=100, voltage=2, soc=1.0, resistance=0.01
   }) {
     const nets = [
@@ -278,7 +278,7 @@ export class BatteryCell extends ElectricComponentBase {
       new ElectricNet({namePrefix:"minus"})
     ];
     super({parentElement, centerPoint, name,
-          className, nets, width:40, height:20});
+      classList, nets, width:40, height:20});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -292,11 +292,11 @@ export class BatteryCell extends ElectricComponentBase {
       point1:{x:sz.centerPoint.x,y:this.size.bottom},
       point2:{x:sz.centerPoint.x,y:sz.bottom}
     });
-    this.plusLine = new Line({parentElement, className:"plusLine",
+    this.plusLine = new Line({parentElement, classList:["plusLine"],
       point1:sz.topLeft, point2:sz.topRight
     });
     sz.width -= 12;
-    this.minusLine = new Line({parentElement, className:"minusLine",
+    this.minusLine = new Line({parentElement, classList:["minusLine"],
       point1: sz.bottomLeft, point2:sz.bottomRight
     });
 
@@ -330,10 +330,10 @@ export class BatteryCell extends ElectricComponentBase {
 
 export class Resistor extends ElectricComponentBase {
 
-  constructor({parentElement, centerPoint, name, className, resistance=1}) {
+  constructor({parentElement, centerPoint, name, classList, resistance=1}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
-          className, nets, width:16, height:50});
+      classList, nets, width:16, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -348,7 +348,7 @@ export class Resistor extends ElectricComponentBase {
       point2:{x:sz.centerPoint.x,y:sz.bottom}
     });
     this.rect = new Rect({
-      parentElement, className, topLeft:sz.topLeft,
+      parentElement, classList, topLeft:sz.topLeft,
       width:sz.width, height: sz.height
     });
 
@@ -383,14 +383,14 @@ export class Resistor extends ElectricComponentBase {
    * Create a new Capacitor
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
-   * @param {string} [className] The className string to use
+   * @param {string} [classList] The css classes to use
    * @param {string} [name] The name of this component
    * @param {number} [capacity] The number of capacitance in Farad
    * @param {number} [resistance] The internal resitance
    * @param {number} [polarized] It capacitor should be polarized
    */
   constructor({
-    parentElement, centerPoint, className, name,
+    parentElement, centerPoint, classList, name,
     capacitance=0.001, resistance=0.05, polarized=false
   }) {
     const nets = [
@@ -399,7 +399,7 @@ export class Resistor extends ElectricComponentBase {
     ];
     const height = polarized ? 33 : 25
     super({parentElement, centerPoint, name,
-          className, nets, width:40, height});
+      classList, nets, width:40, height});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -409,7 +409,7 @@ export class Resistor extends ElectricComponentBase {
       point1:{x:sz.centerPoint.x,y:this.size.top},
       point2:{x:sz.centerPoint.x,y:sz.top}
     });
-    this.plusLine = new Line({parentElement, className:"plusLine",
+    this.plusLine = new Line({parentElement, classList:["plusLine"],
       point1:sz.topLeft, point2:sz.topRight
     });
 
@@ -419,7 +419,7 @@ export class Resistor extends ElectricComponentBase {
       point1:{x:sz.centerPoint.x,y:this.size.bottom},
       point2:{x:sz.centerPoint.x,y:sz.bottom}
     });
-    this.minusShape = new Polygon({parentElement, className:"minusLine",
+    this.minusShape = new Polygon({parentElement, classList:["minusLine"],
       points: [sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft]
     });
 
@@ -443,13 +443,13 @@ export class Resistor extends ElectricComponentBase {
    * Create a new Solenoid
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
-   * @param {string} [className] The className string to use
+   * @param {string} [classList] The css classes to use
    * @param {string} [name] The name of this component
    * @param {number} [inductance] The number of capacitance in Farad
    * @param {number} [resistance] The internal resitance
    */
   constructor({
-    parentElement, centerPoint, className, name,
+    parentElement, centerPoint, classList, name,
     inductance=0.001, resistance=100
   }) {
     const nets = [
@@ -457,7 +457,7 @@ export class Resistor extends ElectricComponentBase {
       new ElectricNet({})
     ];
     super({parentElement, centerPoint, name,
-          className, nets, width:30, height:50});
+      classList, nets, width:30, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -498,13 +498,13 @@ export class Resistor extends ElectricComponentBase {
    * Create a new Diode
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
-   * @param {string} [className] The className string to use
+   * @param {string} [classList] The css classes to use
    * @param {string} [name] The name of this component
    * @param {number} [maxCurrent] The number of capacitance in Farad
    * @param {number} [voltForward] The voltage drop
    */
   constructor({
-    parentElement, centerPoint, className, name,
+    parentElement, centerPoint, classList, name,
     maxCurrent=1, voltForward=0.6
   }) {
     const nets = [
@@ -512,7 +512,7 @@ export class Resistor extends ElectricComponentBase {
       new ElectricNet({})
     ];
     super({parentElement, centerPoint, name,
-          className, nets, width:16, height:40});
+      classList, nets, width:16, height:40});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -551,14 +551,14 @@ export class BipolarTransistor extends ElectricComponentBase {
    * Create a new Diode
    * @param {SVGElement} parentElement The parent to attach this node to
    * @param {Point|{x:number,y:number}} centerPoint the center for this component
-   * @param {string} [className] The className string to use
+   * @param {string} [classList] The css classes to use
    * @param {string} [name] The name of this component
    * @param {number} [maxCurrent] The number of capacitance in Farad
    * @param {number} [voltForward] The voltage drop base-emitter
    * @param {number} [hfe] The gain of this transistor
    */
    constructor({
-    parentElement, centerPoint, className, name, isPnp=false,
+    parentElement, centerPoint, classList, name, isPnp=false,
     maxCurrent=1, voltForward=0.6, hfe=100
   }) {
     const nets = [
@@ -567,7 +567,7 @@ export class BipolarTransistor extends ElectricComponentBase {
       new ElectricNet({namePrefix:"emitter"})
     ];
     super({parentElement, centerPoint, name,
-          className, nets, width:50, height:50});
+      classList, nets, width:50, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
@@ -620,17 +620,17 @@ export class BipolarTransistor extends ElectricComponentBase {
 
 export class Relay extends ElectricComponentBase {
 
-  constructor({parentElement, centerPoint, name, className, resistance=100}) {
+  constructor({parentElement, centerPoint, name, classList, resistance=100}) {
     const nets = [new ElectricNet({}), new ElectricNet({})];
     super({parentElement, centerPoint, name,
-          className, nets, width:60, height:50});
+      classList, nets, width:60, height:50});
 
     parentElement = this.node;
     const sz = new SizeRect({cloneFromRect:this.size});
     sz.height -= 15; sz.width -= 5;
 
     this.rect = new Polygon({
-      parentElement, className:"outline", points:[
+      parentElement, classList:["outline"], points:[
         sz.topLeft, sz.topRight, sz.bottomRight, sz.bottomLeft
       ]
     });

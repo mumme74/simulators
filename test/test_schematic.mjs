@@ -25,7 +25,7 @@ registerTestSuite("testNet", ()=>{
     glbl.cleanup();
   });
 
-  const createNet = ({startPnt, endPnt, betweenPnts, className})=>{
+  const createNet = ({startPnt, endPnt, betweenPnts, classList})=>{
     /*glbl.shapes.push(new Wire({
       parentElement: glbl.parentElement,
       startPnt, endPnt, betweenPnts,
@@ -244,11 +244,11 @@ registerTestSuite("testComponentBase", ()=>{
       expect(comp.size.height).toBe(0);
       expect(comp.node.className.baseVal).toBe("");
     });
-    it("Should contruct with className", ()=>{
-      const comp = createComp({className:"testClassName"});
+    it("Should contruct with classList", ()=>{
+      const comp = createComp({classList:["testClassList"]});
       expect(comp.size.centerPoint).toBeObj({x:0,y:0});
-      expect(comp.node.className.baseVal).toBe("testClassName");
-      expect(document.querySelector(".testClassName")).toBe(comp.node);
+      expect(comp.node.className.baseVal).toBe("testClassList");
+      expect(document.querySelector(".testClassList")).toBe(comp.node);
     });
     it("Should contruct with width & height 100,200", ()=>{
       const comp = createComp({width: 100, height:200});
@@ -385,11 +385,11 @@ registerTestSuite("testComponentBase", ()=>{
 registerTestSuite("testWire", ()=>{
   afterEach(glbl.cleanup);
 
-  const createWire = ({startPnt, endPnt, betweenPnts, className})=>{
+  const createWire = ({startPnt, endPnt, betweenPnts, classList})=>{
     glbl.shapes.push(new Wire({
       parentElement: glbl.parentElement,
       startPnt, endPnt, betweenPnts,
-      className
+      classList
     }));
     return glbl.shapes[glbl.shapes.length-1];
   };
@@ -409,9 +409,9 @@ registerTestSuite("testWire", ()=>{
       expect(wire.startPnt).toBeObj({x:10,y:20});
       expect(wire.endPnt).toBeObj({x:0,y:0});
     });
-    it("Should construct with className", ()=>{
-      const wire = createWire({className:"testClassName"});
-      expect(document.querySelector(".testClassName")).toBe(wire.node);
+    it("Should construct with classList", ()=>{
+      const wire = createWire({classList:["testClassList"]});
+      expect(document.querySelector(".testClassList")).toBe(wire.node);
     });
     it("Should construct with 2 freehanging points", ()=>{
       const p1 = {x:10,y:20}, p2 = {x:30,y:40};

@@ -17,7 +17,7 @@ registerTestSuite("testLength", ()=>{
     }
   });
 
-  const createShape = (points = [{x:1,y:2}, {x:10,y:20}], className)=>{
+  const createShape = (points = [{x:1,y:2}, {x:10,y:20}], classList)=>{
     const shp = document.createElementNS('http://www.w3.org/2000/svg', "line");
     const lens = glbl.lengths = [shp.x1,shp.y1,shp.x2,shp.y2];
     for(let i = 0; i < lens.length; ++i) {
@@ -29,7 +29,7 @@ registerTestSuite("testLength", ()=>{
     glbl.shape = new BaseShape({
       parentElement: glbl.parentElement, rootElement: shp,
       points: pts,
-      className
+      classList
     });
     return [pts[0]._x, pts[0]._y, pts[1]._x, pts[1]._y];
   };

@@ -30,11 +30,11 @@ const glbl = {
 registerTestSuite("testCircle", ()=>{
   afterEach(glbl.cleanup);
 
-  const createCircle = (radii, centerPoint, className)=>{
+  const createCircle = (radii, centerPoint, classList)=>{
     return glbl.shape = new Circle({
       parentElement: glbl.parentElement,
       centerPoint,
-      radii, className
+      radii, classList
     });
   };
 
@@ -59,14 +59,14 @@ registerTestSuite("testCircle", ()=>{
       expect(circle.offset).toBeObj({x:20,y:30});
       expect(circle.node.className.baseVal).toEqual("");
     });
-    it("Should construct a circle with className testClassName", ()=>{
-      const circle = createCircle(10, {x:20,y:30}, "testClassName");
+    it("Should construct a circle with classList testClassList", ()=>{
+      const circle = createCircle(10, {x:20,y:30}, "testClassList");
       expect(circle.node.parentElement).toBe(glbl.parentElement);
       expect(circle.radii).toBe(10);
       expect(circle.node.r.baseVal.value).toBe(10);
       expect(circle.offset).toBeObj({x:20,y:30});
-      expect(circle.node.className.baseVal).toEqual("testClassName");
-      expect(document.querySelector(".testClassName")).toBe(circle.node)
+      expect(circle.node.className.baseVal).toEqual("testClassList");
+      expect(document.querySelector(".testClassList")).toBe(circle.node)
     });
   });
 
@@ -98,10 +98,10 @@ registerTestSuite("testCircle", ()=>{
 registerTestSuite("testTriangle", ()=>{
   afterEach(glbl.cleanup);
 
-  const createTriangle = (points, className)=>{
+  const createTriangle = (points, classList)=>{
     return glbl.shape = new Triangle({
       parentElement: glbl.parentElement,
-      points, className
+      points, classList
     });
   };
 
@@ -113,10 +113,10 @@ registerTestSuite("testTriangle", ()=>{
       expect(triangle.points[1]).toBeObj({x:0,y:0});
       expect(triangle.points[2]).toBeObj({x:0,y:0});
     });
-    it("should construct with className", ()=>{
-      const triangle = createTriangle(undefined, "testClassName");
+    it("should construct with classList", ()=>{
+      const triangle = createTriangle(undefined, "testClassList");
       expect(triangle.points.length).toEqual(3);
-      expect(document.querySelector(".testClassName")).toBe(triangle.node);
+      expect(document.querySelector(".testClassList")).toBe(triangle.node);
     });
     it("should construct with one point rest or zero", ()=>{
       const triangle = createTriangle([{x:2,y:4}]);
@@ -170,11 +170,11 @@ registerTestSuite("testTriangle", ()=>{
 registerTestSuite("testSquare", ()=>{
   afterEach(glbl.cleanup);
 
-  const createSquare = (width, startPoint, className)=>{
+  const createSquare = (width, startPoint, classList)=>{
     return glbl.shape = new Square({
       parentElement: glbl.parentElement,
       startPoint,
-      width, className
+      width, classList
     });
   };
 
@@ -187,10 +187,10 @@ registerTestSuite("testSquare", ()=>{
       expect(square.points[2]).toBeObj({x:0,y:0});
       expect(square.points[2]).toBeObj({x:0,y:0});
     });
-    it("should construct with className", ()=>{
-      const square = createSquare(undefined, undefined, "testClassName");
+    it("should construct with classList", ()=>{
+      const square = createSquare(undefined, undefined, "testClassList");
       expect(square.points.length).toEqual(4);
-      expect(document.querySelector(".testClassName")).toBe(square.node);
+      expect(document.querySelector(".testClassList")).toBe(square.node);
     });
     it("should construct with width 5", ()=>{
       const square = createSquare(5);
@@ -256,11 +256,11 @@ registerTestSuite("testSquare", ()=>{
 registerTestSuite("testRect", ()=>{
   afterEach(glbl.cleanup);
 
-  const createRect = ({topLeft, className, width, height, roundCorners})=>{
+  const createRect = ({topLeft, classList, width, height, roundCorners})=>{
     glbl.shapes.push(new Rect({
       parentElement: glbl.parentElement,
       topLeft, height, roundCorners,
-      width, className
+      width, classList
     }));
     return glbl.shapes[glbl.shapes.length-1];
   };
@@ -496,14 +496,14 @@ registerTestSuite("testArrow", ()=>{
       expect(shp.size.height).toBe(40);
       expect(shp.angle).toBe(315);
     });
-    it("Should construct with className", ()=>{
-      args.className = "testClassName"
+    it("Should construct with classList", ()=>{
+      args.classList = "testClassList"
       const shp = createArrow(args);
       expect(shp.line.offset).toBeObj(args.point1,0);
       expect(shp.shapes.length).toBe(2);
       expect(shp.pnt2Arrow.offset).toBeObj(args.point2,0);
       expect(shp.pnt1Arrow).toBe(undefined);
-      expect(shp.node.className.baseVal).toBe("testClassName");
+      expect(shp.node.className.baseVal).toBe("testClassList");
       expect(shp.size.width).toBe(10.5,0);
       expect(shp.size.height).toBe(20);
     });

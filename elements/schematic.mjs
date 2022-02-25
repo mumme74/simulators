@@ -125,10 +125,10 @@ export class ComponentBase extends Group {
   _terminals = [];
   _state = 0;
 
-  constructor({parentElement, className, width, height,
+  constructor({parentElement, classList, width, height,
               centerPoint={x:0,y:0}, name, nets=[]}) {
 
-    super({parentElement, centerPoint, className, width, height});
+    super({parentElement, centerPoint, classList, width, height});
 
     this.name = name || "";
     this._nets =  nets;
@@ -185,9 +185,9 @@ export class Wire extends Polyline {
    * @ param {Point|{x:number,y:number}} startPnt First point of wire.
    * @ param {Point|{x:number,y:number}} endPnt Last point of wire.
    * @param {Array.<Point>} betweenPnts List of points wire should cross trough
-   * @param {string} className The CSSclasses this.node should have
+   * @param {Array.<string>} [classList] The CSSclasses this.node should have
    */
-  constructor({parentElement, startPnt={x:0,y:0}, endPnt={x:0,y:0}, betweenPnts=[], className}) {
+  constructor({parentElement, startPnt={x:0,y:0}, endPnt={x:0,y:0}, betweenPnts=[], classList}) {
     let points = [
       new Point({x: startPnt.x, y: startPnt.y}),
       new Point({x: endPnt.x, y: endPnt.y})
@@ -200,7 +200,7 @@ export class Wire extends Polyline {
       }
     });
 
-    super({parentElement, points, className});
+    super({parentElement, points, classList});
 
     this.recalculate.bound = this.recalculate.bind(this);
     points.forEach(p=>p._onChangeCallbacks.push(this.recalculate.bound))

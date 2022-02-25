@@ -26,13 +26,13 @@ class PlanetaryGear extends BaseShape {
   }) {
 
     const rootElement = document.createElementNS('http://www.w3.org/2000/svg','g');
-    super({parentElement, rootElement, points:centerPoint,className:""})
+    super({parentElement, rootElement, points:centerPoint,classList:[""]})
 
     parentElement = rootElement;
 
     this.outerCircle = new Circle({
         parentElement, centerPoint,
-        radii:240, className: "ringGear"
+        radii:240, classList: ["ringGear"]
     });
 
     this.state = state;
@@ -46,11 +46,11 @@ class PlanetaryGear extends BaseShape {
     this.sunGearAxleRadii = sunGearAxleRadii;
 
     this.ringLines = [
-      new Line({parentElement, className:"marker",
+      new Line({parentElement, classList:["marker"],
         point1: {x:centerPoint.x-this.outerCircle.radii, y:centerPoint.y},
         point2:{x:centerPoint.x+this.outerCircle.radii, y:centerPoint.y},
       }),
-      new Line({parentElement, className:"marker",
+      new Line({parentElement, classList:["marker"],
         point1: {y:centerPoint.y-this.outerCircle.radii, x:centerPoint.x},
         point2:{y:centerPoint.y+this.outerCircle.radii, x:centerPoint.x},
       }),
@@ -62,7 +62,7 @@ class PlanetaryGear extends BaseShape {
 
     this.ringGear = new Circle({
       parentElement, centerPoint:this.outerCircle.offset,
-      radii: this.ringRadii, className: "inner"});
+      radii: this.ringRadii, classList: ["inner"]});
     this.carrier = new Polygon({parentElement,points:[
       {x:centerPoint.x+this.planetOffset,y:centerPoint.y-this.holderWidth},
       {x:centerPoint.x+this.holderWidth, y:centerPoint.y-this.holderWidth},
@@ -76,7 +76,7 @@ class PlanetaryGear extends BaseShape {
       {x:centerPoint.x+this.holderWidth, y:centerPoint.y+this.planetOffset},
       {x:centerPoint.x+this.holderWidth, y:centerPoint.y+this.holderWidth},
       {x:centerPoint.x+this.planetOffset, y:centerPoint.y+this.holderWidth}
-    ], className:"planetaryHolder"});
+    ], classList:["planetaryHolder"]});
     this.carrierLine = new Line({parentElement,
       point1: {x:centerPoint.x, y:centerPoint.y-this.outerCircle.radii-5},
       point2:{x:centerPoint.x, y:centerPoint.y-this.outerCircle.radii-15}
@@ -84,23 +84,23 @@ class PlanetaryGear extends BaseShape {
     this.planetGears = [
       new Circle({parentElement,
         centerPoint:{x:centerPoint.x+this.planetOffset, y:centerPoint.y},
-        radii:this.planetRadii, className:"planetaryGear"}),
+        radii:this.planetRadii, classList:["planetaryGear"]}),
       new Circle({parentElement,
         centerPoint:{x:centerPoint.x, y:centerPoint.y-this.sunRadii-this.planetRadii},
-        radii:this.planetRadii, className:"planetaryGear"}),
+        radii:this.planetRadii, classList:["planetaryGear"]}),
       new Circle({parentElement,
         centerPoint:{x:centerPoint.x-this.sunRadii-this.planetRadii, y:centerPoint.y},
-        radii:this.planetRadii, className:"planetaryGear"}),
+        radii:this.planetRadii, classList:["planetaryGear"]}),
       new Circle({parentElement,
         centerPoint:{x:centerPoint.x, y:centerPoint.y+this.planetOffset},
-        radii:this.planetRadii, className:"planetaryGear"}),
+        radii:this.planetRadii, classList:["planetaryGear"]}),
     ];
     this.planetGearsLines = this.planetGears.map((planetGear, i)=>{
       const xOffset = (i % 2) === 0 ? this.planetRadii : 0,
             yOffset = (i % 2) !== 0 ? this.planetRadii : 0;
       const point1 = {x:planetGear.offset.x+xOffset, y:planetGear.offset.y-yOffset},
             point2 = {x:planetGear.offset.x-xOffset, y:planetGear.offset.y+yOffset}
-      return new Line({parentElement, point1, point2, className:"marker"})
+      return new Line({parentElement, point1, point2, classList:["marker"]})
     });
     this.planetGearsRotations = this.planetGears.map((planetGear, i)=>{
       return new Rotation({point:planetGear.offset, rotateShapes:[this.planetGearsLines[i]]})
@@ -108,7 +108,7 @@ class PlanetaryGear extends BaseShape {
     this.planetGearAxles = this.planetGears.map(p=>{
       return new Circle({
         parentElement, centerPoint:p.offset,
-        radii:this.planetGearAxleRadii, className:"axle"
+        radii:this.planetGearAxleRadii, classList:["axle"]
       })
     });
     this.carrierRotation = new Rotation({
@@ -120,14 +120,14 @@ class PlanetaryGear extends BaseShape {
     });
     this.sunGear = new Circle({
       parentElement, centerPoint:this.outerCircle.offset,
-      radii: this.sunRadii, className:"sunGear"
+      radii: this.sunRadii, classList:["sunGear"]
     });
     this.sunGearLines = [
-      new Line({parentElement, className:"marker",
+      new Line({parentElement, classList:["marker"],
        point1:{x:centerPoint.x,y:centerPoint.y-this.sunRadii},
        point2:{x:centerPoint.x, y:centerPoint.y+this.sunRadii}
       }),
-      new Line({parentElement, className:"marker",
+      new Line({parentElement, classList:["marker"],
        point1:{x:centerPoint.x+this.sunRadii, y:centerPoint.y},
        point2:{x:centerPoint.x-this.sunRadii, y:centerPoint.y}
       })
@@ -139,7 +139,7 @@ class PlanetaryGear extends BaseShape {
     });
     this.sunGearAxle = new Circle({
       parentElement, centerPoint:this.sunGear.offset,
-       radii:this.sunGearAxleRadii, className:"axle"
+       radii:this.sunGearAxleRadii, classList:["axle"]
     });
 
     this._calcRatios();

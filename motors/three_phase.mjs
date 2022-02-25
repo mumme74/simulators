@@ -26,7 +26,7 @@ const vLine = new Line({parentElement, point1:{x:450,y:50}, point2:{x:450,y:250}
 
 const circle = new Circle({
   parentElement, centerPoint:{x:180,y:150},
-  radii:100, className:"circle"});
+  radii:100, classList:["circle"]});
 const circleX = circle.offset.x,
       circleY = circle.offset.y,
       waveXScale = (circle.radii * 2) / 360;
@@ -71,18 +71,18 @@ const sinPts = [
 //The lines that rotate with the points
 const rotLines = sinPts.map((pnt, i)=>{
   return new Line({parentElement, point1:pnt,
-                   point2:circle.offset, className:"phase"+i});
+    point2:circle.offset, classList:["phase"]+i});
 });
 // the rulers for the phases
 const rulers = sinPts.map((pnt,i)=>{
   return new Line({parentElement, point1:pnt,
-                   className: "ruler"+i,
+    classList: ["ruler"+i],
                    point2:{x:hLine.offset.x, y:pnt.y}});
 });
 
 const axle = new Circle({
   parentElement, centerPoint:circle.offset,
-  radii: 10, className:"axle"
+  radii: 10, classList:["axle"]
 });
 
 // the waves
@@ -90,15 +90,15 @@ const waves = [
   // phase 0
   new Wave({parentElement, offset:hLine.offset,
     // +2 to make suer we have 0 at both begin and end
-    className:"wave0", dataPoints:Array(maxDeg+2).fill(0),
+    classList:["wave0"], dataPoints:Array(maxDeg+2).fill(0),
       yScale:100, xScale: waveXScale}),
   // phase 1
   new Wave({parentElement, offset:hLine.offset,
-    className:"wave1", dataPoints:Array(maxDeg+2).fill(0),
+    classList:["wave1"], dataPoints:Array(maxDeg+2).fill(0),
       yScale:100, xScale: waveXScale}),
   // phase 2
   new Wave({parentElement, offset:hLine.offset,
-    className:"wave2", dataPoints:Array(maxDeg+2).fill(0),
+    classList:["wave2"], dataPoints:Array(maxDeg+2).fill(0),
       yScale:100, xScale: waveXScale}),
 ];
 

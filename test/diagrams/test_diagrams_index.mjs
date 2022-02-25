@@ -17,11 +17,11 @@ registerTestSuite("testWave", ()=>{
     }
   });
 
-  const createWave = ({offset, className, dataPoints, xScale, yScale})=>{
+  const createWave = ({offset, classList, dataPoints, xScale, yScale})=>{
     return glbl.shape = new Wave({
       parentElement: glbl.parentElement,
       dataPoints, xScale, yScale,
-      className, offset
+      classList, offset
     });
   };
 
@@ -33,10 +33,10 @@ registerTestSuite("testWave", ()=>{
       expect(shp.node.points[0]).toBeObj({x:0,y:0});
       expect(shp.node.className.baseVal).toBe("");
     });
-    it("Should construct with className", ()=>{
-      const shp = createWave({className: "testClassName"});
-      expect(document.querySelector(".testClassName"));
-      expect(shp.node.className.baseVal).toBe("testClassName")
+    it("Should construct with classList", ()=>{
+      const shp = createWave({classList: ["testClassList"]});
+      expect(document.querySelector(".testClassList"));
+      expect(shp.node.className.baseVal).toBe("testClassList")
     });
     it("Should construct with 1 datapoint", ()=>{
       const shp = createWave({dataPoints:[10]});

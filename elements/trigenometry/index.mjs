@@ -16,16 +16,16 @@ export class Circle extends BaseShape {
    * Create a new Circle
    * @param {SVGElement} parentElement The element to attach this.node to.
    * @param {Point|{x:number,y:number}} centerPoint Center of Circle
-   * @param {string} className The Css classes this.node should have
+   * @param {Array.<string>} [classList] The Css classes this.node should have
    */
-  constructor({parentElement, centerPoint={x:0,y:0}, radii=0, className}) {
+  constructor({parentElement, centerPoint={x:0,y:0}, radii=0, classList}) {
     const root = document.createElementNS('http://www.w3.org/2000/svg', "circle");
 
     const points = [
       new Point({svgLenXRef:root.cx.baseVal, svgLenYRef:root.cy.baseVal})
     ];
     points[0].point = centerPoint;
-    super({parentElement, rootElement:root, points, className});
+    super({parentElement, rootElement:root, points, classList});
 
     this._radii._lenRef = root.r.baseVal
     this._radii.length = radii;
@@ -50,12 +50,12 @@ export class Triangle extends Polygon {
    * Create a new Triangle
    * @param {SVGElement} parentElement The svg element to attach this.node to.
    * @param {Array.<Point>|Array.<{x:number,y:number}>}
-   * @param {string} className The CSS classes this node should have
+   * @param {Array.<string>} [classList] The CSS classes this node should have
    */
-  constructor({parentElement, points=[], className=""}) {
+  constructor({parentElement, points=[], classList=""}) {
     for (let i = points.length; i < 3; ++i)
       points.push({x:0, y:0});
-    super({parentElement, points: points.slice(0,3), className});
+    super({parentElement, points: points.slice(0,3), classList});
   }
 
   // ensure we only set 3 points
@@ -92,12 +92,12 @@ export class Square extends Polygon {
    * @param {SVGElement} parentElement The SVG element to attach this.node to.
    * @param {Point|{x:number,y:number}} startPoint The startPoint to this Square
    * @param {number} width The width of this square
-   * @param {string} className The CSS classes this.node should have
+   * @param {Array.<string>} [classList] The CSS classes this.node should have
    */
-  constructor({parentElement, startPoint = {x:0,y:0}, width = 0, className}) {
+  constructor({parentElement, startPoint = {x:0,y:0}, width = 0, classList}) {
     width = Math.round(width);
     const pnts = buildPnts(startPoint, width);
-    super({parentElement, points: pnts, className});
+    super({parentElement, points: pnts, classList});
     this._width.length = width;
   }
 
@@ -120,7 +120,7 @@ export class Rect extends BaseShape {
   _height = new Length({});
   _roundCorners = new Point({});
 
-  constructor({parentElement, topLeft={x:0,y:0}, className,
+  constructor({parentElement, topLeft={x:0,y:0}, classList,
                width=0, height=0, roundCorners=0})
   {
     const rootElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -137,7 +137,7 @@ export class Rect extends BaseShape {
       topLeft._y._lenRef = rootElement.y.baseVal;
     }
 
-    super({parentElement,rootElement,points:[topLeft],className});
+    super({parentElement,rootElement,points:[topLeft],classList});
 
     this._width._lenRef = rootElement.width.baseVal;
     this._height._lenRef = rootElement.height.baseVal;
@@ -186,7 +186,7 @@ export class Rect extends BaseShape {
 }
 
 export class Arrow extends Group {
-  constructor({parentElement, point1, point2, className, end1=false, end2=true, size=10}) {
+  constructor({parentElement, point1, point2, classList, end1=false, end2=true, size=10}) {
     const topLeft = {x:0,y:0}, bottomRight = {x:0,y:0}, centerPoint = new Point({});
     let width, height;
 
@@ -223,7 +223,7 @@ export class Arrow extends Group {
     centerPoint.point = {x:topLeft.x + width / 2, y:topLeft.y + height/2};
 
 
-    super({parentElement, width, height, centerPoint, className});
+    super({parentElement, width, height, centerPoint, classList});
 
     // do when this is avaliable
     this._recalculateRect = recalculateRect;
@@ -235,16 +235,17 @@ export class Arrow extends Group {
       this._rot.point = centerPoint;
     });
 
-    className = className ? className : "";
+    if (!classList)
+      classList = [];
 
     this.recalculateSize();
 
-    this.line = new Line({parentElement, className, point1:pnts.line[0], point2:pnts.line[1]});
+    this.line = new Line({parentElement, classList, point1:pnts.line[0], point2:pnts.line[1]});
     this.addShape(this.line);
 
     if (end1) {
       this.pnt1Arrow = new Polygon({parentElement, points:pnts.arr1,
-        className:className + " arrowHead"});
+        classList:[...classList, "arrowHead"]});
       this.addShape(this.pnt1Arrow);
       point1.addChangeCallback(this._onPnt1Move.bind(this));
       this._onPnt1Move();
@@ -253,7 +254,7 @@ export class Arrow extends Group {
 
     if (end2) {
       this.pnt2Arrow = new Polygon({parentElement, points:pnts.arr2,
-        className:className + " arrowHead"});
+        classList:[...classList, "arrowHead"]});
       this.addShape(this.pnt2Arrow);
       point2.addChangeCallback(this._onPnt2Move.bind(this));
       this._onPnt2Move();

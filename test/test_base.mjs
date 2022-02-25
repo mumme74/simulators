@@ -254,13 +254,12 @@ registerTestSuite("testSizeRect", ()=>{
 })
 
 registerTestSuite("testBaseShape", ()=>{
-  const createShape = (points = [{x:0,y:0}], className)=>{
+  const createShape = (points = [{x:0,y:0}], classList)=>{
     const shp = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
     shp.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(" "));
     glbl.shape = new BaseShape({
       parentElement: glbl.parentElement, rootElement: shp,
-      points,
-      className
+      points, classList
     });
     glbl.point = glbl.shape.points[0];
     return glbl.shape;
@@ -274,11 +273,29 @@ registerTestSuite("testBaseShape", ()=>{
       expect(shp.node.parentElement).toEqual(glbl.parentElement);
       expect(shp.offset).toEqual(glbl.point);
     });
-    it("Should construct a shape with className set", ()=>{
-      const shp = createShape(undefined, "testClassName");
+    it("Should construct a shape with classList set as string", ()=>{
+      const shp = createShape(undefined, "testClassList");
       expect(shp.node.parentElement).toEqual(glbl.parentElement);
       expect(shp.offset).toEqual(glbl.point);
-      expect(document.querySelector(".testClassName")).toEqual(shp.node);
+      expect(document.querySelector(".testClassList")).toEqual(shp.node);
+    });
+    it("Should construct a shape with classList set as array", ()=>{
+      const shp = createShape(undefined, ["test", "cls", "list"]);
+      expect(shp.node.parentElement).toEqual(glbl.parentElement);
+      expect(shp.offset).toEqual(glbl.point);
+      expect(document.querySelector(".test.cls.list")).toEqual(shp.node);
+    });
+    it("Should construct a shape with classList set as string empty", ()=>{
+      const shp = createShape(undefined, "");
+      expect(shp.node.parentElement).toEqual(glbl.parentElement);
+      expect(shp.offset).toEqual(glbl.point);
+      expect(shp.node.className.baseVal).toEqual("");
+    });
+    it("Should construct a shape with classList set as array empty strings", ()=>{
+      const shp = createShape(undefined, ["test", "", "list"]);
+      expect(shp.node.parentElement).toEqual(glbl.parentElement);
+      expect(shp.offset).toEqual(glbl.point);
+      expect(shp.node.className.baseVal).toEqual("test list");
     });
     it("Should call decorateNewPoint on construction", ()=>{
       const pts = [];
@@ -550,12 +567,12 @@ registerTestSuite("testBaseShape", ()=>{
 });
 
 registerTestSuite("testBasePointsShape", ()=>{
-  const createShape = (points, className)=>{
+  const createShape = (points, classList)=>{
     const node = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
     return glbl.shape = new BasePointsShape({
       parentElement: glbl.parentElement,
       rootElement: node,
-      points, className
+      points, classList
     });
   };
 
@@ -572,10 +589,10 @@ registerTestSuite("testBasePointsShape", ()=>{
       expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
     });
-    it("Should construct a linw with className", ()=>{
-      const shp = createShape([{x:1,y:2},{x:3,y:4}], "testClassName");
-      expect(document.querySelector(".testClassName")).toBe(shp.node);
-      expect(shp.node.className.baseVal).toBe("testClassName");
+    it("Should construct a line with classList", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4}], "testClassList");
+      expect(document.querySelector(".testClassList")).toBe(shp.node);
+      expect(shp.node.className.baseVal).toBe("testClassList");
     });
     it("Should construct a 4 corner", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6},{x:7,y:8}]);
@@ -903,10 +920,10 @@ registerTestSuite("testBasePointsShape", ()=>{
 });
 
 registerTestSuite("testPolygon", ()=>{
-  const createShape = (points, className)=>{
+  const createShape = (points, classList)=>{
     return glbl.shape = new Polygon({
       parentElement: glbl.parentElement,
-      points, className
+      points, classList
     });
   };
 
@@ -921,14 +938,14 @@ registerTestSuite("testPolygon", ()=>{
       expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
     });
-    it("Should construct a Line with className", ()=>{
-      const shp = createShape([{x:0,y:0}, {x:100,y:200}], "testClassName");
+    it("Should construct a Line with classList", ()=>{
+      const shp = createShape([{x:0,y:0}, {x:100,y:200}], "testClassList");
       expect(shp.points[0]).toBeObj({x:0,y:0});
       expect(shp.points[0]._pntRef).toBeObj(shp.node.points[0]);
       expect(shp.points[1]).toBeObj({x:100,y:200});
       expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
       expect(shp.points.length).toBe(2);
-      expect(document.querySelector(".testClassName")).toBe(shp.node);
+      expect(document.querySelector(".testClassList")).toBe(shp.node);
     });
     it("Should construct a Triangle", ()=>{
       const shp = createShape([{x:2,y:4},{x:100,y:200},{x:50, y:100}]);
@@ -991,10 +1008,10 @@ registerTestSuite("testPolygon", ()=>{
 });
 
 registerTestSuite("testPolyLine", ()=>{
-  const createShape = (points, className)=>{
+  const createShape = (points, classList)=>{
     return glbl.shape = new Polyline({
       parentElement: glbl.parentElement,
-      points, className
+      points, classList
     });
   };
 
@@ -1007,8 +1024,8 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
     });
-    it("Should construct with 2 points and className", ()=>{
-      const shp = createShape([{x:1,y:2},{x:3,y:4}], "testClassName");
+    it("Should construct with 2 points and classList", ()=>{
+      const shp = createShape([{x:1,y:2},{x:3,y:4}], "testClassList");
       expect(shp.points.length).toBe(2);
       expect(shp.node.points[0]).toBeObj({x:1,y:2});
       expect(shp.points[0]).toBeObj({x:1,y:2});
@@ -1016,8 +1033,8 @@ registerTestSuite("testPolyLine", ()=>{
       expect(shp.node.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]).toBeObj({x:3,y:4});
       expect(shp.points[1]._pntRef).toBeObj(shp.node.points[1]);
-      expect(shp.node.className.baseVal).toBe("testClassName");
-      expect(document.querySelector(".testClassName"));
+      expect(shp.node.className.baseVal).toBe("testClassList");
+      expect(document.querySelector(".testClassList"));
     });
     it("Should construct with 3 points", ()=>{
       const shp = createShape([{x:1,y:2},{x:3,y:4},{x:5,y:6}]);
@@ -1075,10 +1092,10 @@ registerTestSuite("testPolyLine", ()=>{
 });
 
 registerTestSuite("testLine", ()=>{
-  const createShape = (point1, point2, className)=>{
+  const createShape = (point1, point2, classList)=>{
     glbl.shapes.push(new Line({
       parentElement: glbl.parentElement,
-      point1, point2, className
+      point1, point2, classList
     }));
     return glbl.shapes[glbl.shapes.length-1];
   };
@@ -1116,10 +1133,10 @@ registerTestSuite("testLine", ()=>{
       expect(shp.node.x2.baseVal.value).toBe(3);
       expect(shp.node.y2.baseVal.value).toBe(4);
     });
-    it("Should construct with className", ()=>{
-      const shp = createShape({x:1,y:2},{x:3,y:4}, "testClassName");
-      expect(shp.node.className.baseVal).toBe("testClassName");
-      expect(document.querySelector(".testClassName")).toBe(shp.node);
+    it("Should construct with classList", ()=>{
+      const shp = createShape({x:1,y:2},{x:3,y:4}, "testClassList");
+      expect(shp.node.className.baseVal).toBe("testClassList");
+      expect(document.querySelector(".testClassList")).toBe(shp.node);
     });
     it("Should construct with ref to pnt", ()=>{
       const pt0 = new Point({x:1,y:2});
@@ -1226,18 +1243,18 @@ registerTestSuite("testLine", ()=>{
 });
 
 registerTestSuite("testText", ()=>{
-  const createLine = (point1, point2, className)=>{
+  const createLine = (point1, point2, classList)=>{
     glbl.shapes.push(new Line({
       parentElement: glbl.parentElement,
-      point1, point2, className
+      point1, point2, classList
     }));
     return glbl.shapes[glbl.shapes.length-1];
   };
 
-  const createText = (point, text, className, followPoint, offsetX, offsetY) => {
+  const createText = (point, text, classList, followPoint, offsetX, offsetY) => {
     glbl.shapes.push(new Text({
       parentElement: glbl.parentElement,
-      point, text, className, followPoint,
+      point, text, classList, followPoint,
       offsetX, offsetY
     }));
     return glbl.shapes[glbl.shapes.length-1];
@@ -1258,10 +1275,10 @@ registerTestSuite("testText", ()=>{
       expect(shp.node.x.baseVal[0].value).toBe(2);
       expect(shp.node.y.baseVal[0].value).toBe(4);
     });
-    it("Should construct with className", ()=>{
-      const shp = createText({x:2,y:4}, "", "testClassName");
-      expect(shp.node.className.baseVal).toBe("testClassName");
-      expect(document.querySelector(".testClassName")).toBe(shp.node);
+    it("Should construct with classList", ()=>{
+      const shp = createText({x:2,y:4}, "", "testClassList");
+      expect(shp.node.className.baseVal).toBe("testClassList");
+      expect(document.querySelector(".testClassList")).toBe(shp.node);
     });
     it("Should construct with text", ()=>{
       const txt = "testText <span>html</span>";
@@ -1458,14 +1475,14 @@ registerTestSuite("testGroup", ()=>{
       expect(shp.node.className.baseVal).toBe('');
     });
     it("Should construct with  [1,2]", ()=>{
-      const shp = createGroup({centerPoint:{x:1,y:2},width:10,height:20,className:"testClassName"});
+      const shp = createGroup({centerPoint:{x:1,y:2},width:10,height:20,classList:["testClassList"]});
       expect(shp.points.length).toBe(1);
       expect(shp.points[0]).toBeObj({x:1,y:2});
       expect(shp.size).toBeInstanceOf(SizeRect);
       expect(shp.size.height).toBe(20);
       expect(shp.size.width).toBe(10);
       expect(shp.size.centerPoint).toBeObj({x:1,y:2});
-      expect(shp.node.className.baseVal).toBe('testClassName');
+      expect(shp.node.className.baseVal).toBe('testClassList');
     });
     it("Should construct with Point(1,2)", ()=>{
       const pt = new Point({x:1,y:2});

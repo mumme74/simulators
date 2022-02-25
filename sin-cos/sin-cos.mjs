@@ -14,22 +14,22 @@ const vLine = new Line({parentElement, point1:{x:450,y:50}, point2:{x:450,y:250}
 
 const circle = new Circle({
   parentElement, centerPoint:{x:180,y:150},
-  radii:100, className:"circle"});
+  radii:100, classList:["circle"]});
 const circleX = circle.offset.x,
       circleY = circle.offset.y,
       waveXScale = (circle.radii * 2) / 360;
 
 const sinPt = new Point({x:circleX + circle.radii, y:circleY}),
       cosPt = new Point({x:sinPt.x, y:sinPt.y});
-const triangle = new Triangle({parentElement, className:"triangle", points:[
+const triangle = new Triangle({parentElement, classList:["triangle"], points:[
                     circle.offset, cosPt, sinPt]}),
       wave = new Wave({parentElement, offset:hLine.offset,
-        className:"wave", dataPoints:Array(maxDeg).fill(0), yScale:100, xScale: waveXScale});
+        classList:["wave"], dataPoints:Array(maxDeg).fill(0), yScale:100, xScale: waveXScale});
 const degTxt = new Text({parentElement, text:"deg: 0°", followPoint:sinPt, offsetX:10, offsetY:-30}),
       radianTxt = new Text({parentElement, text:"radian", followPoint:sinPt, offsetX:10, offsetY:-8}),
       sinTxt = new Text({parentElement, text:"sin", followPoint:sinPt, offsetX:10, offsetY:15}),
       cosTxt = new Text({parentElement, text:"cos", followPoint:cosPt, offsetX:-65, offsetY:15});
-const ruler = new Line({parentElement, point1:new Point({followPoint:sinPt}), className: "ruler",
+const ruler = new Line({parentElement, point1:new Point({followPoint:sinPt}), classList: ["ruler"],
                         point2:{x:hLine.offset.x, y:hLine.offset.y}});
 
 const waveData = wave.dataPoints;

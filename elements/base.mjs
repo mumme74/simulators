@@ -140,12 +140,17 @@ export class BaseShape {
    * @param {SVGElement} parentElement The element to attach this node to
    * @param {SVGElement} rootElement The root element of this shape
    * @param {{Array.{Point}} | Array.{x:numer,y:number}} points The points of this shape, points[0] becomes offset
-   * @param {string} className The CSS classes to this.node
+   * @param {Array.<string>} [classList] The CSS classes to this.node
    */
-  constructor({parentElement, rootElement, points, className}) {
+  constructor({parentElement, rootElement, points, classList}) {
     this.node = rootElement;
-    if (className)
-      this.node.setAttribute("class", className);
+    if (classList && (classList instanceof String || typeof classList ==='string')) {
+      this.node.classList.add(classList);
+    } else if (Array.isArray(classList)) {
+      for (const cls of classList)
+        if (cls) this.node.classList.add(cls);
+    }
+
     parentElement.appendChild(this.node);
 
     this._svgElem = lookupSvgRoot(parentElement);
@@ -281,11 +286,11 @@ export class BasePointsShape extends BaseShape {
    * @param {SVGElement} parentElement The element to attach this node to
    * @param {SVGElement} rootElement The root element of this shape
    * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
-   * @param {string} className The CSS classes to this.node
+   * @param {Array.<string>} [classList] The CSS classes to this.node
    */
-  constructor({parentElement, rootElement, points, className}) {
+  constructor({parentElement, rootElement, points, classList}) {
     rootElement.setAttribute("points", points.map(p=>`${p.x},${p.y}`).join(' '));
-    super({parentElement, rootElement, points, className});
+    super({parentElement, rootElement, points, classList});
   }
 
   _decorateNewPoint(pnt) {
@@ -370,11 +375,11 @@ export class Polygon extends BasePointsShape {
    * Creates a Polygon
    * @param {SVGElement} parentElement The element to attach this node to
    * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
-   * @param {string} className The CSS classes to this.node
+   * @param {Array.<string>} [classList] The CSS classes to this.node
    */
-  constructor({parentElement, points, className}) {
+  constructor({parentElement, points, classList}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', "polygon");
-    super({parentElement, rootElement:node, points, className});
+    super({parentElement, rootElement:node, points, classList});
   }
 }
 
@@ -387,11 +392,11 @@ export class Polyline extends BasePointsShape {
    * Creates a Polyline
    * @param {SVGElement} parentElement The element to attach this node to
    * @param {{Array.{Point}} | Array.{x:number,y:number}} points The points of this shape, points[0] becomes offset
-   * @param {string} className The CSS classes to this.node
+   * @param {Array.<string>} [classList] The CSS classes to this.node
    */
-  constructor({parentElement, points, className}) {
+  constructor({parentElement, points, classList}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    super({parentElement, rootElement:node, points, className});
+    super({parentElement, rootElement:node, points, classList});
   }
 }
 
@@ -405,9 +410,9 @@ export class Line extends BaseShape {
    * @param {SVGElement} parentElement to attach line to
    * @param {*} point1 First point of line
    * @param {*} point2 Second point of line
-   * @param {string} className Css className of line Node
+   * @param {Array.<string>} [classList] Css classes of line Node
    */
-  constructor({parentElement, point1={x:0,y:0}, point2={x:0,y:0}, className}) {
+  constructor({parentElement, point1={x:0,y:0}, point2={x:0,y:0}, classList}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     const points = [];
     node.x1.baseVal.value = point1.x;
@@ -439,7 +444,7 @@ export class Line extends BaseShape {
         svgLenYRef:node.y2.baseVal
       }));
 
-    super({parentElement, rootElement:node, points, className});
+    super({parentElement, rootElement:node, points, classList});
   }
 
   get point1() {
@@ -476,12 +481,12 @@ export class Text extends BaseShape {
    * @param {SVGElement} parentElement The SVG node to attach this.node to.
    * @param {Point|{x:number,y:number}} point pos text at
    * @param {string} text The Text to show
-   * @param {string} className The Css classes to this node
+   * @param {Array.<string>} [classList] The Css classes to this node
    * @param {Point} followPoint Follows this point, we move with this node automatically
    * @param {number} offsetX followPoint offset by X
    * @param {number} offsetY followPoint offset y Y
    */
-  constructor({parentElement, point={x:0,y:0}, text, className,
+  constructor({parentElement, point={x:0,y:0}, text, classList,
               followPoint, offsetX=0, offsetY=0}) {
     const node = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     const svgElem = lookupSvgRoot(parentElement);
@@ -498,7 +503,7 @@ export class Text extends BaseShape {
     } else
       point = new Point({svgLenXRef, svgLenYRef});
 
-    super({parentElement, rootElement:node, points:[point], className});
+    super({parentElement, rootElement:node, points:[point], classList});
 
     this._followPointChanged.bound = this._followPointChanged.bind(this);
     this._offsetX = offsetX;
@@ -583,10 +588,10 @@ export class Group extends BaseShape {
    * @param {Point|{x:number,y:number}} centerPoint The centerPoint for this class
    * @param {number} [width] The width of this shape
    * @param {number} [height] The height of this shape
-   * @param {string} [className] The css class name of this shape
+   * @param {string} [classList] The css classed of this shape
    * @param {Array.<BaseShape>} [shapes] Add these shapes to group
    */
-  constructor({parentElement, centerPoint={x:0,y:0}, width, height, className, shapes=[]}) {
+  constructor({parentElement, centerPoint={x:0,y:0}, width, height, classList, shapes=[]}) {
     const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
     if (centerPoint instanceof Point)
@@ -594,7 +599,7 @@ export class Group extends BaseShape {
     else
       centerPoint = new Point({x:centerPoint.x, y:centerPoint.y});
 
-    super({parentElement, rootElement, points: [centerPoint], className});
+    super({parentElement, rootElement, points: [centerPoint], classList});
 
     let oldPos = {x:centerPoint.x, y:centerPoint.y};
 
