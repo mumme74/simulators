@@ -584,8 +584,9 @@ export class Group extends BaseShape {
    * @param {number} [width] The width of this shape
    * @param {number} [height] The height of this shape
    * @param {string} [className] The css class name of this shape
+   * @param {Array.<BaseShape>} [shapes] Add these shapes to group
    */
-  constructor({parentElement, centerPoint={x:0,y:0}, width, height, className}) {
+  constructor({parentElement, centerPoint={x:0,y:0}, width, height, className, shapes=[]}) {
     const rootElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
     if (centerPoint instanceof Point)
@@ -609,6 +610,9 @@ export class Group extends BaseShape {
     })
     this.size = new SizeRect({centerPoint, width, height});
     this._rot = new Rotation({point:centerPoint});
+
+    for (const shp of shapes)
+      this.addShape(shp);
   }
 
   /**

@@ -1478,6 +1478,12 @@ registerTestSuite("testGroup", ()=>{
       expect(shp.size.centerPoint).toBeObj({x:10,y:20});
       expect(shp.offset).toBeObj({x:10,y:20});
     });
+    it("Should construct with a shape", ()=>{
+      const shp2 = createShape({points:[{x:-10,y:-10},{x:10,y:10}]});
+      const shp = createGroup({shapes:[shp2]});
+      expect(shp.shapes.length).toBe(1);
+      expect(shp.shapes[0]).toBe(shp2);
+    });
   });
 
   describe("Test shapes", ()=>{
