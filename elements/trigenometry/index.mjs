@@ -188,8 +188,7 @@ export class Rect extends BaseShape {
 export class Arrow extends Group {
   constructor({parentElement, point1, point2, className, end1=false, end2=true, size=10}) {
     const topLeft = {x:0,y:0}, bottomRight = {x:0,y:0}, centerPoint = new Point({});
-    const arrHeadAngle = (30/180)*Math.PI, adj = Math.cos(arrHeadAngle)*size;
-    let width, height, angle;
+    let width, height;
 
     point1 = (point1 instanceof Point)
            ? new Point({followPoint:point1})
@@ -197,76 +196,141 @@ export class Arrow extends Group {
     point2 = (point2 instanceof Point)
            ? new Point({followPoint:point2})
            : new Point(point2);
-    const pnt1_arr1 = new Point({}),
-          pnt1_arr2 = new Point({}),
-          pnt2_arr1 = new Point({}),
-          pnt2_arr2 = new Point({});
 
-    let   pnt1_line = new Point({}),
-          pnt2_line = new Point({});
-
-    const recalculate = (self)=>{
-      topLeft.x = Math.min(point1.x, point2.x);
-      topLeft.y = Math.min(point1.y, point2.y);
-      bottomRight.x = Math.max(point1.x, point2.x);
-      bottomRight.y = Math.max(point1.y, point2.y);
-
-      width = bottomRight.x - topLeft.x,
-      height = bottomRight.y - topLeft.y,
-      centerPoint.point = {x:topLeft.x + width / 2, y:topLeft.y + height/2};
-
-      // get the angle between the points
-      angle = Math.atan2(height, width);
-      pnt1_arr1.point = {
-        x:point1.x + Math.cos(angle+arrHeadAngle)*size,
-        y:point1.y + Math.sin(angle+arrHeadAngle)*size};
-      pnt1_arr2.point = {
-        x:point1.x + Math.cos(angle-arrHeadAngle)*size,
-        y:point1.y + Math.sin(angle-arrHeadAngle)*size};
-      pnt1_line.point = {
-        x:point1.x + Math.cos(angle)*adj,
-        y:point1.y + Math.sin(angle)*adj};
-      pnt2_arr1.point = {
-        x:point2.x + Math.cos(angle+arrHeadAngle+Math.PI)*size,
-        y:point2.y + Math.sin(angle+arrHeadAngle+Math.PI)*size};
-      pnt2_arr2.point = {
-        x:point2.x + Math.cos(angle-arrHeadAngle+Math.PI)*size,
-        y:point2.y + Math.sin(angle-arrHeadAngle+Math.PI)*size};
-      pnt2_line.point = {
-        x:point2.x + Math.cos(angle+Math.PI)*adj,
-        y:point2.y + Math.sin(angle+Math.PI)*adj};
-
-      if (self) {
-        self.size.height = height;
-        self.size.width = width;
-        self.angle = angle;
-      }
+    const pnts = {
+      arr1: [ new Point({x:point1.x,y:point1.y}),
+        new Point({x:point1.x,y:point1.y}),
+        new Point({x:point1.x,y:point1.y})],
+      arr2: [ new Point({x:point2.x,y:point2.y}),
+        new Point({x:point2.x,y:point2.y}),
+        new Point({x:point2.x,y:point2.y})],
+      line: [ new Point({x:point1.x,y:point1.y}),
+        new Point({x:point2.x,y:point2.y})]
     }
 
-    recalculate();
+    const recalculateRect = (p1,p2)=>{
+      topLeft.x = Math.min(p1.x, p2.x);
+      topLeft.y = Math.min(p1.y, p2.y);
+      bottomRight.x = Math.max(p1.x, p2.x);
+      bottomRight.y = Math.max(p1.y, p2.y);
+
+      width = bottomRight.x - topLeft.x,
+      height = bottomRight.y - topLeft.y;
+      return {width, height, size, topLeft, bottomRight};
+    }
+
+    recalculateRect(point1, point2);
+    centerPoint.point = {x:topLeft.x + width / 2, y:topLeft.y + height/2};
+
 
     super({parentElement, width, height, centerPoint, className});
 
+    // do when this is avaliable
+    this._recalculateRect = recalculateRect;
+    this.point1 = point1;
+    this.point2 = point2;
+    this._pnts = pnts;
+
+    centerPoint.addChangeCallback(()=>{
+      this._rot.point = centerPoint;
+    });
+
     className = className ? className : "";
 
-    if (end1) {
-      this.pnt1Arrow = new Polygon({parentElement, points:[point1, pnt1_arr1, pnt1_arr2],
-        className:className + " arrowHead"});
-      this.addShape(this.pnt1Arrow);
-    } else
-      pnt1_line = point1;
+    this.recalculateSize();
 
-    if (end2) {
-      this.pnt2Arrow = new Polygon({parentElement, points:[point2, pnt2_arr1, pnt2_arr2],
-        className:className + " arrowHead"});
-        this.addShape(this.pnt2Arrow);
-    } else
-      pnt2_line = point2;
-
-    this.line = new Line({parentElement, className, point1:pnt1_line, point2:pnt2_line});
+    this.line = new Line({parentElement, className, point1:pnts.line[0], point2:pnts.line[1]});
     this.addShape(this.line);
 
-    point1.addChangeCallback(()=>{recalculate(this)});
-    point2.addChangeCallback(()=>{recalculate(this)});
+    if (end1) {
+      this.pnt1Arrow = new Polygon({parentElement, points:pnts.arr1,
+        className:className + " arrowHead"});
+      this.addShape(this.pnt1Arrow);
+      point1.addChangeCallback(this._onPnt1Move.bind(this));
+      this._onPnt1Move();
+    } else
+      pnts.line[0].followPoint = point1;
+
+    if (end2) {
+      this.pnt2Arrow = new Polygon({parentElement, points:pnts.arr2,
+        className:className + " arrowHead"});
+      this.addShape(this.pnt2Arrow);
+      point2.addChangeCallback(this._onPnt2Move.bind(this));
+      this._onPnt2Move();
+    } else
+      pnts.line[1].followPoint = point2;
+
+    this.recalculateSize();
+
   }
+
+  _movePnt(pnt, arrowPnts, line) {
+    const {size, width, height, topLeft, bottomRight} = this._recalculateRect(this.point1, this.point2);
+    this.size.centerPoint.point = {
+      x:topLeft.x + ((bottomRight.x - topLeft.x) / 2),
+      y:topLeft.y + ((bottomRight.y - topLeft.y) / 2)
+    };
+    const hAngle = (30/180)*Math.PI, adj = Math.cos(hAngle)*size;
+    let angle = Math.atan2(
+        this.point1.y-this.point2.y, this.point2.x-this.point1.x);
+    if (pnt === this.point2) angle += Math.PI;
+    arrowPnts[0].point = pnt;
+    arrowPnts[1].point = {
+      x:pnt.x + Math.cos(-angle+hAngle)*size,
+      y:pnt.y + Math.sin(-angle+hAngle)*size};
+    arrowPnts[2].point = {
+      x:pnt.x + Math.cos(-angle-hAngle)*size,
+      y:pnt.y + Math.sin(-angle-hAngle)*size};
+    line.point = {
+      x:pnt.x + Math.cos(angle)*adj,
+      y:pnt.y + Math.sin(-angle)*adj};
+  }
+
+  _onPnt1Move() {
+    this._movePnt(this.point1, this._pnts.arr1, this._pnts.line[0]);
+    if (this.pnt2Arrow)
+      //must recal as we have changed angle
+      this._movePnt(this.point2, this._pnts.arr2, this._pnts.line[1]);
+    if (!this._isMoving)
+      this.recalculateSize()
+  }
+
+  _onPnt2Move() {
+    this._movePnt(this.point2, this._pnts.arr2, this._pnts.line[1]);
+    if (this.pnt1Arrow)
+      // must recal as we have changed angle
+      this._movePnt(this.point1, this._pnts.arr1, this._pnts.line[0]);
+    if (!this._isMoving)
+      this.recalculateSize()
+  }
+
+  recalculateSize() {
+    const min = this.point1.point, max = this.point2.point;
+    const pts = [this.point1, this.point2, ...this._pnts.arr1, ...this._pnts.arr2];
+    pts.forEach(p=>{
+      min.x = Math.min(min.x, p.x);
+      min.y = Math.min(min.y, p.y);
+      max.x = Math.max(max.x, p.x);
+      max.y = Math.max(max.y, p.y);
+    });
+
+    const {width, height} = this._recalculateRect(min, max);
+
+    if (this.size.height !== height || this.size.width !== width) {
+      this.size.height = height;
+      this.size.width = width;
+    }
+  }
+
+  get angle() {
+    let angle = Math.atan2(
+      this.point1.y-this.point2.y,
+     this.point2.x-this.point1.x) * (180 / Math.PI);
+    if (angle < 0)
+      angle += 360;
+    else if (angle > 360)
+      angle -= 360;
+     return angle;
+  }
+  set angle(angle) { super.angle = angle; }
 }

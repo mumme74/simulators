@@ -431,12 +431,12 @@ registerTestSuite("testRect", ()=>{
 
 registerTestSuite("testArrow", ()=>{
 
-  const args = {point1:{x:0,y:0}, point2:{x:10,y:20}};
+  const args = {point1:{x:0,y:0}, point2:{x:20,y:20}};
   beforeEach(()=>{
     for(const key of Object.keys(args))
       delete args[key];
-    args.point1 = {x:0,y:0};
-    args.point2 = {x:10,y:20};
+    args.point1 = {x:10,y:10};
+    args.point2 = {x:20,y:30};
   });
 
   afterEach(glbl.cleanup);
@@ -450,34 +450,25 @@ registerTestSuite("testArrow", ()=>{
   describe("Test construction", ()=>{
     it("Should construct with defaults", ()=>{
       const shp = createArrow(args);
-      expect(shp.line.offset).toBeObj(args.point1);
+      expect(shp.line.offset).toBeObj(args.point1,0);
       expect(shp.shapes.length).toBe(2);
-      expect(shp.pnt2Arrow.offset).toBeObj(args.point2);
+      expect(shp.pnt2Arrow.offset).toBeObj(args.point2,0);
       expect(shp.pnt1Arrow).toBe(undefined);
       expect(shp.node.className.baseVal).toBe("");
-      expect(shp.size.width).toBe(10);
+      expect(shp.size.width).toBe(10.6,0);
       expect(shp.size.height).toBe(20);
-    });
-    it("Should construct with className", ()=>{
-      args.className = "testClassName"
-      const shp = createArrow(args);
-      expect(shp.line.offset).toBeObj(args.point1);
-      expect(shp.shapes.length).toBe(2);
-      expect(shp.pnt2Arrow.offset).toBeObj(args.point2);
-      expect(shp.pnt1Arrow).toBe(undefined);
-      expect(shp.node.className.baseVal).toBe("testClassName");
-      expect(shp.size.width).toBe(10);
-      expect(shp.size.height).toBe(20);
+      expect(shp.size.centerPoint).toBeObj({x:15,y:20},0);
     });
     it("Should construct with arrow at end1", ()=>{
       args.end1 = true; args.end2 = false;
       const shp = createArrow(args);
-      expect(shp.line.points[1]).toBeObj(args.point2);
+      expect(shp.line.points[1]).toBeObj(args.point2, 0);
       expect(shp.shapes.length).toBe(2);
-      expect(shp.pnt1Arrow.offset).toBeObj(args.point1);
+      expect(shp.pnt1Arrow.offset).toBeObj(args.point1, 0);
       expect(shp.pnt2Arrow).toBe(undefined);
-      expect(shp.size.width).toBe(10);
-      expect(shp.size.height).toBe(20);
+      expect(shp.size.width).toBe(10.5,0);
+      expect(shp.size.height).toBe(20,1);
+      expect(shp.size.centerPoint).toBeObj({x:15,y:20},0);
     });
     it("Should construct with arrow at no end", ()=>{
       args.end1 = false; args.end2 = false;
@@ -491,33 +482,135 @@ registerTestSuite("testArrow", ()=>{
       expect(shp.size.height).toBe(20);
     });
     it("Should construct with arrow at both ends", ()=>{
-      args.end1 = true; args.end2 = true;
-      const shp = createArrow(args);
-      expect(shp.line.points[1]).toBeObj({x:6.1,y:12.3}, 1);
-      expect(shp.line.points[0]).toBeObj({x:3.9,y:7.7},1);
+      const shp = createArrow({point1:{x:10,y:10},point2:{x:50,y:50},end1:true,end2:true});
+      expect(shp.line.points[0]).toBeObj({x:16.1,y:16.1}, 1);
+      expect(shp.line.points[1]).toBeObj({x:43.9,y:43.9},1);
       expect(shp.shapes.length).toBe(3);
-      expect(shp.pnt1Arrow).toNotBe(undefined);
-      expect(shp.pnt2Arrow).toNotBe(undefined);
-      expect(shp.size.width).toBe(10);
+      expect(shp.pnt1Arrow.offset).toBeObj({x:10,y:10});
+      expect(shp.pnt2Arrow.offset).toBeObj({x:50,y:50});
+      expect(shp.pnt1Arrow.points[1]).toBeObj({x:12.6,y:19.7},0);
+      expect(shp.pnt1Arrow.points[2]).toBeObj({x:19.7,y:12.6},0);
+      expect(shp.pnt2Arrow.points[1]).toBeObj({x:47.4,y:40.3},0);
+      expect(shp.pnt2Arrow.points[2]).toBeObj({x:40.3,y:47.4},0);
+      expect(shp.size.width).toBe(40);
+      expect(shp.size.height).toBe(40);
+      expect(shp.angle).toBe(315);
+    });
+    it("Should construct with className", ()=>{
+      args.className = "testClassName"
+      const shp = createArrow(args);
+      expect(shp.line.offset).toBeObj(args.point1,0);
+      expect(shp.shapes.length).toBe(2);
+      expect(shp.pnt2Arrow.offset).toBeObj(args.point2,0);
+      expect(shp.pnt1Arrow).toBe(undefined);
+      expect(shp.node.className.baseVal).toBe("testClassName");
+      expect(shp.size.width).toBe(10.5,0);
       expect(shp.size.height).toBe(20);
     });
-    it("Should construct with size 50", ()=>{
+    it("Should construct with size 15", ()=>{
+      args.size = 15; args.point2.x=10;
       const shp = createArrow(args);
-      args.point1.x += 10; args.point2.x += 10;
+      expect(shp.line.offset.x).toBe(10,0);
+      expect(shp.line.offset.y).toBe(10,0);
+      expect(shp.shapes.length).toBe(2);
+      expect(shp.pnt2Arrow.offset.x).toBe(10,0);
+      expect(shp.pnt2Arrow.offset.y).toBe(30,0);
+      expect(shp.pnt2Arrow.points[1]).toBeObj({x:17.5,y:17},0);
+      expect(shp.pnt2Arrow.points[2]).toBeObj({x:2.5,y:17},0);
+      expect(shp.size.width).toBe(15,1);
+      expect(shp.size.height).toBe(20);
+      expect(shp.size.centerPoint).toBeObj({x:10,y:20});
+    });
+
+    it("Should construct 4arrow, hang in debugger to see", ()=>{
+      args.point1.x += 10; args.point2.x += 40;
+      args.point1.y += 10; args.point2.y += 10;
+      const shp = createArrow(args);
+      expect(shp.pnt1Arrow?.offset).toBe(undefined);
+      expect(shp.pnt2Arrow?.offset).toBeObj(args.point2,0);
+      args.point1.x += 50; args.point2.x += 50;
       args.end1 = true; args.end2 = false;
       const shp1 = createArrow(args);
-      args.point1.x += 10; args.point2.x += 10;
+      expect(shp1.pnt1Arrow?.offset).toBeObj(args.point1,0);
+      expect(shp1.pnt2Arrow?.offset).toBe(undefined);
+      args.point1.x += 50; args.point2.x += 50;
       args.end1 = false; args.end2 = false;
       const shp2 = createArrow(args);
-      args.point1.x += 10; args.point2.x += 10;
+      expect(shp2.pnt1Arrow?.offset).toBe(undefined);
+      expect(shp2.pnt2Arrow?.offset).toBe(undefined);
+      args.point1.x += 50; args.point2.x += 50;
       args.end1 = true; args.end2 = true;
       const shp3 = createArrow(args);
+      expect(shp3.pnt1Arrow?.offset).toBeObj(args.point1,0);
+      expect(shp3.pnt2Arrow?.offset).toBeObj(args.point2,0);
     });
   });
 
   describe("Test move", ()=>{
-    it("Should move arrows and line", ()=>{});
-    it("Should move and recalculate height, width", ()=>{});
-    it("Should move and recalculate angle", ()=>{});
+    it("Should move arrows and line", ()=>{
+      const shp = createArrow({point1:{x:0,y:0},point2:{x:40,y:40},end1:true,end2:true});
+      expect(shp.size.centerPoint).toBeObj({x:20,y:20});
+      shp.move([25,25]);
+      expect(shp.line.points[0]).toBeObj({x:11.1,y:11.1}, 1);
+      expect(shp.line.points[1]).toBeObj({x:38.9,y:38.9},1);
+      expect(shp.shapes.length).toBe(3);
+      expect(shp.pnt1Arrow.offset).toBeObj({x:5,y:5},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:45,y:45});
+      expect(shp.pnt1Arrow.points[1]).toBeObj({x:7.6,y:14.7},1);
+      expect(shp.pnt1Arrow.points[2]).toBeObj({x:14.7,y:7.6},1);
+      expect(shp.pnt2Arrow.points[1]).toBeObj({x:42.4,y:35.3},1);
+      expect(shp.pnt2Arrow.points[2]).toBeObj({x:35.3,y:42.4},1);
+      expect(shp.size.width).toBe(40);
+      expect(shp.size.height).toBe(40);
+      expect(shp.angle).toBe(315);
+    });
+    it("Should move pnt1 and recalculate height, width angle", ()=>{
+      const shp = createArrow({point1:{x:0,y:0},point2:{x:40,y:40},end1:true,end2:true});
+      expect(shp.size.centerPoint).toBeObj({x:20,y:20});
+      expect(shp.angle).toBe(315);
+      expect(shp.size.height).toBe(40);
+      expect(shp.size.width).toBe(40);
+      expect(shp.pnt1Arrow.offset).toBeObj({x:0,y:0},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:40,y:40},1);
+      shp.point1.point = [0,40];
+      expect(shp.pnt1Arrow.offset).toBeObj({x:0,y:40},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:40,y:40},1);
+      expect(shp.angle).toBe(0,1);
+      expect(shp.size.height).toBe(10);
+      expect(shp.size.width).toBe(40);
+      expect(shp.size.centerPoint).toBeObj({x:20,y:40})
+      shp.point2.point = [0,0];
+      expect(shp.pnt1Arrow.offset).toBeObj({x:0,y:40},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:0,y:0},1);
+      expect(shp.angle).toBe(90,1);
+      expect(shp.size.height).toBe(40);
+      expect(shp.size.width).toBe(10,1);
+      expect(shp.size.centerPoint).toBeObj({x:0,y:20}, 1)
+      shp.point2.point = [0,40];
+      expect(shp.pnt1Arrow.offset).toBeObj({x:0,y:40},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:0,y:40},1);
+      expect(shp.angle).toBe(0,1);
+      expect(shp.size.centerPoint).toBeObj({x:0,y:40})
+    });
+    it("Should move pnt1 and recalculate height, width angle", ()=>{});
+  });
+  describe("Test rotate", ()=>{
+    it("Should rotate arrow and line", ()=>{
+      const shp = createArrow({point1:{x:10,y:10},point2:{x:40,y:40},end1:true,end2:true});
+      expect(shp.size.centerPoint).toBeObj({x:25,y:25});
+      shp.angle = 90;
+      expect(shp.pnt1Arrow.offset).toBeObj({x:10,y:40},1);
+      expect(shp.pnt2Arrow.offset).toBeObj({x:40,y:10},1);
+      expect(shp.line.points[0]).toBeObj({x:16.1,y:33.9}, 1);
+      expect(shp.line.points[1]).toBeObj({x:33.9,y:16.1},1);
+      expect(shp.shapes.length).toBe(3);
+      expect(shp.pnt1Arrow.points[1]).toBeObj({x:19.6,y:37.4},1);
+      expect(shp.pnt1Arrow.points[2]).toBeObj({x:12.7,y:30.3},1);
+      expect(shp.pnt2Arrow.points[1]).toBeObj({x:30.4,y:12.6},1);
+      expect(shp.pnt2Arrow.points[2]).toBeObj({x:37.3,y:19.6},1);
+      expect(shp.size.width).toBe(30);
+      expect(shp.size.height).toBe(30);
+      expect(shp.angle).toBe(315);
+    });
   });
 })
