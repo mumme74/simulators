@@ -443,9 +443,19 @@ registerTestSuite("testPoint", ()=>{
       expect(pt2.connectedPoints).toBeObj([pt1,pt2,pt3]);
       expect(pt3.connectedPoints).toBeObj([pt1,pt2,pt3]);
       pt1.detachEverything();
-      expect(pt1.connectedPoints).toBeObj([]);
-      expect(pt2.connectedPoints).toBeObj([]);
-      expect(pt3.connectedPoints).toBeObj([]);
+      expect(pt1.connectedPoints).toBeEmpty();
+      expect(pt2.connectedPoints).toBeObj([pt2,pt3]);
+      expect(pt3.connectedPoints).toBeObj([pt2,pt3]);
+      expect(pt1.connectedTo).toBe(null);
+      expect(pt2.connectedTo).toBe(null);
+      expect(pt3.connectedTo).toBe(pt2);
+      pt3.detachEverything();
+      expect(pt1.connectedPoints).toBeEmpty();
+      expect(pt2.connectedPoints).toBeEmpty();
+      expect(pt3.connectedPoints).toBeEmpty();
+      expect(pt1.connectedTo).toBe(null);
+      expect(pt2.connectedTo).toBe(null);
+      expect(pt3.connectedTo).toBe(null);
     });
   });
 

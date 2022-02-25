@@ -199,6 +199,15 @@ export class Point {
   disconnect() {
     if (this._connectedToPointHandler) {
       // disconnect from current point
+      const myPnts = this._connectedPoints;
+      myPnts.splice(myPnts.length, 0,
+        ...this._connectedToPointHandler._connectedPoints.filter(p=>{
+          if (p._connectedToPoint === this) {
+            p._connectedToPointHandler = this;
+            return p;
+          }
+        })
+      );
       const idx = this._connectedToPointHandler._connectedPoints.indexOf(this);
       this._connectedToPointHandler._connectedPoints.splice(idx, 1);
       this._connectedToPoint = null;
@@ -251,7 +260,11 @@ export class Point {
   detachEverything() {
     for(const trackPt of this._followPoints)
       trackPt._followPoint = null;
+    for(const pt of this._connectedPoints)
+      pt.disconnect();
+    this.disconnect();
     this._followPoints.splice(0);
+    this._connectedPoints.splice(0);
     this._onChangeCallbacks.splice(0);
   }
 
