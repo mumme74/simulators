@@ -164,6 +164,12 @@ export class Point {
     return this._connectedToPoint;
   }
 
+  /**
+   * Connect a point to another point logically, as in wire connectiontions
+   * Connects this point to point
+   * @param {Point|{x:number,y:number}} point The point to connect to
+   * @returns {boolean} true if succceds
+   */
   connect(point) {
     if (point !== this && point instanceof Point) {
       if (this._connectedPoints.indexOf(point) < 0) {
@@ -186,6 +192,10 @@ export class Point {
     return false;
   }
 
+  /**
+   * Disconnects point from its connected point
+   * @returns {boolean} true if succeds, false if unsuccessfull
+   */
   disconnect() {
     if (this._connectedToPointHandler) {
       // disconnect from current point
