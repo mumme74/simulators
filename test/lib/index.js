@@ -150,6 +150,20 @@ class ExpectChecks {
     }
   }
 
+  toBeEmpty() {
+    const res = this.result("===", "empty");
+    if (Array.isArray(this.value)) {
+      if (this.value.length === 0)
+        return res.pass();
+      return res.fail("[]", this.value);
+    } else if (this.value !== undefined && typeof this.value === 'object') {
+      if (Object.keys(this.value).length === 0)
+        return res.pass();
+      return res.fail("[]", this.value);
+    }
+    res.fail("empty", this.value);
+  }
+
   // Match the expected and actual result of the test.
   toEqual(expected, precision) {
     const res = this.result("==", expected);
