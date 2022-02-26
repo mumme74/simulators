@@ -13,6 +13,9 @@
   --phase2: #cfac4c;
   --warn: #f7b21f;
   --error: rgb(250, 52, 26);
+  --pageheader-height: 5rem;
+  --pagefooter-height: 1.5rem;
+  --pagecontent-height: calc(100vh - calc(var(--pageheader-height) + var(--pagefooter-height)));
 }
 
 body, html {
@@ -35,6 +38,7 @@ body > div:first-child > header {
   color: var(--common);
   padding: 0.5rem;
   padding-left: 1rem;
+  height: var(--pageheader-height);
 }
 
 body > div:first-child > header > h1 {
@@ -43,16 +47,16 @@ body > div:first-child > header > h1 {
 }
 
 body > div:first-child > section {
-  margin: 1em;
+  margin: 1rem;
   color: var(--text-color);
-  padding-bottom: 1.5rem;
+  min-height: calc(var(--pagecontent-height) - 2rem);
 }
 
 body > div:first-child > footer {
   position: absolute;
   bottom: 0;
   width: 100%;
-  height: 1.5rem;
+  height: var(--pagefooter-height);
   background-color: var(--common);
   text-align: center;
 }

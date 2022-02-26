@@ -4,14 +4,27 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cos - Sin animation</title>
+    <title>Simulators</title>
     <style>
       @import url(css/common.css);
-      body > div > section {
+      #content {
         background-color: var(--content);
         padding: 0.5rem;
         border-radius: 0.2rem;
       }
+      .lib {
+        padding-top: 3rem;
+      }
+      .lib a {
+        display: block;
+        margin: 1rem;
+        text-decoration: none;
+        color: var(--dark-color);
+      }
+      .lib a:visited, .lib a:active .lib a:current {
+        text-decoration: none;
+      }
+      .lib a:hover { color: var(--text-color); }
     </style>
     <script type="module">
       import  { Menu } from "./menu.mjs"
@@ -23,10 +36,16 @@
       <header class="page-header">
         <h1>Simuleringar och annat för fordonselever</h1>
       </header>
-      <section>
+      <section id="content">
         <h2>Denna sida försöker samla några simuleringar jag kodat</h2>
         <p>För tillfället finns det:</p>
         <div id="menu"></div>
+        <section class="lib">
+          <h3>Bibliotek för mjukvaran (körs enbart på användarens webbläsare)</h3>
+          <a href="lib/doc">API documentation for client lib</a>
+          <a href="lib/test">Test runner (Tests lib for complience)</a>
+          <a href="https://github.com/mumme74/simulators">Project home at github.com</a>
+        </section>
       </section>
       <footer></footer>
     </div>
