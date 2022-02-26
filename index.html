@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cos - Sin animation</title>
+    <style>
+      @import url(css/common.css);
+      body > div > section {
+        background-color: var(--content);
+        padding: 0.5rem;
+        border-radius: 0.2rem;
+      }
+    </style>
+    <script type="module">
+      import  { Menu } from "./menu.mjs"
+      new Menu(document.getElementById("menu"));
+    </script>
+  </head>
+  <body>
+    <div>
+      <header class="page-header">
+        <h1>Simuleringar och annat för fordonselever</h1>
+      </header>
+      <section>
+        <h2>Denna sida försöker samla några simuleringar jag kodat</h2>
+        <p>För tillfället finns det:</p>
+        <div id="menu"></div>
+      </section>
+      <footer></footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "opts": {
+    "template": "node_modules/better-docs"
+  },
+  "source": {
+    "include": [ "lib" ],
+    "exclude": [ "lib/test" ],
+    "includePattern": ".+\\.m+js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  }
+}
