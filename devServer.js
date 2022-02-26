@@ -9,5 +9,8 @@ server.use(
   serveIndex(__dirname + '/', {'icons': true}));
 
 const port = process.env.PORT || 8000;
-server.listen(port);
+const serv = server.listen(port);
 console.log(`Server running on http://localhost:${port}`);
+serv.port = port;
+
+exports.server = serv;

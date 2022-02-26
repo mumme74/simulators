@@ -33,6 +33,7 @@
   "devDependencies": {
     "better-docs": "~2.7.2",
     "jsdoc": "~3.6.10",
+    "puppeteer": "^13.4.0",
     "serve-index": "^1.9.1"
   }
 }
