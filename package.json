@@ -1,0 +1,38 @@
+{
+  "name": "simulators",
+  "version": "0.1.0",
+  "description": "A website and SVG manupulation library used to create simulations",
+  "main": "index.js",
+  "directories": {
+    "test": "test",
+    "lib": "lib",
+    "css": "css",
+    "pages": "pages"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs": "jsdoc -r -c jsdoc.json -d lib/doc",
+    "devServer": "node devServer.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mumme74/simulators.git"
+  },
+  "keywords": [
+    "Simlations",
+    "SVG-manipulation",
+    "electric-schematics",
+    "hydraulic-schematics"
+  ],
+  "author": "Fredrik Johansson (mumme)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mumme74/simulators/issues"
+  },
+  "homepage": "https://github.com/mumme74/simulators#readme",
+  "devDependencies": {
+    "better-docs": "~2.7.2",
+    "jsdoc": "~3.6.10",
+    "serve-index": "^1.9.1"
+  }
+}

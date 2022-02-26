@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planetväxel</title>
+    <style>
+      @import url(../../css/common.css);
+
+      input[type=range] { width: 50rem; }
+      .forceIn {
+        fill: var(--phase0) !important;
+        background-color: var(--phase0);
+      }
+      .forceOut {
+        fill: var(--phase1) !important;
+        background-color: var(--phase1);
+      }
+      .locked {
+        fill: var(--phase2) !important;
+        background-color: var(--phase2);
+      }
+      .inner { fill: #eff2f5; stroke: var(--dark-color);}
+      .ringGear, .planetaryGear,.sunGear {
+        fill: #ccc; stroke: var(--dark-color);
+      }
+      .axle, .planetaryHolder { fill: #999; stroke: var(--dark-color);}
+      .toggleButton {
+        border: 1px solid var(--dark-color);
+        border-radius: 0.3rem;
+        margin: 0.5rem;
+        padding: 0.3rem;
+      }
+      .displayRoot {
+        position: absolute;
+        top: 200px;
+        left: 650px;
+        border: 1px solid var(--dark-color);
+        border-radius: 0.3rem;
+        color: var(--text-color);
+        background-color: var(--mild);
+        padding: 1rem;
+        font-size: 1.5rem;
+      }
+      .displayRoot .displayItm {
+        vertical-align:text-top;
+        margin: 0.4rem;
+      }
+      .displayRoot .partColor {
+        display: inline-block;
+        height: 2rem;
+        width: 2rem;
+        margin: 0 0.5rem;
+      }
+
+    </style>
+    <script type="module" src="../../menu.mjs"></script>
+    <script type="module" src="./planetary_gear.mjs"></script>
+  </head>
+  <body>
+    <div>
+      <header class="page-header">
+        <h1>Planetväxel</h1>
+      </header>
+      <section>
+        <svg width="1000" height="600">
+          <text x="20" y="15">Planetväxel</text>
+          <defs>
+            <marker id="triangle" viewBox="0 0 10 10"
+                  refX="1" refY="5"
+                  markerUnits="strokeWidth"
+                  markerWidth="10" markerHeight="10"
+                  orient="auto">
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#f00"/>
+            </marker>
+          </defs>
+        </svg>
+        <label>Rotation
+          <input type="range" min="0" max="720" value="0"/>
+          <output>0</output>&deg;<br/>
+        </label>
+        <fieldset id="forceIn">Kraft in &nbsp;</fieldset>
+        <fieldset id="lock">Lås &nbsp;</fieldset>
+      </section>
+      <footer></footer>
+    </div>
+  </body>
+</html>

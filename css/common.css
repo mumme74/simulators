@@ -77,7 +77,7 @@ svg *.filled {
 }
 
 svg text {
-  fill: none;
+  fill: var(--dark-color);
   stroke: var(--text-color);
 }
 

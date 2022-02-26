@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cos - Sin animation</title>
+    <style>
+      @import url(../../css/common.css);
+      input[type=range] { width: 50rem; }
+      .triangle, .wave { fill: var(--common); }
+      .wave { stroke:blue; }
+      .ruler { stroke: var(--ruler); }
+      .circle { fill: white; }
+    </style>
+    <script type="module" src="./sin-cos.mjs"></script>
+    <script type="module" src="../../menu.mjs"></script>
+  </head>
+  <body>
+    <div>
+      <header class="page-header">
+        <h1>Cosinus - Sinus simulation</h1>
+      </header>
+      <section>
+        <svg width="1000" height="300">
+          <text x="20" y="15">Enhetscirkeln, radie=1</text>
+        </svg>
+        <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
+        <output>0</output>&deg;
+      </section>
+      <footer></footer>
+    </div>
+  </body>
+</html>

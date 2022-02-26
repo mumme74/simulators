@@ -2,6 +2,7 @@
 
 // add all possible tags here
 const tags = {
+  start:'Startsida',
   sim:'Simulator',
   math:'Matte',
   trigenometry: "Trigenometri",
@@ -16,6 +17,9 @@ const tags = {
 
 // tags can be in many categories
 const tagSubCategories = {
+  start: {
+    tags:[tags.start]
+  },
   math: {
     tags:[tags.trigenometry]
   },
@@ -33,19 +37,23 @@ const tagSubCategories = {
 // add a new page here
 const allPages = [
   {
-    name:"Sin-Cos simulator", path:"sin-cos/sin-cos.html",
+    name:"Startsida", path:"/index.html",
+    tags:[tags.start]
+  },
+  {
+    name:"Sin-Cos simulator", path:"/pages/sin-cos/sin-cos.html",
     tags:[tags.math, tags.trigenometry, tags.sim]
   },
   {
-    name:"Synkron-motor", path:"motors/bldc/motor_synkron.html",
+    name:"Synkron-motor", path:"pages/motors/bldc/motor_synkron.html",
     tags:[tags.ac_electrical, tags.electrical, tags.motors]
   },
   {
-    name:"3-Fas simulering", path:"motors/three_phase.html",
+    name:"3-Fas simulering", path:"pages/motors/three_phase.html",
     tags:[tags.ac_electrical, tags.motors]
   },
   {
-    name:"Planetväxel", path:"mechanical/planetary_gear.html",
+    name:"Planetväxel", path:"pages/mechanical/planetary_gear.html",
     tags:[tags.mechanical, tags.gears]
   }
 ];
@@ -75,15 +83,11 @@ allPages.forEach(p=>p.tags=tags.__(p.tags));
   }
 })(tagSubCategories);
 
-class MenuPopup {
-  _state = "startPage";
-  constructor(toggleNode) {
-    this.toggleNode = toggleNode;
-    this.root = document.createElement("div");
-    document.body.appendChild(this.root);
-    this.root.className = "menu-popup-root";
-    toggleNode.addEventListener("click", this.toggleShow.bind(this));
 
+
+export class Menu {
+  constructor(parentElement) {
+    this.root = parentElement;
     const header = document.createElement("header");
     this.root.appendChild(header);
 
@@ -93,46 +97,36 @@ class MenuPopup {
     this.search.addEventListener("input", this.onSearch.bind(this));
     header.appendChild(this.search);
 
-    const closer = document.createElement("div");
-    closer.appendChild(document.createTextNode("✖"));
-    closer.className = "closer-cross";
-    closer.addEventListener("click", this.hide.bind(this));
-    header.appendChild(closer);
-
-
-
     this.displaySection = document.createElement("section");
     this.displaySection.className = "menu-display-list";
     this.root.appendChild(this.displaySection);
     this.startMenu();
   }
 
-  hide() {
-    const rect = this.root.getBoundingClientRect()
-    this.root.style.left = `-${rect.width}px`;
-  }
-
-  show() {
-    const rect = this.toggleNode.getBoundingClientRect();
-    this.root.style.left = `${rect.left}px`;
-    this.root.style.top = `${rect.top + rect.height}px`;
-    this.search.focus();
-  }
-
-  isShown(){
-    return this.root.getBoundingClientRect().left > 0;
-  }
-
-  toggleShow() {
-    this.isShown() ? this.hide() : this.show();
-  }
 
   startMenu() {
     this._state = "startPage";
 
+    const locParts = location.pathname.split('/').slice(1,-1);
+
+    const buildHref = (path) => {
+      const newPath = []; let start = 0;
+      if (path[0]==='/')
+        path = path.slice(1);
+      const pathParts = path.split('/');
+      locParts.forEach((part, i)=>{
+        if ((part !== pathParts[i]))
+          newPath.push('..');
+        else
+          ++start;
+      });
+      newPath.push(...pathParts.splice(start));
+      return newPath.join('/');
+    }
+
     const createLink = (page, li) => {
       const a = document.createElement("a");
-      a.href = `/${page.path}`;
+      a.href = buildHref(page.path);
       a.appendChild(document.createTextNode(page.name));
       li.appendChild(a);
       return a;
@@ -274,6 +268,45 @@ class MenuPopup {
         n = n.parentElement;
       }
     }
+  }
+}
+
+class MenuPopup extends Menu {
+  _state = "startPage";
+  constructor(toggleNode) {
+    const root = document.createElement("div");
+    super(root);
+
+    this.toggleNode = toggleNode;
+    document.body.appendChild(this.root);
+    this.root.className = "menu-popup-root";
+    toggleNode.addEventListener("click", this.toggleShow.bind(this));
+
+    const closer = document.createElement("div");
+    closer.appendChild(document.createTextNode("✖"));
+    closer.className = "closer-cross";
+    closer.addEventListener("click", this.hide.bind(this));
+    this.root.firstElementChild.appendChild(closer);
+  }
+
+  hide() {
+    const rect = this.root.getBoundingClientRect()
+    this.root.style.left = `-${rect.width}px`;
+  }
+
+  show() {
+    const rect = this.toggleNode.getBoundingClientRect();
+    this.root.style.left = `${rect.left}px`;
+    this.root.style.top = `${rect.top + rect.height}px`;
+    this.search.focus();
+  }
+
+  isShown(){
+    return this.root.getBoundingClientRect().left > 0;
+  }
+
+  toggleShow() {
+    this.isShown() ? this.hide() : this.show();
   }
 }
 
