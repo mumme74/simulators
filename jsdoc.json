@@ -2,6 +2,10 @@
   "opts": {
     "template": "node_modules/better-docs"
   },
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true
+  },
   "source": {
     "include": [ "lib" ],
     "exclude": [ "lib/test" ],
