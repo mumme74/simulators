@@ -1,0 +1,23 @@
+# based https://github.com/RostiMelk/one.com-deployer but also builds docs
+name: Deploy to Site
+
+on:
+  workflow_dispatch: branches [ * ]
+  push:
+    branches:
+        - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: GitHub Deploy to One.com
+      uses: mumme74/simulators/.github/actions/deploy
+      env:
+          ONE_DOMAIN_NAME: ${{ secrets.ONE_DOMAIN_NAME }}
+          ONE_SSH_KEY_PUBLIC: ${{ secrets.PUBLIC_KEY_NAME }}
+          ONE_SSH_KEY_PRIVATE: ${{ secrets.PRIVATE_KEY_NAME }}
+          TPO_SRC_PATH: ""
+          TPO_PATH: ""
