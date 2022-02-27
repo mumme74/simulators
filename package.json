@@ -32,6 +32,7 @@
   "homepage": "https://github.com/mumme74/simulators#readme",
   "devDependencies": {
     "better-docs": "~2.7.2",
+    "express": "^4.17.3",
     "jsdoc": "~3.6.10",
     "puppeteer": "^13.4.0",
     "serve-index": "^1.9.1"
