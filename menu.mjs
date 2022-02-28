@@ -87,6 +87,7 @@ allPages.forEach(p=>p.tags=tags.__(p.tags));
 
 export class Menu {
   constructor(parentElement) {
+    this.rootFolder = location.hostname == 'localhost' ? "" : "simulators";
     this.root = parentElement;
     const header = document.createElement("header");
     this.root.appendChild(header);
@@ -120,7 +121,7 @@ export class Menu {
         else
           ++start;
       });
-      newPath.push(...pathParts.splice(start));
+      newPath.push(this.rootFolder, ...pathParts.splice(start));
       return newPath.join('/');
     }
 
