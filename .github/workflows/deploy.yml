@@ -1,23 +1,32 @@
 # based https://github.com/RostiMelk/one.com-deployer but also builds docs
-name: Deploy to Site
+name: DeployToSite
 
 on:
-  workflow_dispatch: branches [ * ]
-  push:
-    branches:
-        - master
+  workflow_dispatch:
+
+  #push:
+   # branches:
+   #     - master
+  workflow_run:
+    workflows: ["runTests"]
+    branches: [master]
+    types:
+    - completed
+
 
 jobs:
-  build:
+  deploy-to-site:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
     - uses: actions/checkout@v2
-    - name: GitHub Deploy to One.com
-      uses: mumme74/simulators/.github/actions/deploy
+      name: GitHub Deploy to One.com
+    - uses: ./.github/actions/deploy
+      name: "Github deploy to one.com"
       env:
-          ONE_DOMAIN_NAME: ${{ secrets.ONE_DOMAIN_NAME }}
-          ONE_SSH_KEY_PUBLIC: ${{ secrets.PUBLIC_KEY_NAME }}
-          ONE_SSH_KEY_PRIVATE: ${{ secrets.PRIVATE_KEY_NAME }}
-          TPO_SRC_PATH: ""
-          TPO_PATH: ""
+        ONE_DOMAIN_NAME: ${{ secrets.ONE_DOMAIN_NAME }}
+        ONE_SSH_KEY_PUBLIC: ${{ secrets.PUBLIC_KEY_NAME }}
+        ONE_SSH_KEY_PRIVATE: ${{ secrets.PRIVATE_KEY_NAME }}
+        TPO_SRC_PATH: ""
+        TPO_PATH: "simulators"

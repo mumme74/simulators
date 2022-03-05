@@ -1,0 +1,4 @@
+Header add "Cache-Control" "no-cache"
+<IfModule mod_mime.c>
+  AddType text/javascript js mjs
+</IfModule>
