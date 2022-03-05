@@ -12,7 +12,8 @@
   "scripts": {
     "test": "node lib/test/test_headless_browser.js",
     "docs": "jsdoc -r -c jsdoc.json -d lib/doc",
-    "devServer": "node devServer.js"
+    "devServer": "node devServer.js",
+    "installDocs": "npm install jsdoc better-docs"
   },
   "repository": {
     "type": "git",
