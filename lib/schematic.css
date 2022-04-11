@@ -3,7 +3,7 @@
 * Import this file when using schematic classes, such as wires
 */
 
-._schematic_wire {
+._schematic_wire_ {
   stroke: 1px;
   fill: none;
 }
