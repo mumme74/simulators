@@ -121,7 +121,9 @@ export class Menu {
         else
           ++start;
       });
-      newPath.push(this.rootFolder, ...pathParts.splice(start));
+      if (this.rootFolder)
+        newPath.push(this.rootFolder);
+      newPath.push(...pathParts.slice(start));
       return newPath.join('/');
     }
 
