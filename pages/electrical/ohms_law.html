@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ohms lag</title>
+    <style>
+      @import url(../../css/common.css);
+      @import url(../../lib/electrical/electric.css);
+      @import url(../../lib/schematic.css);
+
+      input[type=range] { width: 1rem; height: 5rem; -webkit-appearance: slider-vertical;}
+      .ruler0, .phase0 { stroke: var(--phase0); }
+      .ruler1, .phase1 { stroke: var(--phase1); }
+      .ruler2, .phase2 { stroke: var(--phase2); }
+      label {
+        display: inline-block;
+        border:1px solid black;
+        padding: 0.3rem;
+        margin: 0.5rem;
+      }
+      .potential {
+        background-color: var(--phase0);
+        stroke: var(--phase0);
+        fill: var(--phase0);
+      }
+      .resistance {
+        background-color: var(--phase2);
+        stroke: var(--phase2);
+        fill: var(--phase2);
+      }
+      .current {
+        background-color: var(--phase1);
+        stroke: var(--phase1);
+        fill: var(--phase1);
+      }
+      #calculation {
+        font-family: 'Courier New', Courier, monospace;
+        display: inline-block;
+      }
+      #calculation math {
+        display: block;
+        margin: 1rem;
+        font-size: large;
+      }
+      svg {
+        display: inline-block;
+      }
+    </style>
+    <script type="module" src="../../menu.mjs"></script>
+    <script type="module" src="./ohms_law.mjs"></script>
+  </head>
+  <body>
+    <div>
+      <header class="page-header">
+        <h1>Ohms lag simulering</h1>
+      </header>
+      <section>
+        <svg width="680" height="300"></svg>
+        <div id="calculation"></div><br>
+        <label class="potential">U (Spänning = Volt))<br/>
+          <input type="number" min="1" max="100" step="1" id="potential" value="1"/>
+          <input class="ruler0" type="range" id="potential-slider" min="1" max="100" value="0"/>
+        </label>
+        <label class="current">I (Ström = Ampere) <br/>
+          <input type="number" min="1" max="100" step="1" id="current" value="1"/>
+          <input class="ruler1" type="range" id="current-slider" min="1" max="100" value="0"/>
+        </label>
+        <label class="resistance">R (Resistans = Ohm) <br/>
+          <input type="number" min="1" max="100" step="1" id="resistance" value="1"/>
+          <input class="ruler2" type="range" id="resistance-slider" min="1" max="100" value="0"/>
+        </label>
+      </section>
+      <footer></footer>
+    </div>
+  </body>
+</html>

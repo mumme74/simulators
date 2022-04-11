@@ -24,7 +24,7 @@ const tagSubCategories = {
     tags:[tags.trigenometry]
   },
   electrical: {
-    tags: [tags.motors, tags.ac_electrical],
+    tags: [tags.motors, tags.ac_electrical, tags.electrical],
     ac_electrical: {
       tags:[tags.motors]
     }
@@ -55,6 +55,10 @@ const allPages = [
   {
     name:"Planetväxel", path:"pages/mechanical/planetary_gear.html",
     tags:[tags.mechanical, tags.gears]
+  },
+  {
+    name: "Ohms lag", path:"pages/electrical/ohms_law.html",
+    tags:[tags.electrical, tags.sim]
   }
 ];
 
