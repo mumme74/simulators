@@ -38,7 +38,7 @@ body > div:first-child > header {
   color: var(--common);
   padding: 0.5rem;
   padding-left: 1rem;
-  height: var(--pageheader-height);
+  height: calc(var(--pageheader-height));
 }
 
 body > div:first-child > header > h1 {
@@ -49,7 +49,7 @@ body > div:first-child > header > h1 {
 body > div:first-child > section {
   margin: 1rem;
   color: var(--text-color);
-  min-height: calc(var(--pagecontent-height) - 2rem);
+  min-height: calc(var(--pagecontent-height) - 3rem);
 }
 
 body > div:first-child > footer {
