@@ -1,0 +1,9 @@
+/**
+* All generic schematic specific rendering details here
+* Import this file when using schematic classes, such as wires
+*/
+
+._schematic_wire {
+  stroke: 1px;
+  fill: none;
+}
