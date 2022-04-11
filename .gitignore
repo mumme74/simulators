@@ -68,3 +68,5 @@ node_modules/
 lib/doc
 
 lib/test/results
+
+secrets
