@@ -1,8 +1,13 @@
 "use strict";
 
-const express = require('express');
-const serveIndex = require('serve-index');
+import express from 'express';
+import serveIndex from 'serve-index';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
 const server = express();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 server.use(
   express.static(__dirname + '/'),
@@ -13,4 +18,4 @@ const serv = server.listen(port);
 console.log(`Server running on http://localhost:${port}`);
 serv.port = port;
 
-exports.server = serv;
+export { serv };
