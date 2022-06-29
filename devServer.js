@@ -7,15 +7,15 @@ import { fileURLToPath } from 'url';
 
 const server = express();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 server.use(
-  express.static(__dirname + '/'),
-  serveIndex(__dirname + '/', {'icons': true}));
+  express.static(dirname + '/'),
+  serveIndex(dirname + '/', {'icons': true}));
 
 const port = process.env.PORT || 8000;
 const serv = server.listen(port);
 console.log(`Server running on http://localhost:${port}`);
 serv.port = port;
 
-export { serv };
+export { serv , dirname};
