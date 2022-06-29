@@ -35,9 +35,10 @@
     "better-docs": "~2.7.2",
     "express": "^4.17.3",
     "jsdoc": "~3.6.10",
+    "jsdom": "^20.0.0",
     "puppeteer": "^13.4.0",
     "serve-index": "^1.9.1",
-    "jsdom": "^20.0.0"
+    "url": "^0.11.0"
   },
   "type": "module"
 }
