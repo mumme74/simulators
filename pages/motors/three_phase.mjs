@@ -3,7 +3,6 @@
 import { Circle } from "../../lib/trigenometry/index.mjs";
 import { Line, Text } from "../../lib/base.mjs";
 import { Point } from "../../lib/point.mjs";
-import { Rotation } from "../../lib/rotation.mjs";
 import { Wave } from "../../lib/diagrams/index.mjs";
 
 const maxDeg = 720;
@@ -21,8 +20,8 @@ const parentElement = document.querySelector("svg");
 const slider = document.querySelector("input[type=range]");
 const showTexts = document.querySelector("#showTexts");
 
-const vLine = new Line({parentElement, point1:{x:450,y:50}, point2:{x:450,y:250}}),
-      hLine = new Line({parentElement, point1:{x:450,y:150}, point2:{x:850,y:150}});
+/*const vLine =*/new Line({parentElement, point1:{x:450,y:50}, point2:{x:450,y:250}});
+const hLine = new Line({parentElement, point1:{x:450,y:150}, point2:{x:850,y:150}});
 
 const circle = new Circle({
   parentElement, centerPoint:{x:180,y:150},
@@ -46,7 +45,6 @@ const sinPts = [
   pnt.addChangeCallback((p)=>{
     // move ruler
     const vl = vlu[i];
-    const xOffset = Math.round((vl.deg - degOffset)*(180/circle.radii))
     const x = waves[i].offset.x + ((vl.deg - degOffset) * waveXScale);
     const ruler = rulers[i],
           data = waveDatas[i];
@@ -69,7 +67,7 @@ const sinPts = [
 });
 
 //The lines that rotate with the points
-const rotLines = sinPts.map((pnt, i)=>{
+/*const rotLines =*/ sinPts.map((pnt, i)=>{
   return new Line({parentElement, point1:pnt,
     point2:circle.offset, classList:["phase"]+i});
 });
@@ -80,7 +78,7 @@ const rulers = sinPts.map((pnt,i)=>{
                    point2:{x:hLine.offset.x, y:pnt.y}});
 });
 
-const axle = new Circle({
+/*const axle =*/new Circle({
   parentElement, centerPoint:circle.offset,
   radii: 10, classList:["axle"]
 });
@@ -132,10 +130,10 @@ sinPts[0].addChangeCallback(()=>{
 
 // the texts
 const textsPk = rulers.map(r=>r.point2).map((pnt,i)=>{
-  return new Text({parentElement, text:`Fas-${i}`,
-                   followPoint: pnt, offsetX:-200, offsetY:-8});
+  return new Text({parentElement, text:`Fas-${i}`, followPoint: pnt,
+                   offsetX:-200, offsetY:-8});
 });
-const textsMean = rulers.map(r=>r.point2).map((pnt,i)=>{
+const textsMean = rulers.map(r=>r.point2).map((pnt)=>{
   return new Text({parentElement, followPoint:pnt, offsetX:-160, offsetY:13})
 })
 

@@ -386,7 +386,7 @@ spinner.addEventListener("change", ()=>{
     mainGear.node.parentElement.removeChild(mainGear.node);
     state.sunRadii = +spinner.value;
     mainGear = createMainGear();
-  };
+  }
 });
 sizeLbl.appendChild(spinner);
 document.querySelector("fieldset").appendChild(sizeLbl);

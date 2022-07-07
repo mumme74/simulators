@@ -79,11 +79,10 @@ tags.__ = (arr)=>{
 
 allPages.forEach(p=>p.tags=tags.__(p.tags));
 (function sani(obj) {
-  for(let o in obj) {
-    if (!obj.hasOwnProperty(o)) continue;
-    if (o === 'tags') obj[o] = tags.__(obj[o]);
-    else if (obj[o] !== undefined && typeof obj[o] === 'object')
-      sani(obj[o]);
+  for(const [key, value] of Object.entries(obj)) {
+    if (key === 'tags') obj[key] = tags.__(value);
+    else if (value !== undefined && typeof value === 'object')
+      sani(value);
   }
 })(tagSubCategories);
 
@@ -171,7 +170,7 @@ export class Menu {
       const pages = allPages.filter(p=>p.tags.indexOf(tag)>-1);
       for (const p of pages) {
         const li = createLi(ul);
-        const a = createLink(p, li);
+        createLink(p, li);
       }
     }
 
@@ -248,7 +247,7 @@ export class Menu {
     this.displaySection.appendChild(btn);
   }
 
-  onSearch(evt) {
+  onSearch() {
     if (this._state !== "startPage")
       this.startMenu();
 
@@ -322,4 +321,4 @@ hideShowMenu.className = "toggle-menu-btn";
 hideShowMenu.appendChild(document.createTextNode('☰'));
 const header = document.querySelector("body > div:first-child > header");
 header.insertBefore(hideShowMenu, header.firstElementChild);
-const menu = new MenuPopup(hideShowMenu);
+/*const menu =*/ new MenuPopup(hideShowMenu);

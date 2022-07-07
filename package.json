@@ -13,7 +13,8 @@
     "test": "node lib/test/test_headless_browser.js",
     "docs": "jsdoc -r -c jsdoc.json -d lib/doc",
     "devServer": "node devServer.js",
-    "installDocs": "npm install jsdoc better-docs"
+    "installDocs": "npm install jsdoc better-docs",
+    "lint": "npx eslint . --ext .mjs,.js"
   },
   "repository": {
     "type": "git",
@@ -32,9 +33,10 @@
   },
   "homepage": "https://github.com/mumme74/simulators#readme",
   "devDependencies": {
-    "better-docs": "~2.7.2",
+    "better-docs": "^2.7.2",
+    "eslint": "^8.19.0",
     "express": "^4.17.3",
-    "jsdoc": "~3.6.10",
+    "jsdoc": "^3.6.10",
     "jsdom": "^20.0.0",
     "puppeteer": "^13.4.0",
     "serve-index": "^1.9.1",
