@@ -1,0 +1,26 @@
+.tabwgt > .tabwgt-tab {
+  display: none;
+  transition: ease-out !important;
+}
+.tabwgt > .tabwgt-tab.tabwgt-activeTab {
+  display: block;
+  transition: ease-in !important;
+}
+.tabwgt > button {
+  background: none !important;
+  color: #333 !important;
+  font-weight: bold !important;
+  border: 0 !important;
+  padding: 0.5rem !important;
+}
+.tabwgt > button:hover,
+.tabwgt > button.tabwgt-activeTab:hover {
+  border-bottom: 1px solid #333 !important;
+  background:none !important;
+  color:#333 !important;
+  cursor: pointer;
+}
+.tabwgt > button.tabwgt-activeTab {
+  background-color: #333 !important;
+  color: white !important;
+}

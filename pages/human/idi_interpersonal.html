@@ -7,11 +7,122 @@
     <title>IDI personality check</title>
     <style>
       @import url(../../css/common.css);
-      input[type=range] { width: 50rem; }
       .triangle, .wave { fill: var(--common); }
       .wave { stroke:blue; }
       .ruler { stroke: var(--ruler); }
       .circle { fill: white; }
+      body { user-select: none;}
+
+      .question {
+        border: 1px solid gray;
+        background-color: #CCC;
+        user-select: none;
+        font-size: 1.5rem;
+      }
+      .question:hover {
+        background-color: #FFF;
+      }
+      .question:has(> selected) {
+        opacity:0.5;
+      }
+      .question > div {
+        display: inline-block;
+      }
+      .leftText, .rightText {
+        min-width: 15rem;
+        text-align: center;
+      }
+      .selector > div {
+        display: inline-block;
+        background-color: gray;
+        width:2rem;
+        border-radius: 1rem;
+        margin: 0.4rem;
+        text-align: center;
+        cursor: pointer;
+      }
+      .selector > div:hover {
+        background-color: aqua;
+        scale: 1.5;
+        transition: 0.5s;
+      }
+      .selector > div.selected {
+        background-color: orangered;
+        scale: 1.3;
+        transition: 0.1s;
+      }
+      .scale {
+        stroke: #000;
+        stroke-width: 2px;
+      }
+      .scaleBar {
+        stroke: #73F;
+        stroke-width:3px;
+      }
+      path.relator:hover, path.motivator:hover,
+      path.processor:hover, path.producer:hover {
+        cursor: pointer;
+
+      }
+      text.relator, text.motivator,
+      text.processor, text.producer {
+        display:none;
+      }
+      text.relator.show, text.motivator.show,
+      text.processor.show, text.producer.show {
+        display:block;
+        transition: cubic-bezier(0.075, 0.82, 0.165, 1);
+      }
+      .resultArea {
+        fill: #FFF;
+        stroke:black;
+        stroke-width: 1px;
+        opacity: 0.5;
+      }
+      #resultMarker {
+        transform: translate(150px, 150px);
+        stroke: #000;
+        stroke-width: 2px;
+      }
+      #resultMarker > .dot {
+        fill: #73F;
+      }
+      #resultMarker > .ring {
+        fill: none;
+      }
+      .crossLine {
+        stroke-dasharray: 1rem;
+      }
+      #result, svg {
+        display: inline-block;
+        vertical-align: text-top;
+        border: 1px solid black;
+      }
+      #result {
+        min-width: 30%;
+        min-height: 410px;
+      }
+      #result > div {
+        padding: 0.5rem;
+      }
+      .warn {
+        background-color:var(--warn);
+      }
+      .personalityRow {
+        width: 20rem;
+      }
+      .personalityRow > div:first-child {
+        font-weight: bold;
+      }
+      .personalityRow > div {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .personalityRow > div:not(:first-child):hover {
+        cursor: pointer;
+      }
+
     </style>
     <script type="module" src="./idi_interpersonal.mjs"></script>
     <script type="module" src="../../menu.mjs"></script>
@@ -23,11 +134,72 @@
       </header>
       <section>
         <div id="questions"></div>
-        <svg width="1000" height="300">
-          <text x="20" y="15">Enhetscirkeln, radie=1</text>
-        </svg>
-        <input type="range" min="0" max="720" value="0" oninput="this.nextElementSibling.value = this.value"/>
-        <output>0</output>&deg;
+        <div id="results">
+          <h1 id="showingPerson">Ditt Namn</h1>
+          <svg width="550" height="410">
+            <g style="transform: translate(100px, 50px);" id="circle">
+              <path d="M 0 150
+                A 150 150, 0, 0, 0, 150 300
+                L 150 150 Z" fill="green" class="relator"/>
+              <text x="-30" y="250" class="relator">Relator</text>
+              <text x="-30" y="270" class="relator">(stödjande)</text>
+              <path d="M 150 300
+                A 150 150, 0, 0, 0, 300 150
+                L 150 150 Z" fill="yellow" class="motivator"/>
+              <text x="220" y="250" class="motivator">Motivator</text>
+              <text x="220" y="270" class="motivator">(initiativrik)</text>
+              <path d="M 300 150
+                A 150 150, 0, 0, 0, 150 0
+                L 150 150 Z" fill="red" class="producer"/>
+              <text x="220" y="50" class="producer">Producer</text>
+              <text x="220" y="70" class="producer">(styrande)</text>
+              <path d="M 150 0
+                A 150 150, 0, 0, 0, 0 150
+                L 150 150 Z" fill="blue" class="processor"/>
+              <text x="-30" y="50" class="processor">Processor</text>
+              <text x="-30" y="70" class="processor">(analyserande)</text>
+
+              <text x="345" y="5">Formell</text>
+              <text x="345" y="305">Informell</text>
+              <path d="M 320 0 h20
+                m -10 0 v150
+                m -10 0 h20 m-10 0 v150
+                m -10 0 h20Z" class="scale"/>
+              <g id="vertBar">
+                <path d="M315 150 h30 Z" class="scaleBar"/>
+              </g>
+              <path d="M 0 320 v20
+                m 0 -10 h150
+                m 0 -10 v20 m 0 -10 h150
+                m 0 -10 v20Z" class="scale"/>
+              <g id="horizBar">
+                <path d="M150 315 v30 Z" class="scaleBar"/>
+              </g>
+              <text x="-30" y="355">Följare</text>
+              <text x="270" y="355">Dominant</text>
+              <g id="resultMarker">
+                <circle cx="0" cy="0" r="10" class="ring"/>
+                <circle cx="0" cy="0" r="5" class="dot"/>
+              </g>
+            </g>
+          </svg>
+          <div id="result" class="tabwgt">
+            <button>Förklaring</button>
+            <button>Dina data</button>
+            <button>Alla personer</button>
+            <div class="tabwgt-tab" id="explanationTab">
+              <h1>Uträkning</h1>
+              <p class="warn">Ej tillräckligt med data än.</p>
+            </div>
+            <div class="tabwgt-tab" id="yourdataTab">
+              dina data
+            </div>
+            <div class="tabwgt-tab" id="othersTab">
+              andra i gruppen
+            </div>
+          </div>
+        </div>
+        <br/>&nbsp;
       </section>
       <footer></footer>
     </div>

@@ -5,6 +5,7 @@ const tags = {
   start:'Startsida',
   sim:'Simulator',
   math:'Matte',
+  human:'Människor',
   trigenometry: "Trigenometri",
   electrical:"Ellära",
   mechanical: "Mekanisk",
@@ -13,6 +14,7 @@ const tags = {
   hydraulic:"Hydraulik",
   ac_electrical:'Växelströmslära',
   motors:"Elmotor",
+  personality:"Personlighet"
 };
 
 // tags can be in many categories
@@ -31,6 +33,9 @@ const tagSubCategories = {
   },
   mechanical: {
     tags: [tags.gears]
+  },
+  human: {
+    tags: [tags.personality]
   }
 }
 
@@ -59,6 +64,10 @@ const allPages = [
   {
     name: "Ohms lag", path:"pages/electrical/ohms_law.html",
     tags:[tags.electrical, tags.sim]
+  },
+  {
+    name: "Personlighetstest IDI", path:"pages/human/idi_interpersonal.html",
+    tags:[tags.human, tags.personality]
   }
 ];
 
