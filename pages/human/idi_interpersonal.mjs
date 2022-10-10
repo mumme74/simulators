@@ -393,7 +393,7 @@ class DisplayWgt {
 
     makeFormula('formel (C + 30 - D) / 14', 'Följare vs. Dominant', person.followOrDominant);
     tab.append(document.createElement('br'));
-    makeFormula('formel (A + 45 - B) / 20', 'Formell vs. Informal', person.formalOrInformal);
+    makeFormula('formel (A + 45 - B) / 20', 'Formell vs. Informal', person.informalOrFormal);
     tab.append(document.createElement('br'));
 
     // your personality type
