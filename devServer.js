@@ -9,6 +9,20 @@ const server = express();
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const websocketUrls = ['/pages/human/'];
+function isWSUrl(url) {
+  for(const wsUrl of websocketUrls)
+    if (url.startsWith(wsUrl))
+      return true;
+  return false;
+}
+
+server.use((req, res, next) =>{
+  if (req.method === 'GET' && isWSUrl(req.path))
+    res.header('Access-Control-Allow-Origin', 'http://localhost:8080/*');
+  next();
+})
+
 server.use(
   express.static(dirname + '/'),
   serveIndex(dirname + '/', {'icons': true}));

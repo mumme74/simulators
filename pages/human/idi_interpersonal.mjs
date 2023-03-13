@@ -4,6 +4,7 @@ import { StateFromHash } from "../../lib/helpers/index.mjs";
 import { Line, Polygon } from "../../lib/base.mjs";
 import ModalSingleton, { Dialog } from  "../../lib/widgets/modal.mjs";
 import { TabWgt } from "../../lib/widgets/tabwgt.mjs";
+//import {io} from "http://localhost:8080/socket.io/socket.io.js";
 
 const hashStore = (new StateFromHash()).ref;
 
@@ -88,7 +89,7 @@ const baseTypes = {
 
 // ---------------------------------------------------------------
 
-class Person {
+class PersonBase {
   constructor(name, group) {
     this._evtListeners = [];
     this.name = name;
@@ -99,30 +100,8 @@ class Person {
     this.followOrDominant = 0;
     this.informalOrFormal = 0;
     this.questions = asking.map((q, nr)=>{
-      return new Question(q[0], q[1], nr);
+      return new QuestionBase(q[0], q[1], nr);
     });
-
-    this._lastCheck = new Date(new Date().getTime -1000);
-
-    const mayRecalc = (evt)=>{
-      if (this._lastCheck.getTime() + 1000 > new Date().getTime()) {
-        const msg = document.createElement('div');
-        msg.innerHTML = `
-        <h1 class="warn">För snabbt!</h1>
-        <p>Du trycker för snabbt!</p>
-        <p>Tänk efter riktigt innan du klickar!</p>`;
-        ModalSingleton.setContent(msg);
-        ModalSingleton.show();
-        evt?.stopPropagation();
-        evt?.preventDefault();
-      }
-      this._lastCheck = new Date();
-      if (this.questions.reduce((v,q)=>v+=(q.dirty && q.choice>0) || 0,0) >= asking.length)
-        this.recalculate();
-    }
-
-    document.querySelector("#questions").addEventListener("click", mayRecalc);
-    mayRecalc();
   }
 
   recalculate() {
@@ -145,6 +124,45 @@ class Person {
   addListener(cb) {
     this._evtListeners.push(cb);
   }
+
+  removeListener(cb) {
+    this._evtListeners.forEach((c,i,listeners)=>{
+      if (c===cb)
+        listeners.splice(i,1);
+    })
+  }
+};
+
+class ActivePerson extends PersonBase {
+  constructor(name, group) {
+    super(name, group)
+    this.questions = asking.map((q, nr)=>{
+      return new Question(q[0], q[1], nr);
+    });
+
+    this._lastCheck = new Date(new Date().getTime -1000);
+
+    const mayRecalc = (evt)=>{
+      if (this._lastCheck.getTime() + 1000 > new Date().getTime()) {
+        const msg = document.createElement('div');
+        msg.innerHTML = `
+        <h1 class="warn">För snabbt!</h1>
+        <p>Du trycker för snabbt!</p>
+        <p>Tänk efter riktigt innan du klickar!</p>`;
+        ModalSingleton.setContent(msg);
+        ModalSingleton.show();
+        evt?.stopPropagation();
+        evt?.preventDefault();
+      }
+      this._lastCheck = new Date();
+      if (this.questions.reduce((v,q)=>v+=(q.dirty && q.choice>0) || 0,0) >= asking.length) {
+        this.recalculate();
+      }
+    }
+
+    document.querySelector("#questions").addEventListener("click", mayRecalc);
+    mayRecalc();
+  }
 }
 
 // ----------------------------------------------------------------
@@ -152,7 +170,7 @@ class Person {
 class NameGrpDlg extends Dialog {
   constructor() {
     super();
-    //if (!hashStore.name) {
+    if (!hashStore.name) {
       const frm = this.frm = document.createElement("form");
       frm.addEventListener("submit", (e)=>{e.preventDefault()});
       const h1 = document.createElement("h1");
@@ -174,16 +192,18 @@ class NameGrpDlg extends Dialog {
 
       makeRow("name", "Namn");
       makeRow("group", "Klass/Grupp");
-    //}
+    }
     if (hashStore.name) this.updateUser();
   }
 
   async exec(force=false) {
     if (!hashStore.name || force) {
-      await this.showOkCancel(this.frm);
-      hashStore.name = this.frm.querySelector("[name='name']").value;
-      hashStore.group = this.frm.querySelector("[name='group']").value;
-      this.updateUser();
+      try {
+        await this.showOkCancel(this.frm);
+        hashStore.name = this.frm.querySelector("[name='name']").value;
+        hashStore.group = this.frm.querySelector("[name='group']").value;
+        this.updateUser();
+      } catch(e) { /* squlsh */}
     }
   }
 
@@ -218,13 +238,19 @@ class NameGrpDlg extends Dialog {
 
 // ----------------------------------------------------------------
 
-class Question {
+class QuestionBase {
   constructor(leftTxt, rightTxt, qnr) {
     this.choice = 0;
     this.leftTxt = leftTxt;
     this.rightTxt = rightTxt;
     this.saved = false;
     this.dirty = false;
+  }
+}
+
+class Question extends QuestionBase {
+  constructor(leftTxt, rightTxt, qnr) {
+    super(leftTxt, rightTxt, qnr);
     this.createNodes(qnr);
   }
 
@@ -422,13 +448,108 @@ class DisplayWgt {
 
 // --------------------------------------------------------------
 
-let person = null;
+class RemotePerson extends PersonBase {
+  constructor(name, group, answers = []) {
+    super(name, group);
+    this.questions.map((q,nr)=>{
+      q.choice = answers[nr] || 0;
+    });
+
+    this.recalculate();
+  }
+
+  onUpdate(updatedQuestions) {
+    // {q1:1,q14:4}
+    for (const {key, value} of Object.entries(updatedQuestions)) {
+      this.questions[+key.substr(1)].choice = value;
+    }
+
+    this.recalculate();
+  }
+}
+
+// --------------------------------------------------------------
+/*
+class RemoteConnection extends io {
+  constructor() {
+    const url = location.protocol === 'file:' ? "wss://chat-zl3usdsnka-lz.a.run.app/" : '';
+    super(url, {transports: ['websocket']});
+
+    // reconnect when clicking connect button
+    document.querySelector("#connectIcon")
+      .addEventListener('click', async ()=>{
+        if (socket.connected)
+          await socket.disconnect();
+        else
+          await socket.connect();
+      });
+
+    // Listen for new messages
+    this.on('message', this._gotMsg);
+
+    // Listen for notifications
+    this.on('notification', this._gotMsg);
+
+    this.on('connect', ()=>{
+      RemoteConnection.log('connected');
+      document.body.classList.add('connected');
+    });
+
+    this.on('disconnect', (err)=>{
+      RemoteConnection.log('server disconnected');
+      document.body.classList.remove('joined');
+      document.body.classList.remove('connected');
+      remotePersons.splice(0);
+    });
+
+    this.on('reconnect', ()=>{
+      RemoteConnection.log('reconnected');
+      // Emit updateSocketIdEvent
+      this.emit('updateSocketId', {user, room}, (error)=>{
+        if (error) return RemoteConnection.log(error);
+      });
+    });
+
+    // when we update ourselfs
+    activePerson.addEventListener((person)=>{
+      this.emit()
+    })
+  }
+
+  // make a nofifier widget at top of page
+  static log(arg) {
+    const div = document.createElement("div");
+    div.textContent = arg;
+    div.classList.add('notifier');
+    document.body.appendChild(div);
+    log._timeout = setTimeout(()=>{
+      div.parentElement.removeChild(div);
+    }, 2000);
+    console.log(arg);
+  }
+
+  _gotMsg(data) {
+    if (data.room === activePerson.group) {
+      let person = remotePersons.find(p=>p.name===data.name);
+      if (!person) {
+        person = new RemotePerson(data.name, data.group, data.messages);
+        remotePersons.push(person);
+      }
+      person.onUpdate(data.messages);
+    }
+  }
+}*/
+
+// --------------------------------------------------------------
+
+let activePerson = null;
 let displayWgt = null;
 let tabs = null;
+let remotePersons = [];
 document.addEventListener("DOMContentLoaded", async ()=>{
   const dlg = new NameGrpDlg();
   await dlg.exec();
-  person = new Person(hashStore.name, hashStore.group);
-  displayWgt = new DisplayWgt(person);
+  activePerson = new ActivePerson(hashStore.name, hashStore.group);
+  displayWgt = new DisplayWgt(activePerson);
   tabs = new TabWgt(document.querySelector("#result"));
 });

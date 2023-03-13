@@ -14,6 +14,15 @@
       "type": "node"
     },
     {
+      "name": "npm run devServer",
+      "program": "npm run devSrver",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node"
+    },
+    {
       "type": "pwa-chrome",
       "request": "launch",
       "name": "Launch Chrome against localhost",

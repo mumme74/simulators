@@ -122,7 +122,23 @@
       .personalityRow > div:not(:first-child):hover {
         cursor: pointer;
       }
-
+      #connectIcon {
+        width: 2rem; height: 2rem; font-size: 2rem;
+        background-color:#faad91; color: red; padding:0.3rem 0.5rem;
+        border-radius: 0.3rem;
+        cursor: pointer;
+      }
+      #connectIcon::after { content: '✗';}
+      body.connected > #connectIcon { background-color: #b8c2a7; color:green;}
+      body.connected > #connectIcon::after { content: '✓'; }
+      .notifier {
+        position: fixed;
+        top:0;
+        left:0;
+        width: 100%;
+        background-color: rgb(205, 195, 50);
+        padding:0.3rem;
+      }
     </style>
     <script type="module" src="./idi_interpersonal.mjs"></script>
     <script type="module" src="../../menu.mjs"></script>
@@ -186,7 +202,7 @@
           <div id="result" class="tabwgt">
             <button>Förklaring</button>
             <button>Dina data</button>
-            <button>Alla personer</button>
+            <!--<button>Alla personer</button>-->
             <div class="tabwgt-tab" id="explanationTab">
               <h1>Uträkning</h1>
               <p class="warn">Ej tillräckligt med data än.</p>
@@ -194,9 +210,16 @@
             <div class="tabwgt-tab" id="yourdataTab">
               dina data
             </div>
-            <div class="tabwgt-tab" id="othersTab">
-              andra i gruppen
-            </div>
+            <!--<div class="tabwgt-tab" id="othersTab">
+              <div>
+                <span id="connectIcon" title="connected status"></span>
+                <h1>Andra i gruppen</h1>
+              </div>
+              <p>Din data sparas i 4timmar efter senaste uppdatering</p>
+              <div>
+                others data
+              </div>
+            </div>-->
           </div>
         </div>
         <br/>&nbsp;
