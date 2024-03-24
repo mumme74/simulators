@@ -1,0 +1,150 @@
+.outline {
+  fill: rgb(65, 165, 74);
+  stroke: black;
+}
+.plastic {
+  fill: #4b4a4a
+}
+.glass {
+  fill: #111
+}
+.screenText {
+  fill: white;
+  stroke: none;
+  font: Arial;
+}
+#screenRect {
+  fill:#4d4949
+}
+.button {
+  cursor: pointer;
+}
+.button > path {
+  fill: #2b2a2a;
+}
+.button > text {
+  fill: white;
+  stroke: none;
+  font-weight: bold;
+  text-anchor: middle;
+  font-size: 1.1rem;
+  font-family: sans-serif;
+  user-select: none;
+}
+.button.blue > path {
+  fill: rgb(103, 103, 158);
+}
+.button.blue > text {
+  fill: black;
+}
+.button.white > path {
+  fill: rgb(211, 205, 205);
+}
+.button.white.on > path {
+  fill:rgb(61, 212, 74);
+}
+.button.white.halt > path {
+  fill: rgb(235, 112, 112);
+}
+.button.white > text {
+  fill: black; stroke: none;
+}
+.button.smallText > text {
+  font-size: 0.8rem;
+}
+.button.smallText > line {
+  stroke: white
+}
+#multimeterInputs > g > text {
+  text-anchor: middle;
+  font-size: 1.5rem;
+  font-family: sans-serif;
+  fill: white;
+  stroke: none;
+}
+#multimeterInputs > g > circle:first-of-type {
+  stroke: #111;
+  fill: #2b2a2a;
+}
+#multimeterInputs > g > circle:last-of-type {
+  stroke: black;
+  stroke-width: 0.2rem;
+  fill: none;
+}
+#multimeterInputs > .voltOhmInput > circle:last-of-type {
+  stroke: rgb(168, 42, 42)
+}
+#multimeterInputs > .ampInput > circle:last-of-type {
+  stroke: rgb(150, 150, 13);
+}
+
+.bgScreen {
+  fill:#7e7a8b;
+}
+
+#screen rect.battery {
+  stroke: white;
+  stroke-width: 0.2rem;
+  fill: none;
+}
+#screen path.battery {
+  stroke: green;
+  fill: green;
+}
+
+#screen .badge > rect {
+  fill: #111;
+}
+#screen .badge > text {
+  fill: white; stroke: none;
+  text-anchor: middle;
+  alignment-baseline: middle;
+}
+#screen .badge.rangeIndicator > text {
+  fill: rgb(46, 201, 46);
+}
+
+#screen .badge.funcBtn > rect {
+  fill: #7e7a8b;
+}
+
+#screen .badge.funcBtn rect.funcBtnItem.selected {
+  fill: white;
+}
+#screen .badge.funcBtn rect.funcBtnItem {
+  stroke: none;
+}
+#screen .badge.funcBtn text.funcBtnItem {
+  text-anchor: start;
+  alignment-baseline: text-before-edge;
+}
+#screen .badge.funcBtn text.funcBtnItem.selected {
+  fill: #7e7a8b;
+}
+
+#screen text.multimeterValue {
+  fill: yellow;
+  stroke: none;
+  font-family: monospace;
+  font-size: 4rem;
+  text-align: right;
+  text-anchor: end;
+}
+
+#screen text.multimeterUnit {
+  fill: yellow;
+  stroke: none;
+  font-family: monospace;
+  font-size: 3rem;
+  text-align: right;
+  text-anchor: end;
+}
+
+#screen text.multimeterHold {
+  fill: yellow;
+  stroke: none;
+  font-family: monospace;
+  font-size: 2rem;
+  text-align: right;
+  text-anchor: end;
+}

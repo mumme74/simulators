@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oscillioscope</title>
+    <style>
+      @import url(../../css/common.css);
+      @import url(./oscillioscope.css);
+    </style>
+    <script type="module" src="../../menu.mjs"></script>
+    <script type="module" src="./main.mjs"></script>
+  </head>
+  <body>
+    <div>
+      <header class="page-header">
+        <h1>Oscillioscope</h1>
+      </header>
+      <section>
+        <svg width="800" height="1200">
+          <defs>
+            <g id="arrowButton" class="button">
+              <path d="M0 0 Q35 3 40 10 Q40 22 0 40 Q-40 22 -40 10 Q-35 3 0 0"></path>
+              <text x="0" y="20">▲</text>
+            </g>
+          </defs>
+          <!--green outer contours-->
+          <path class="outline" d="
+            M0 40 v350 l15 15 v450 l-15 15 v30
+            l40 40
+            h40 l25 -25 h300 l25 25 h40
+            l40 -40
+            v-30 l-15 -15 v-450 l15 -15 v-350
+            l-40 -40
+            h-20 l-25 25 h-340 l-25 -25 h-20
+            l-40 40 z
+          "></path>
+          <!--plastic parts outside-->
+          <path class="plastic" d="
+            M69 8 h374 l-17 17 h-340z
+            M4 395 v470 l11 -11 v-450z
+            M506 395 v470 l-11-11 v-450z
+            M84 935 h340 l-20-20 h-300z
+          "></path>
+          <!--inside base-->
+          <path class="plastic" d="
+            M30 52 v830 l15 15 h420 l15 -15 v-830 l-15 -15 h-420 l-15 15z
+          "></path>
+          <g id="screenGlass">
+            <path class="glass" d="
+              M39 58 v360 h432 v-360 l-13-13 h-406 l-13 13z
+            "></path>
+            <text x="55" y="65" class="screenText">Oscillioskop träning</text>
+            <text x="380" y="60" class="screenText">Handhållet</text>
+            <text x="370" y="75" class="screenText">Oscillioskop</text>
+            <g id="screen" transform="translate(54,80)">
+              <rect id="screenRect" x="0" y="0" width="400" height="320"></rect>
+            </g>
+          </g>
+          <g id="buttons" transform="translate(55, 450)">
+            <g id="menuButtons">
+              <g id="F1Btn" class="button blue">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">F1</text>
+              </g>
+              <g id="F2Btn" class="button blue" transform="translate(108)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">F2</text>
+              </g>
+              <g id="F3Btn" class="button blue" transform="translate(220)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">F3</text>
+              </g>
+              <g id="F4Btn" class="button blue" transform="translate(330)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">F4</text>
+              </g>
+            </g>
+            <g id="secondRowBtns" transform="translate(0,75)">
+              <g id="modeBtn" class="button">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">Mode</text>
+              </g>
+              <g id="ch1_2Btn" class="button" transform="translate(108)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">CH1/2</text>
+              </g>
+              <g id="horBtn" class="button" transform="translate(220)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">HOR</text>
+              </g>
+              <g id="backBtn" class="button" transform="translate(330)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">⮌</text>
+              </g>
+            </g>
+            <g id="leftColBtns" transform="translate(0,150)">
+              <g id="systemBtn" class="button">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">System</text>
+              </g>
+              <g id="saveBtn" class="button" transform="translate(0,75)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">Save</text>
+              </g>
+              <g id="onOffBtn" class="button white" transform="translate(0,150)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">⏻</text>
+              </g>
+            </g>
+            <g id="arrowBtns" transform="translate(200, 145)">
+              <use id="upBtn" xlink:href="#arrowButton" transform="translate(0,0)"></use>
+              <use id="rightBtn" xlink:href="#arrowButton" transform="translate(65,65) rotate(90)"></use>
+              <use id="downBtn" xlink:href="#arrowButton" transform="translate(0,130) rotate(180)"></use>
+              <use id="leftBtn" xlink:href="#arrowButton" transform="translate(-65,65) rotate(-90)"></use>
+            </g>
+            <g id="rightColBtns" transform="translate(330,150)">
+              <g id="measureRangeBtn" class="button smallText">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="22">Measure</text>
+                <line x1="8" y1="25" x2="60" y2="25"></line>
+                <text x="34" y="37">Range</text>
+              </g>
+              <g id="autoBtn" class="button" transform="translate(0,75)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">Auto</text>
+              </g>
+              <g id="runPauseBtn" class="button white" transform="translate(0,150)">
+                <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+                <text x="34" y="32">▶ / ⏸</text>
+              </g>
+            </g>
+            <g id="trigBtn" class="button" transform="translate(165, 300)">
+              <path d="M3 5 q30 -5 63 0 q3 20 0 40 q-30 5 -63 0 q-3 -20 0 -40z"></path>
+              <text x="34" y="32">Trig</text>
+            </g>
+          </g>
+          <g id="multimeterInputs" transform="translate(70, 830)">
+            <g transform="translate(0,0)" class="ampInput">
+              <text x="0" y="10">A</text>
+              <circle cx="0" cy="30" r="15"></circle>
+              <circle cx="0" cy="30" r="10"></circle>
+            </g>
+            <g transform="translate(113,0)" class="ampInput">
+              <text x="0" y="10">mA</text>
+              <circle cx="0" cy="30" r="15"></circle>
+              <circle cx="0" cy="30" r="10"></circle>
+            </g>
+            <g transform="translate(226,0)" class="comInput">
+              <text x="0" y="10">COM</text>
+              <circle cx="0" cy="30" r="15"></circle>
+              <circle cx="0" cy="30" r="10"></circle>
+            </g>
+            <g transform="translate(350,0)" class="voltOhmInput">
+              <text x="0" y="10">VΩ-⯈⊢C</text>
+              <circle cx="0" cy="30" r="15"></circle>
+              <circle cx="0" cy="30" r="10"></circle>
+            </g>
+          </g>
+        </svg>
+      </section>
+      <footer></footer>
+    </div>
+  </body>
+</html>

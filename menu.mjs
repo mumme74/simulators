@@ -14,7 +14,8 @@ const tags = {
   hydraulic:"Hydraulik",
   ac_electrical:'Växelströmslära',
   motors:"Elmotor",
-  personality:"Personlighet"
+  personality:"Personlighet",
+  tools:"Verktyg"
 };
 
 // tags can be in many categories
@@ -52,6 +53,10 @@ const allPages = [
   {
     name:"Synkron-motor", path:"pages/motors/bldc/motor_synkron.html",
     tags:[tags.ac_electrical, tags.electrical, tags.motors]
+  },
+  {
+    name:"Oscillioscope", path:"pages/oscillioscope/oscillioscope.html",
+    tags:[tags.electrical, tags.tools]
   },
   {
     name:"3-Fas simulering", path:"pages/motors/three_phase.html",
