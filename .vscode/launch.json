@@ -15,7 +15,7 @@
     },
     {
       "name": "npm run devServer",
-      "program": "npm run devSrver",
+      "program": "npm run devServer",
       "request": "launch",
       "skipFiles": [
         "<node_internals>/**"
@@ -23,11 +23,17 @@
       "type": "node"
     },
     {
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "launch",
       "name": "Launch Chrome against localhost",
-      "url": "http://localhost:8080",
-      "webRoot": "${workspaceFolder}"
+      "url": "http://localhost:8000",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}",
+      "runtimeExecutable": "/snap/bin/chromium",
+      "runtimeArgs": [
+        "--remote-debugging-port=9222",
+        "--user-data-dir=remote-debug-profile"
+      ]
     }
   ]
 }
