@@ -56,9 +56,15 @@ body > div:first-child > footer {
   position: fixed;
   bottom: 0;
   width: 100%;
+  height: 0.1rem;
+  background-color: var(--text-color);
+  text-align: center;
+}
+
+body > div:first-child > footer:hover {
   height: var(--pagefooter-height);
   background-color: var(--common);
-  text-align: center;
+  transition: 0.3s;
 }
 
 body > div:first-child > footer::before {
