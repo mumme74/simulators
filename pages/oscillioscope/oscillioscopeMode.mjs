@@ -155,7 +155,12 @@ class OscillioscopeScreen extends ScreenBase {
   }
 
   drawScreen() {
+    const rect = this.createElement("rect",
+      {x:12,y: 32,width:this.width -24,height:this.height-64});
+    rect.classList.add("oscillioscopeBg");
+    this.mode.manager.oscInstance.screen.append(rect);
 
+    this.display = new OscillioscopeDisplay(this);
   }
 
   updateHeader() {
