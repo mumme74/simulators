@@ -275,26 +275,31 @@ export class MenuBase extends KeyInputBase {
    */
   constructor(manager,subMenus = []) {
     super(manager, subMenus);
-  }
-}
-
-
-class ModeOscillioscope extends ModeBase {
-  constructor(manager) {
-    super(manager, [])
-  }
-
-  activated() {
-    this.manager.oscInstance.buttons.onOffBtn.classList.add("on");
+    this.hold = false;
   }
 
   redraw() {
-
+    this.haltButtonUpdated();
   }
 
-  // FIXME stub
+  haltButtonUpdated() {
+    const n = this.manager.oscInstance.buttons.runPauseBtn;
+    if (!this.hold) {
+      n.classList.add("on");
+      n.classList.remove("halt");
+    } else {
+      n.classList.add("halt");
+      n.classList.remove("on");
+    }
+    this.manager.currentMode.screen.display.update();
+    this.manager.currentMode.screen.updateHeader();
+  }
+
+  on_runPauseBtn() {
+    this.hold = !this.hold;
+    this.haltButtonUpdated();
+  }
 }
-KeyInputManager.register(ModeOscillioscope);
 
 
 class ModeContinuity extends ModeBase {

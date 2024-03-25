@@ -2,37 +2,19 @@
 
 import {ModeBase, MenuBase, KeyInputManager} from './keyinputs.mjs';
 import {Choices} from './menus.mjs';
-import {ScreenBase, ScreenBadgeText, ScreenBadgeValue, ScreenBadgeBase} from './screen.mjs';
-import { SignalGenerator } from './signalgenerator.mjs';
+import {
+  ScreenBase, ScreenBadgeText, ScreenBadgeValue,
+  ScreenBadgeBase, ScreenFuncBtn
+} from './screen.mjs';
+import { SignalGenerator, SignalInputBase } from './signalgenerator.mjs';
 
 // this file handles all Multimeter measuring
 // when we are in multimeter mode
 
-class MultimeterInputBase {
+
+class MultimeterInputVolt extends SignalInputBase {
   constructor(mode) {
-    this.mode = mode;
-  }
-
-  start() {
-    this.tmr = setInterval(this.acquire.bind(this), 200);
-  }
-
-  stop() {
-    clearInterval(this.tmr);
-  }
-
-  acquire() {
-    const data = this.mode.manager.oscInstance.signalGenerator.
-      multimeter.acquire(400);
-    this.inspectData(data);
-  }
-
-  inspectData(data) {}
-}
-
-class MultimeterInputVolt extends MultimeterInputBase {
-  constructor(mode) {
-    super(mode);
+    super(mode, "multimeter");
   }
 
   inspectData(data) {
@@ -174,10 +156,16 @@ export class MultimeterScreenBase extends ScreenBase {
   }
 }
 
+class ModeMultimeterBase extends ModeBase {
+  on_modeBtn() {
+    this.manager.activateMode("ModeOscillioscope");
+  }
+}
+
 /**
  * The volt measuring mode class
  */
-export class ModeVolt extends ModeBase {
+export class ModeVolt extends ModeMultimeterBase {
   constructor(manager) {
     super(manager, []);
     this.rangeChoices = new Choices([0.2,2,20,200,1000], 0);
@@ -217,10 +205,6 @@ export class ModeVolt extends ModeBase {
     return this.rangeChoices.value() > 2 ? "V" : "mV";
   }
 
-  value() {
-    return 1000;
-  }
-
   limit() {
     return this.rangeChoices.value();
   }
@@ -231,13 +215,15 @@ export class ModeVolt extends ModeBase {
       this.unitChoices.select(this.unit());
     this.screen.updateHeader();
   }
+
+
 }
 KeyInputManager.register(ModeVolt);
 
 /**
  * The Amp measuring mode class
  */
-export class ModeAmp extends ModeBase {
+export class ModeAmp extends ModeMultimeterBase {
   constructor(manager) {
     super(manager, []);
     this.rangeChoices = new Choices([0.02,0.2,2,10], 0);
@@ -290,7 +276,7 @@ KeyInputManager.register(ModeAmp);
 /**
  * The volt measuring mode class
  */
-export class ModeOhm extends ModeBase {
+export class ModeOhm extends ModeMultimeterBase {
   constructor(manager) {
     super(manager, []);
     this.rangeChoices = new Choices([200, 2000, 20000, 200000, 20000000], 0);
@@ -341,3 +327,67 @@ export class ModeOhm extends ModeBase {
   }
 }
 KeyInputManager.register(ModeOhm);
+
+class MultimeterMenu extends MenuBase {
+  constructor(manager, subMenus = []) {
+    super(manager, subMenus);
+    this.ohmChoices = new Choices(["Ω", "🕩", "-⯈⊢", "⊣⊢"]);
+    this.currentTypeChoices = new Choices(["DC","AC"]);
+    this.voltageTypeChoices = new Choices(["DC","AC"]);
+  }
+
+  redraw() {
+    this.drawFuncBtns();
+    super.redraw();
+  }
+
+  drawFuncBtns() {
+    // Function buttons
+    const screen = this.manager.currentMode.screen;
+    this.F1Button = new ScreenFuncBtn(screen,
+      "Voltage", this.voltageTypeChoices, 0);
+    this.F2Button = new ScreenFuncBtn(screen,
+      "Current", this.currentTypeChoices, 1);
+    this.F3Button = new ScreenFuncBtn(screen,
+      null, this.manager.currentMode.unitChoices, 2);
+    this.F4Button = new ScreenFuncBtn(screen,
+      null, this.ohmChoices, 3, true)
+  }
+
+  on_F1Btn() {
+    this.voltageTypeChoices.increment(true);
+    this.manager.ensureMode("ModeVolt");
+    this.manager.currentMode.acMode =
+      this.voltageTypeChoices.value() == "AC";
+    this.F1Button.click();
+    this.manager.currentMode.screen.updateHeader();
+  }
+
+  on_F2Btn() {
+    this.currentTypeChoices.increment(true);
+    this.manager.ensureMode("ModeAmp");
+    this.manager.currentMode.acMode =
+      this.currentTypeChoices.value() == "AC";
+    this.F2Button.click();
+    this.manager.currentMode.screen.updateHeader();
+  }
+
+  on_F3Btn() {
+    this.manager.currentMode.unitChoices.increment(true);
+    this.F3Button.click();
+  }
+
+  on_F4Btn() {
+    this.ohmChoices.increment(true);
+    this.manager.ensureMode("ModeOhm");
+    this.F4Button.click();
+  }
+
+  on_backBtn() {
+    this.F1Button.collapse();
+    this.F2Button.collapse();
+    this.F3Button.collapse();
+    this.F4Button.collapse();
+  }
+}
+KeyInputManager.register(MultimeterMenu);

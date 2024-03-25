@@ -148,3 +148,11 @@
   text-align: right;
   text-anchor: end;
 }
+
+/* oscllioscope screen */
+#screen .badge.runIndicator text {
+  fill: red;
+}
+#screen .badge.runIndicator.running text {
+  fill: green;
+}

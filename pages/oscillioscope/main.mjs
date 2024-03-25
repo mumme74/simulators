@@ -3,6 +3,7 @@
 import {OscModes} from './keyinputs.mjs';
 import {KeyInputManager} from './keyinputs.mjs';
 import {ModeVolt} from './multimeterMode.mjs';
+import {ModeOscillioscope} from './oscillioscopeMode.mjs';
 import { SignalGenerator } from './signalgenerator.mjs';
 
 const dq = document.querySelector.bind(document);
@@ -31,9 +32,9 @@ class Oscillioscope {
       runPauseBtn: dq("#runPauseBtn"),
       trigBtn: dq("#trigBtn")
     }
-    const lastMode = localStorage.getItem("lastMode")
-    this.modeManager = new KeyInputManager(this);
+    const lastMode = localStorage.getItem("lastMode");
     this.signalGenerator = new SignalGenerator(this);
+    this.modeManager = new KeyInputManager(this);
   }
 }
 

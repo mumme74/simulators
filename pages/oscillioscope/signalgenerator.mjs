@@ -1,6 +1,77 @@
 "use strict"
 
 // this file is supposed to generate signals
+
+/**
+ * Base class for all inputs to oscillioscope
+ */
+export class SignalInputBase {
+  /**
+   * Constructor
+   * @param {ModeBase} mode The controlling mode instance
+   * @param {string} attachToInput The input to attach to
+   * @param {number} [intervall] The intervall to aquire
+   */
+  constructor(mode, attachToInput, intervall = 200) {
+    this.mode = mode;
+    this.attachToCh(attachToInput);
+    this.intervall = intervall;
+  }
+
+  /**
+   * Plug in to output from signal generator
+   * @param {string} attachToInput
+   */
+  attachToCh(attachToInput) {
+    this.attachToInput = attachToInput;
+    this.attachedCh = this.mode.manager.oscInstance.signalGenerator
+      [this.attachToInput];
+  }
+
+  /**
+   * Start periodic acquire
+   */
+  start() {
+    this.tmr = setInterval(this.acquire.bind(this), this.intervall);
+  }
+
+  /**
+   * Stop periodic acquire
+   */
+  stop() {
+    clearInterval(this.tmr);
+    this.tmr = null;
+  }
+
+  /**
+   * Change the refresh rate to acquire
+   * @param {number} intervall Time in milliseconds
+   */
+  setInterval(intervall) {
+    this.intervall = intervall;
+    if (this.tmr) {
+      this.stop();
+      this.start();
+    }
+  }
+
+  /**
+   * Acquire from signal generator
+   * Normally not needed, auto-acquires if start-ed
+   */
+  acquire() {
+    const data = this.attachedCh.acquire(400);
+    this.inspectData(data);
+  }
+
+  /**
+   * Callback for acquired data, subclasses must implement
+   * @param {Int16Array} data The data-points acquired
+   */
+  inspectData(data) {}
+}
+
+
 export class SignalGenerator {
   constructor(oscInstance) {
     this.oscInstance = oscInstance;
