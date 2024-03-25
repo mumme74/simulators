@@ -71,7 +71,7 @@ export class KeyInputManager {
       /^class(?: |\n|\r)+([^\s\n\r{]+)[\s\n\r{](?:\s|\n|\r|.)+/i,
                '$1').trim();
     if (KeyInputManager.classes[name])
-      throw new Error(`Menu ${name} already registered`);
+      throw new Error(`${name} already registered`);
     KeyInputManager.classes[name] = cls;
   }
 
@@ -96,7 +96,7 @@ export class KeyInputManager {
   getInstance(clsName) {
     const menuCls = KeyInputManager.classes[clsName];
     if (!menuCls)
-      throw new Error(`Menu ${clsName} is not registered can't be used as submenu`);
+      throw new Error(`${clsName} is not registered can't be used`);
     if (this.instances[clsName])
       return this.instances[clsName];
     return this.instances[clsName] = new KeyInputManager.classes[clsName](this);
