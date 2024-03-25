@@ -59,6 +59,20 @@ export class Choices {
     return false;
   }
 
+    /**
+   * Decrement selectedIdx
+   * @param {boolean} [flipOver] if true and at end flip to max again
+   * @returns {boolean} true if we were at end
+   */
+  decrement(flipOver = false) {
+    if (this.selectedIdx === 0) {
+      if (flipOver) this.selectedIdx = this.choices.length -1;
+      return true;
+    }
+    this.selectedIdx--;
+    return false;
+  }
+
   /**
    * Get the currently selected value
    * @returns {string|number|null} The value selected or null if not selected
@@ -207,8 +221,8 @@ class MultimeterMenu extends MenuBase {
   constructor(manager, subMenus = []) {
     super(manager, subMenus);
     this.ohmChoices = new Choices(["Ω", "🕩", "-⯈⊢", "⊣⊢"]);
-    this.currentTypeChoices = new Choices(["A","mA"]);
-    this.voltageTypeChoices = new Choices(["V","mV"]);
+    this.currentTypeChoices = new Choices(["DC","AC"]);
+    this.voltageTypeChoices = new Choices(["DC","AC"]);
     this.hold = false;
   }
 
@@ -245,14 +259,20 @@ class MultimeterMenu extends MenuBase {
   on_F1Btn() {
     this.voltageTypeChoices.increment(true);
     this.manager.ensureMode("ModeVolt");
+    this.manager.currentMode.acMode =
+      this.voltageTypeChoices.value() == "AC";
     this.F1Button.click();
+    this.manager.currentMode.screen.updateHeader();
   }
 
   on_F2Btn() {
     console.log("on_F2Btn")
     this.currentTypeChoices.increment(true);
     this.manager.ensureMode("ModeAmp");
+    this.manager.currentMode.acMode =
+      this.currentTypeChoices.value() == "AC";
     this.F2Button.click();
+    this.manager.currentMode.screen.updateHeader();
   }
 
   on_F3Btn() {

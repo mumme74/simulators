@@ -3,9 +3,83 @@
 import {ModeBase, MenuBase, KeyInputManager} from './keyinputs.mjs';
 import {Choices} from './menus.mjs';
 import {ScreenBase, ScreenBadgeText, ScreenBadgeValue, ScreenBadgeBase} from './screen.mjs';
+import { SignalGenerator } from './signalgenerator.mjs';
 
 // this file handles all Multimeter measuring
 // when we are in multimeter mode
+
+class MultimeterInputBase {
+  constructor(mode) {
+    this.mode = mode;
+  }
+
+  start() {
+    this.tmr = setInterval(this.acquire.bind(this), 200);
+  }
+
+  stop() {
+    clearInterval(this.tmr);
+  }
+
+  acquire() {
+    const data = this.mode.manager.oscInstance.signalGenerator.
+      multimeter.acquire(400);
+    this.inspectData(data);
+  }
+
+  inspectData(data) {}
+}
+
+class MultimeterInputVolt extends MultimeterInputBase {
+  constructor(mode) {
+    super(mode);
+  }
+
+  inspectData(data) {
+    const AC = this.mode.acMode;
+    let min = 0.0, max = 0.0, mean100 = 0, mean1000 = 0, mean = 0;
+    for (let i = 0; i < data.length; ++i) {
+      // take average in two steps so we don't get to big a number
+      if ((i % 100) === 0) {
+         mean1000 += (mean100 / 100);
+         mean100 = 0;
+      }
+      if ((i % 1000) === 0) {
+        mean += (mean1000 / 1000);
+        mean1000 = 0;
+      }
+
+      const vlu = AC ? Math.max(0, data[i]) : data[i];
+      mean100 += vlu;
+
+      min = Math.min(vlu, min);
+      max = Math.max(vlu, max);
+    }
+
+    mean /= (data.length / 1000);
+    this.value = mean;
+    this.min = min;
+    this.max = max;
+
+    const limit = this.mode.limit();
+
+    if (this.mode.autoRange) {
+      if (mean > 0 && (mean > limit) || (mean < 0 && mean < -limit)) {
+        this.mode.rangeChoices.increment();
+        this.mode.screen.updateHeader();
+      } else {
+        const idx = this.mode.rangeChoices.selectedIdx -1;
+        const lower = this.mode.rangeChoices.choices[idx >= 0 ? idx :0];
+        if ((mean < 0 && mean > -lower) || (mean > 0 && mean < lower)) {
+          this.mode.rangeChoices.decrement();
+          this.mode.screen.updateHeader();
+        }
+      }
+    }
+
+    this.mode.screen.display.update();
+  }
+}
 
 
 class MultimeterDisplay {
@@ -29,10 +103,18 @@ class MultimeterDisplay {
 
   update() {
     this.unitNode.innerHTML = this.screen.mode.unit();
-    const vlu = this.screen.mode.value();
+    const vlu = this.screen.mode.input?.value;
+    const int = Math.round(vlu),
+          fraction = vlu - int,
+          fracStr = (""+fraction).substring((""+fraction).indexOf(".")),
+          limit = this.screen.mode.limit();
     let vluStr = ""+vlu;
-    if (vluStr.length < 6)
-      vluStr = vlu.toFixed(Math.max(0,6-vluStr.length));
+    if ((vlu> 0 && vlu > limit) || (vlu < 0 && vlu < -limit))
+      vluStr = "OL";
+    else if (vluStr.length < 5)
+      vluStr = vlu.toFixed(Math.max(0,4-vluStr.length));
+    else if (fracStr.length > 4)
+      vluStr = `${int}.${fracStr.substring(2,4)}`;
     this.valueNode.innerHTML = vluStr;
     const hold = this.screen.mode.manager.currentMenu?.hold;
     this.holdNode.style.display = hold ? "" : "none";
@@ -52,7 +134,7 @@ export class MultimeterScreenBase extends ScreenBase {
     super.redraw();
     this.drawHeader();
     this.drawScreen();
-    this.updateRange();
+    this.updateHeader();
   }
 
   drawHeader() {
@@ -78,11 +160,12 @@ export class MultimeterScreenBase extends ScreenBase {
     this.display = new MultimeterDisplay(this);
   }
 
-  updateRange() {
+  updateHeader() {
     this.rangeIndicator.setText(
       this.mode.autoRange ? "Auto" : "Normal");
     this.measurementRange.setUnit(this.mode.unit());
     this.measurementRange.setValue(this.mode.range());
+    this.measurementType.setText(this.mode.measurementType());
     this.display.update()
   }
 
@@ -105,11 +188,18 @@ export class ModeVolt extends ModeBase {
     this.unitChoices = new Choices(["V", "mV"], 1);
     // the screen to draw on
     this.screen = new MultimeterScreenBase(this);
+    this.input = new MultimeterInputVolt(this);
   }
 
   activated() {
     this.manager.oscInstance.buttons.onOffBtn.classList.add("on");
     this.manager.activateMenu("MultimeterMenu");
+    this.input.start();
+  }
+
+  cleanup() {
+    this.input.stop();
+    super.cleanup();
   }
 
   measurementType() {
@@ -131,11 +221,15 @@ export class ModeVolt extends ModeBase {
     return 1000;
   }
 
+  limit() {
+    return this.rangeChoices.value();
+  }
+
   on_measureRangeBtn(e) {
     this.autoRange = this.rangeChoices.increment(true);
     if (this.unitChoices.value() !== this.unit())
       this.unitChoices.select(this.unit());
-    this.screen.updateRange();
+    this.screen.updateHeader();
   }
 }
 KeyInputManager.register(ModeVolt);
@@ -180,11 +274,15 @@ export class ModeAmp extends ModeBase {
     return 10.00;
   }
 
+  limit() {
+    return this.rangeChoices.value();
+  }
+
   on_measureRangeBtn(e) {
     this.autoRange = this.rangeChoices.increment(true);
     if (this.unitChoices.value() !== this.unit())
       this.unitChoices.select(this.unit());
-    this.screen.updateRange();
+    this.screen.updateHeader();
   }
 }
 KeyInputManager.register(ModeAmp);
@@ -231,11 +329,15 @@ export class ModeOhm extends ModeBase {
     return 10.00;
   }
 
+  limit() {
+    return this.rangeChoices.value();
+  }
+
   on_measureRangeBtn(e) {
     this.autoRange = this.rangeChoices.increment(true);
     if (this.unitChoices.value() !== this.unit())
       this.unitChoices.select(this.unit());
-    this.screen.updateRange();
+    this.screen.updateHeader();
   }
 }
 KeyInputManager.register(ModeOhm);

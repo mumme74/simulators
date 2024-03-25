@@ -3,6 +3,7 @@
 import {OscModes} from './keyinputs.mjs';
 import {KeyInputManager} from './keyinputs.mjs';
 import {ModeVolt} from './multimeterMode.mjs';
+import { SignalGenerator } from './signalgenerator.mjs';
 
 const dq = document.querySelector.bind(document);
 
@@ -32,6 +33,7 @@ class Oscillioscope {
     }
     const lastMode = localStorage.getItem("lastMode")
     this.modeManager = new KeyInputManager(this);
+    this.signalGenerator = new SignalGenerator(this);
   }
 }
 
