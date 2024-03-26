@@ -82,6 +82,11 @@
   fill:#7e7a8b;
 }
 
+#screen {
+  --ch1-color: yellowgreen;
+  --ch2-color: rgb(34, 92, 89);
+}
+
 #screen rect.battery {
   stroke: white;
   stroke-width: 0.2rem;
@@ -155,4 +160,63 @@
 }
 #screen .badge.runIndicator.running text {
   fill: green;
+}
+
+#screen .oscillioscopeBg {
+  stroke-width: 2px;
+  stroke-dasharray: 1 5;
+  stroke: rgb(129, 127, 127);
+}
+
+#screen .markerLine {
+  stroke-dasharray: 1 2;
+  display: none;
+}
+
+#screen .markerLine.highlight {
+  stroke: white;
+  display: block;
+}
+
+#screen .triggerHArrow {
+  fill: var(--ch1-color);
+  stroke: var(--ch1-color);
+}
+#screen .triggerHArrow.ch2 {
+  fill: var(--ch2-color);
+  stroke: var(--ch2-color);
+}
+#screen .triggerVArrow {
+  fill:#7e7a8b;
+  stroke: orange;
+}
+
+#screen .ch1Arrow {
+  stroke: var(--ch1-color);
+  fill: var(--ch1-color);
+}
+
+#screen .ch2Arrow {
+  stroke: var(--ch2-color);
+  fill: var(--ch2-color);
+}
+
+#screen .ch1Curve {
+  stroke: var(--ch1-color);
+  fill: none;
+}
+
+#screen .ch2Curve {
+  stroke: var(--ch2-color);
+  fill: none;
+}
+
+#screen .horPosWidget line,
+#screen .horPosWidget path {
+  stroke: white;
+  fill: none;
+}
+
+.hidden {
+  display: none;
 }

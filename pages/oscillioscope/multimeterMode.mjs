@@ -134,8 +134,8 @@ export class MultimeterScreenBase extends ScreenBase {
 
   drawScreen() {
     // display screen
-    const rect = this.createElement("rect",
-      {x:0,y: 30,width:this.width,height:this.height-30});
+    const rect = this.createElement("rect", {
+      x:0,y: 30, width:this.width, height:this.height-30});
     rect.classList.add("multimeterResultBg");
     this.mode.manager.oscInstance.screen.append(rect);
 
@@ -355,7 +355,7 @@ class MultimeterMenu extends MenuBase {
   }
 
   on_F1Btn() {
-    this.voltageTypeChoices.increment(true);
+    //this.voltageTypeChoices.increment(true);
     this.manager.ensureMode("ModeVolt");
     this.manager.currentMode.acMode =
       this.voltageTypeChoices.value() == "AC";
@@ -364,7 +364,7 @@ class MultimeterMenu extends MenuBase {
   }
 
   on_F2Btn() {
-    this.currentTypeChoices.increment(true);
+    //this.currentTypeChoices.increment(true);
     this.manager.ensureMode("ModeAmp");
     this.manager.currentMode.acMode =
       this.currentTypeChoices.value() == "AC";
@@ -373,12 +373,12 @@ class MultimeterMenu extends MenuBase {
   }
 
   on_F3Btn() {
-    this.manager.currentMode.unitChoices.increment(true);
+    //this.manager.currentMode.unitChoices.increment(true);
     this.F3Button.click();
   }
 
   on_F4Btn() {
-    this.ohmChoices.increment(true);
+    //this.ohmChoices.increment(true);
     this.manager.ensureMode("ModeOhm");
     this.F4Button.click();
   }

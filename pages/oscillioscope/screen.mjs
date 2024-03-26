@@ -18,6 +18,7 @@ export class ScreenBadgeBase {
    */
   constructor(screen, content, className, attr) {
     this.screen = screen;
+    this.attr = attr;
     this.node = screen.createElement("g", attr);
     const clsArray = Array.isArray(className) ? className : [className];
     for (const cls of ["badge", ...clsArray])
@@ -37,8 +38,10 @@ export class ScreenBadgeBase {
    */
   layout() {
     const box = this.content.getBoundingClientRect();
-    this.rect.width.baseVal.value = box.width + 10;
-    this.rect.height.baseVal.value = box.height + 10;
+    const width = box.width || this.attr?.width || 0,
+          height = box.height || this.attr?.height || 0;
+    this.rect.width.baseVal.value = width + 10;
+    this.rect.height.baseVal.value = height + 10;
   }
 
   destroy() {
@@ -152,7 +155,7 @@ export class ScreenFuncBtn extends ScreenBadgeBase {
     for (const value of arr) {
       const yOffset = horizontal ? 15 : ScreenFuncBtn.rowSpacing*i+4,
             xOffset = horizontal ? itemWidth * i +2:
-              (itemWidth-arr[i].length)/2;
+              (itemWidth-(""+arr[i]).length)/2;
       const attr = {transform:`translate(${xOffset},${yOffset})`};
       const items = [
         screen.createElement("rect", attr),
@@ -160,8 +163,9 @@ export class ScreenFuncBtn extends ScreenBadgeBase {
       items.forEach(n=>n.classList.add("funcBtnItem"));
       if (i === selectedIdx)
         items.forEach(n=>n.classList.add("selected"));
-      items[1].append(value);
-      items.forEach(n=>g.append(n));
+      items[1].append(""+value);
+      g.append(...items);
+      //items.forEach(n=>g.append(n));
       i++;
     }
 
@@ -245,7 +249,8 @@ export class ScreenFuncBtn extends ScreenBadgeBase {
     this.rect.height.baseVal.value = this.height;
   }
 
-  click() {
+  click(increment = true) {
+    if (increment) this.choices.increment(true);
     this.expand();
   }
 

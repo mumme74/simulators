@@ -30,6 +30,7 @@ export class KeyInputManager {
     this.oscInstance = oscInstance;
     if (startupMode === undefined)
       startupMode = OscModes[this.defaultMode()];
+    this.menuHistory = [];
     this.switchMode(startupMode);
 
     const b = document.body, self = this,
@@ -144,6 +145,21 @@ export class KeyInputManager {
       if (!(instance instanceof MenuBase))
         throw new Error(`${name} does not inherit MenuBase`);
     });
+    this.menuHistory.push(name);
+  }
+
+  menuBack() {
+    if (this.menuHistory.length > 1) {
+      this.menuHistory.pop(); // current menu
+      this.activateMenu(this.menuHistory.pop()); // prev menu
+    }
+  }
+
+  menuAtHistory(back) {
+    if (this.menuHistory.length-1 >= back)
+      return this.instances[this.menuHistory[
+        this.menuHistory.length - back-1]];
+    return null;
   }
 
   _activate(name, prop, checker) {
@@ -176,7 +192,7 @@ export class KeyInputManager {
         cb(e);
         self._cancelRepeat();
         self._repeatClickStartTmr = setTimeout(()=>{
-          self._repeatClickTmr = setInterval(cb, 80);
+          self._repeatClickTmr = setInterval(cb, 20);
         }, 700);
       }
       buttons[key].addEventListener("mousedown", bound, instance);
@@ -311,7 +327,7 @@ export class MenuBase extends KeyInputBase {
     let openCnt = 0;
     for (let i = 1; i < 5; ++i) {
       const but = this[`F${i}Button`];
-      if (!but?.collapsed) openCnt++;
+      if (but && !but.collapsed) openCnt++;
       but?.collapse();
     }
     return openCnt;
@@ -326,7 +342,7 @@ export class MenuBase extends KeyInputBase {
       n.classList.add("halt");
       n.classList.remove("on");
     }
-    this.manager.currentMode.screen.display.update();
+    this.manager.currentMode.screen.update();
     this.manager.currentMode.screen.updateHeader();
   }
 
