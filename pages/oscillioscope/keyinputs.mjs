@@ -30,7 +30,15 @@ export class KeyInputManager {
     this.oscInstance = oscInstance;
     if (startupMode === undefined)
       startupMode = OscModes[this.defaultMode()];
-    this.switchMode(startupMode)
+    this.switchMode(startupMode);
+
+    const b = document.body, self = this,
+          cb = (()=>{
+            setTimeout(self._cancelRepeat.bind(self), 0);
+          }).bind(this);
+    b.addEventListener("mouseup", cb);
+    b.addEventListener("touchend", cb);
+    b.addEventListener("touchcancel", cb);
   }
 
   /**
@@ -149,9 +157,10 @@ export class KeyInputManager {
     if (this[prop]) {
       const old = this[prop];
       for (const [key, node] of Object.entries(this.oscInstance.buttons)) {
-        if (old.bound && old.bound[`on_${key}_bound`])
-          buttons[key].removeEventListener("click", old.bound[`on_${key}_bound`]);
-        else
+        if (old.bound && old.bound[`on_${key}_bound`]) {
+          buttons[key].removeEventListener("mousedown", old.bound[`on_${key}_bound`]);
+          buttons[key].removeEventListener("touchstart", old.bound[`on_${key}_bound`]);
+        } else
           console.warn(key, "not detached from DOM");
       }
       delete old.bound;
@@ -161,8 +170,17 @@ export class KeyInputManager {
     this[prop] = instance;
     instance.bound = {};
     for (const [key, node] of Object.entries(this.oscInstance.buttons)) {
-      const bound = instance.bound[`on_${key}_bound`] = instance[`on_${key}`].bind(instance);
-      buttons[key].addEventListener("click", bound, instance);
+      const self = this;
+      const bound = instance.bound[`on_${key}_bound`] = (e)=>{
+        const cb = instance[`on_${key}`].bind(instance);
+        cb(e);
+        self._cancelRepeat();
+        self._repeatClickStartTmr = setTimeout(()=>{
+          self._repeatClickTmr = setInterval(cb, 80);
+        }, 700);
+      }
+      buttons[key].addEventListener("mousedown", bound, instance);
+      buttons[key].addEventListener("touchstart", bound, instance);
     }
 
     if (prop === "currentMode" && name !== 'ModeOff')
@@ -170,6 +188,13 @@ export class KeyInputManager {
     instance.redraw();
     instance.activated();
     console.log(name, "activated")
+  }
+
+  _cancelRepeat() {
+    if (this._repeatClickStartTmr)
+      clearTimeout(this._repeatClickStartTmr);
+    if (this._repeatClickTmr)
+      clearTimeout(this._repeatClickTmr);
   }
 }
 
@@ -280,6 +305,16 @@ export class MenuBase extends KeyInputBase {
 
   redraw() {
     this.haltButtonUpdated();
+  }
+
+  collapseFuncButtons() {
+    let openCnt = 0;
+    for (let i = 1; i < 5; ++i) {
+      const but = this[`F${i}Button`];
+      if (!but?.collapsed) openCnt++;
+      but?.collapse();
+    }
+    return openCnt;
   }
 
   haltButtonUpdated() {
