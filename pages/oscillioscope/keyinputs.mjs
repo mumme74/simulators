@@ -237,6 +237,8 @@ export class KeyInputBase {
   cleanup() {}
   redraw() {}
 
+  on_holdChange() {}
+
   /// all possible events from SVG buttons
   on_F1Btn(e) {}
   on_F2Btn(e) {}
@@ -268,6 +270,7 @@ export class ModeBase extends KeyInputBase {
   autoRange = true;
   constructor(manager, subModes) {
     super(manager, subModes);
+    this.hold = false;
   }
 
   activated() {
@@ -316,11 +319,10 @@ export class MenuBase extends KeyInputBase {
    */
   constructor(manager,subMenus = []) {
     super(manager, subMenus);
-    this.hold = false;
   }
 
   redraw() {
-    this.haltButtonUpdated();
+    this.holdButtonUpdated();
   }
 
   collapseFuncButtons() {
@@ -333,9 +335,9 @@ export class MenuBase extends KeyInputBase {
     return openCnt;
   }
 
-  haltButtonUpdated() {
+  holdButtonUpdated() {
     const n = this.manager.oscInstance.buttons.runPauseBtn;
-    if (!this.hold) {
+    if (!this.manager.currentMode.hold) {
       n.classList.add("on");
       n.classList.remove("halt");
     } else {
@@ -347,8 +349,10 @@ export class MenuBase extends KeyInputBase {
   }
 
   on_runPauseBtn() {
-    this.hold = !this.hold;
-    this.haltButtonUpdated();
+    this.manager.currentMode.hold =
+      !this.manager.currentMode.hold;;
+    this.holdButtonUpdated();
+    this.manager.currentMode?.on_holdChange();
   }
 }
 

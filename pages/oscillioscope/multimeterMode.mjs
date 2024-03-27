@@ -160,6 +160,10 @@ class ModeMultimeterBase extends ModeBase {
   on_modeBtn() {
     this.manager.activateMode("ModeOscillioscope");
   }
+
+  sampleTimeMs() {
+    return 400;
+  }
 }
 
 /**

@@ -76,7 +76,7 @@ export class ScreenBadgeText extends ScreenBadgeBase {
 }
 
 /**
- * A custom badge with label, values and unit seeparated.
+ * A custom badge with label, values and unit separated.
  * Easier to update
  * @readonly {string | number} value The currently rendered value
  * @readonly {string} unit The currently rendered unit

@@ -32,7 +32,7 @@ export class SignalInputBase {
    * Start periodic acquire
    */
   start() {
-    this.tmr = setInterval(this.acquire.bind(this), this.intervall);
+    this.tmr = setInterval(this.sample.bind(this), this.intervall);
   }
 
   /**
@@ -41,6 +41,10 @@ export class SignalInputBase {
   stop() {
     clearInterval(this.tmr);
     this.tmr = null;
+  }
+
+  setHold(hold) {
+    hold ? this.stop() : this.start();
   }
 
   /**
@@ -56,11 +60,12 @@ export class SignalInputBase {
   }
 
   /**
-   * Acquire from signal generator
+   * Sample from signal generator
    * Normally not needed, auto-acquires if start-ed
    */
-  acquire() {
-    const data = this.attachedCh.acquire(400);
+  sample() {
+    this.sampleTimeMs = this.mode.sampleTimeMs();
+    const data = this.attachedCh.sample(this.sampleTimeMs);
     this.inspectData(data);
   }
 
@@ -100,7 +105,7 @@ class SignalGeneratorChannel {
 
   setSignal(signalName) {
     this._clearHtml();
-    this.signal = SignalManager.instance().getInstance(signalName);
+    this.signal = SignalManager.instance().createInstance(signalName);
     localStorage.setItem(`${this.name}_signal`, signalName);
     // create same for all
     const idPart = `${this.name}_`;
@@ -153,8 +158,11 @@ class SignalGeneratorChannel {
     const div = document.createElement("div"),
           lbl = document.createElement("label"),
           range = document.createElement("input"),
-          vlu = document.createElement("span");
-    vlu.innerText = initVlu;
+          vlu = document.createElement("input");
+    vlu.type = "number";
+    vlu.value = initVlu;
+    vlu.max = prop.max;
+    vlu.min = prop.min;
     lbl.for = `${idPart}${prop.name}`;
     lbl.innerText = prop.caption;
     range.id = lbl.for;
@@ -170,15 +178,19 @@ class SignalGeneratorChannel {
   _createProp(idPart, prop) {
     const initVlu = prop.getCallback(this.signal[prop.name]);
     const {range,vlu} = this._createRange(idPart, prop, initVlu);
-    range.addEventListener("change",(e)=>{
-      vlu.innerText = e.target.value;
+    const cb = (e)=>{
       const fn = `set${
         prop.name[0].toUpperCase()
       }${
         prop.name.substring(1)
       }`;
-      this.signal[fn](prop.setCallback(+e.target.value));
-    });
+      const v = + e.target.value;
+      this.signal[fn](prop.setCallback(v));
+      range.value = v;
+      vlu.value = v;
+    };
+    range.addEventListener("change",cb);
+    vlu.addEventListener("change", cb)
   }
 
   _createFrequency(idPart) {
@@ -188,19 +200,23 @@ class SignalGeneratorChannel {
       getCallback: ((vlu)=>vlu),
       setCallback: ((vlu)=>vlu)
     }, this.frequency);
-    range.addEventListener("change", (e)=>{
-      this.setFrequency(+e.target.value);
-      vlu.innerText = e.target.value;
-    });
+    const cb = (e)=>{
+      const v = +e.target.value;
+      this.setFrequency(v);
+      range.value = v;
+      vlu.value = v;
+    }
+    range.addEventListener("change", cb);
+    vlu.addEventListener("change", cb)
   }
 
   setFrequency(frequency) {
     this.frequency = +frequency;
   }
 
-  acquire(durationMs, from = -1) {
+  sample(durationMs, from = -1) {
     // acquire for ms long
-    const data = new Int16Array(4000);
+    const data = new Int16Array(this.signal.points.length);
     if (!this.running) return data;
 
     // special case DC
@@ -222,7 +238,7 @@ class SignalGeneratorChannel {
       const vlu = this.signal.points[Math.floor(si)];
       data[i] = vlu;
     }
-    this._acquireFrom = si;
+    this._acquireFrom = si-1;
 
     return data;
   }
@@ -233,7 +249,6 @@ class SignalGeneratorChannel {
  */
 class SignalManager {
   static classes = {};
-  instances = {};
 
   /**
    * Register a signal class to Signal manager
@@ -271,18 +286,16 @@ class SignalManager {
   }
 
   /**
-   * Get the instance with clsName
+   * Create a new instance from clsName
    * @param {string} clsName The name of the class to get
    * @returns {SignalBase} The instance of the signal
    * @throws {Error} if clsName is'nt registered
    */
-  getInstance(clsName) {
+  createInstance(clsName) {
     const signalCls = SignalManager.classes[clsName];
     if (!signalCls)
       throw new Error(`${clsName} is not registered`);
-    if (this.instances[clsName])
-      return this.instances[clsName];
-    return this.instances[clsName] = new SignalManager.classes[clsName]();
+    return new SignalManager.classes[clsName]();
   }
 }
 
@@ -312,7 +325,7 @@ class SignalProperty {
  */
 class SignalBase {
   constructor(props) {
-    this.points = new Int16Array(4000);
+    this.points = new Int16Array(12000);
     // store all properties and name them if needed
     this.props = props;
     Object.entries(this.props).forEach(([key,prop])=>{
@@ -412,7 +425,7 @@ SignalManager.register(SignalDC);
  * Generate square wave
  */
 class SignalSquare extends SignalCyclic {
-  constructor(amplitude = 12, offset = 0, cycles = 4, duty = 0.5) {
+  constructor(amplitude = 12, offset = 0, cycles = 12, duty = 0.5) {
     const props = {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20}),
@@ -436,7 +449,7 @@ class SignalSquare extends SignalCyclic {
       steps = state ? onSteps : offSteps;
       const amp = state ? this.amplitude : -this.amplitude;
       const vlu = amp * 100 + this.offset * 100;
-      this.points.fill(this.clamp(vlu), i, steps);
+      this.points.fill(this.clamp(vlu), i, i + steps);
       state = !state;
     }
   }
@@ -445,10 +458,6 @@ class SignalSquare extends SignalCyclic {
     this.duty = duty;
     this.update();
   }
-
-  setCustom(custom) {
-    this.setDuty(+custom / 100);
-  }
 }
 SignalManager.register(SignalSquare);
 
@@ -456,7 +465,7 @@ SignalManager.register(SignalSquare);
  * Generate a ramp (sawtooth) wave
  */
 class SignalRamp extends SignalCyclic {
-  constructor(amplitude = 12, offset = 0, cycles = 4) {
+  constructor(amplitude = 12, offset = 0, cycles = 12) {
     const props = {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20})
@@ -472,7 +481,7 @@ class SignalRamp extends SignalCyclic {
     for (let i = 0, steps = period; i < len; i++, steps++) {
       vlu = (steps >= period) ? -this.amplitude + this.offset : vlu + incr;
       if (steps >= period) steps = 0;
-      this.points[i] = this.clamp(vlu);
+      this.points[i] = this.clamp(vlu*100);
     }
   }
 }
@@ -482,11 +491,11 @@ SignalManager.register(SignalRamp);
  * Generate a triangle wave
  */
 class SignalTriangle extends SignalCyclic {
-  constructor(amplitude = 12, offset = 0, cycles = 4, skew = 0.5) {
+  constructor(amplitude = 12, offset = 0, cycles = 12, skew = 0.5) {
     const props = {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20}),
-      skew: new SignalProperty({min:0,max:100,
+      skew: new SignalProperty({min:10,max:90,
         callbackSet(vlu){ return +vlu / 100; },
         callbackGet(vlu) { return vlu * 100; }
       })
@@ -498,29 +507,33 @@ class SignalTriangle extends SignalCyclic {
 
   update() {
     const {len, period} = this._period(this.cycles),
-          upSteps = Math.round(period * this.skew),
-          downSteps = Math.round(period - upSteps),
-          inc = this.amplitude * 2 / upSteps,
-          dec = this.amplitude * 2 / downSteps;
+          ampTop = this.amplitude + this.offset,
+          ampBottom = -this.amplitude + this.offset,
+          tUp = period / 2 * this.skew,
+          tDown = period / 2 - tUp,
+          // mul by 100 to increase rounding precision
+          inc = this.amplitude *100 / tUp / 100,
+          dec = -this.amplitude *100 / tDown / 100;
 
-    let state = true, vlu = -this.amplitude + this.offset;
-    for (let i = 0, steps = 0; i < len; i++, steps++) {
-      if (steps >= upSteps) {
-        state = !state;
-        steps = 0;
+    let state = true,
+        vlu = -this.amplitude + this.offset,
+        term = inc;
+    for (let i = 0; i < len; i++) {
+      if (state && vlu >= ampTop) {
+        state = false;
+        term = dec;
+      } else if (!state && vlu <= ampBottom) {
+        state = true;
+        term = inc;
       }
-      vlu += state ? inc : dec;
-      this.points[i] = this.clamp(vlu);
+      vlu += term;
+      this.points[i] = this.clamp(vlu*100);
     }
   }
 
   setSkew(skew) {
     this.skew = skew;
     this.update();
-  }
-
-  setCustom(custom) {
-    this.setSkew(+custom / 100);
   }
 }
 SignalManager.register(SignalTriangle);
@@ -529,7 +542,7 @@ SignalManager.register(SignalTriangle);
  * Generate a sine wave
  */
 class SignalSine extends SignalCyclic {
-  constructor(amplitude = 12, offset = 0, cycles = 4) {
+  constructor(amplitude = 12, offset = 0, cycles = 12) {
     const props = {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20})
@@ -543,8 +556,8 @@ class SignalSine extends SignalCyclic {
           rot = Math.PI * 2 * this.cycles / len;
 
     for (let i = 0; i < len; ++i) {
-      const vlu = Math.sin(rot * i) * this.amplitude * 100 + this.offset;
-      this.points[i] = this.clamp(vlu);
+      const vlu = Math.sin(rot * i) * this.amplitude + this.offset;
+      this.points[i] = this.clamp(vlu * 100);
     }
   }
 }

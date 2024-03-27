@@ -83,8 +83,8 @@
 }
 
 #screen {
-  --ch1-color: yellowgreen;
-  --ch2-color: rgb(34, 92, 89);
+  --ch1-color: rgb(200, 223, 73);
+  --ch2-color: rgb(44, 158, 152);
 }
 
 #screen rect.battery {
