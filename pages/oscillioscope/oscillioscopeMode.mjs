@@ -183,20 +183,23 @@ class OscillioscopeHorPosWidget extends ScreenBadgeBase {
           xMiddle = this.width / 2;
 
     const screenWidth = this.screenEdgeIn * 2 -4,
-          markerPos = xMiddle + horPos / tDiv * screenWidth / gridXNr,
-          mPosClamped = Math.min(this.width, Math.max(0, markerPos));
+          centerPos = (horPos / tDiv * screenWidth / gridXNr),
+          markerPos = xMiddle + centerPos,
+          markerPosRev = xMiddle -centerPos,
+          mPosClamped = Math.min(this.width, Math.max(0, markerPos)),
+          mPosClampedRev = Math.min(this.width, Math.max(0, markerPosRev));
 
     this.lineMarker.x1.baseVal.value = mPosClamped;
     this.lineMarker.x2.baseVal.value = mPosClamped;
 
     // move brackets at edges
-    const lBracketPos = Math.min(this.screenEdgeIn, mPosClamped+4),
+    const lBracketPos = Math.min(this.screenEdgeIn, mPosClampedRev+4),
           rBracketPos = Math.max(
-              this.width - this.screenEdgeIn, mPosClamped-4),// 4 for bracket width
-          lBracketX = mPosClamped > xMiddle ?
+              this.width - this.screenEdgeIn, mPosClampedRev-4),// 4 for bracket width
+          lBracketX = mPosClampedRev > xMiddle ?
               Math.max(0,Math.max(rBracketPos-screenWidth+4, lBracketPos))
             : lBracketPos,
-          rBracketX = mPosClamped < xMiddle ?
+          rBracketX = mPosClampedRev < xMiddle ?
               Math.min(
                 this.width,
                 Math.min(lBracketPos+screenWidth-4, rBracketPos))
