@@ -616,7 +616,7 @@ class OscillioscopeScreen extends ScreenBase {
           end = clampData(dataLen/2 + midPntInDisp);
 
     // if we have trigger lock
-    const trigPosPnt = (end-start)/2 + (clampMid(-trigPos/tDivShown)*ptsPerDivShown),
+    const trigPosPnt = (end-start)/2 + (clampMid(-trigPos/tDiv)*ptsPerDivShown),
           trigMode = this.mode.triggerSettings.type.value(),
           posInScreen = (pt)=>start+midPntInDisp-pt  + (-trigPosPnt)+midPntInDisp;
     for (const pt of trigSource.triggerPoints) {
@@ -636,6 +636,13 @@ class OscillioscopeScreen extends ScreenBase {
 
     start -= offsetX;
     end -= offsetX;
+    if (start < 0) {
+      end -= start;
+      start = 0;
+    } else if (end >= dataLen) {
+      start -= dataLen - end;
+      end = dataLen;
+    }
 
     // y coords
     const ch1ZeroPos = middle + ch1Zero * ch1Factor,

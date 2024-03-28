@@ -83,6 +83,21 @@ export class SignalGenerator {
     this.ch1 = new SignalGeneratorChannel(this, "ch1", true);
     this.ch2 = new SignalGeneratorChannel(this, "ch2");
     this.multimeter = new SignalGeneratorChannel(this, "multi", true);
+    SignalGenerator.instance = this;
+  }
+
+  /**
+   * Used to update Gui when a property is changed by code
+   * @param {SignalBase} sigInstance The signal affected
+   * @param {string} prop The propertyName
+   */
+  setPropertyValue(sigInstance, prop) {
+    [this.ch1, this.ch2, this.multimeter].find(channel=>{
+      if (channel.signal === sigInstance) {
+        channel.setPropertyValue(prop, channel.signal[prop]);
+        return true;
+      }
+    })
   }
 }
 
@@ -157,7 +172,7 @@ class SignalGeneratorChannel {
     this.node.append(div);
   }
 
-  _createRange(idPart, prop, initVlu) {
+  _createRange(idPart, prop, initVlu, key) {
     const div = document.createElement("div"),
           lbl = document.createElement("label"),
           range = document.createElement("input"),
@@ -166,7 +181,8 @@ class SignalGeneratorChannel {
     vlu.value = initVlu;
     vlu.max = prop.max;
     vlu.min = prop.min;
-    lbl.for = `${idPart}${prop.name}`;
+    vlu.id = `${idPart}${key}_vlu`;
+    lbl.for = `${idPart}${key}_range`;
     lbl.innerText = prop.caption;
     range.id = lbl.for;
     range.type = "range";
@@ -182,15 +198,11 @@ class SignalGeneratorChannel {
     return {vlu, range, lbl, div};
   }
 
-  _createProp(idPart, prop, name) {
-    const initVlu = prop.getCallback(this.signal[name]);
-    const {range,vlu} = this._createRange(idPart, prop, initVlu);
+  _createProp(idPart, prop, key) {
+    const initVlu = prop.getCallback(this.signal[key]);
+    const {range,vlu} = this._createRange(idPart, prop, initVlu, key);
     const cb = (e)=>{
-      const fn = `set${
-        name[0].toUpperCase()
-      }${
-        name.substring(1)
-      }`;
+      const fn = this.signal.propertySetter(key);
       const v = + e.target.value;
       this.signal[fn](prop.setCallback(v));
       range.value = v;
@@ -221,6 +233,14 @@ class SignalGeneratorChannel {
     this.frequency = +frequency;
   }
 
+  setPropertyValue(prop, vlu) {
+    const idPart = `${this.name}_${prop}`;
+    const vluNode = document.getElementById(`${idPart}_vlu`),
+          rangeNode = document.getElementById(`${idPart}_range`);
+    if (vluNode) vluNode.value = vlu;
+    if (rangeNode) rangeNode.value = vlu;
+  }
+
   sample(durationMs, from = -1) {
     // acquire for ms long
     const data = new Int16Array(this.signal.points.length);
@@ -232,7 +252,7 @@ class SignalGeneratorChannel {
       return data;
     }
 
-    if (from !== -1 && this.signal.alwaysSampleFrom)
+    if (from === -1 && this.signal.alwaysSampleFrom !== undefined)
       from = this.signal.alwaysSampleFrom;
 
     const signalDurationMs = this.signal.points.length / this.frequency,
@@ -259,6 +279,7 @@ class SignalGeneratorChannel {
  */
 class SignalManager {
   static classes = {};
+  _createdInstances = [];
 
   /**
    * Register a signal class to Signal manager
@@ -308,7 +329,21 @@ class SignalManager {
     const signalCls = SignalManager.classes[clsName];
     if (!signalCls)
       throw new Error(`${clsName} is not registered`);
-    return new SignalManager.classes[clsName]();
+    const instance = new SignalManager.classes[clsName]();
+    this._createdInstances.push(instance)
+    return instance;
+  }
+
+  /**
+   * Finds alla created signals of type
+   * @param {string|SignalBase} signal The signal to filter in
+   * @returns {[SignalBase]} All created signals which matches signal
+   */
+  findSignals(signal) {
+    if (signal instanceof SignalBase)
+      signal = signal.constructor.name;
+    return this._createdInstances.filter(i=>
+      i.constructor.name === signal);
   }
 }
 
@@ -346,6 +381,14 @@ class SignalBase {
     Object.entries(this.props).forEach(([key,prop])=>{
       if (!prop.name) prop.name = key;
     });
+  }
+
+  propertySetter(name) {
+    return `set${
+      name[0].toUpperCase()
+    }${
+      name.substring(1)
+    }`;
   }
 
   name() {
@@ -787,3 +830,94 @@ class SignalLinBus extends SignalDiscontinuous {
   }
 }
 SignalManager.register(SignalLinBus);
+
+class Signal2Channel extends SignalBase {
+  constructor(props, amplitude, name) {
+    super(props,name)
+    this.amplitude = amplitude;
+    this.props = props;
+    this._updateLock = false;
+  }
+
+  syncProperty(propertyName, vlu = null) {
+    this._updateLock = true;
+    SignalManager.instance().findSignals(this).forEach(s=>{
+      s.syncSetProperty(
+        this.propertySetter(propertyName),
+        vlu ?? this[propertyName]);
+    });
+    this._updateLock = false;
+  }
+
+  syncSetProperty(setFn, vlu) {
+    if (this._updateLock) return;
+    if (!this[setFn])
+      throw new Error("Can't set property using " + setFn);
+    this[setFn](vlu);
+    const prop = setFn[3].toLowerCase() + setFn.substring(4);
+    SignalGenerator.instance.setPropertyValue(this, prop);
+  }
+
+  setAmplitude(amplitude) {
+    this.amplitude = amplitude;
+    this.syncProperty("amplitude");
+    this.update();
+  }
+}
+
+class SignalResolver extends Signal2Channel {
+  constructor(amplitude = 5, cos = undefined, baseFrequency = 10000) {
+    const maxSpeed = 1000,
+          props = {
+      amplitude: new SignalProperty({min:1,max:10}),
+      baseFrequency: new SignalProperty({name:"bas.frekv.",min:5000,max:10000,step:100}),
+      speed: new SignalProperty({name:"rpm.", min:0,max:maxSpeed,step:20}),
+      cos: new SignalProperty({name:"Sin/cos",min:0,max:1})
+    };
+    super(props, amplitude, "Resolver");
+    this.frequency = 1000;
+    this.alwaysSampleFrom = 0;
+    this.baseFrequency = baseFrequency;
+    this.cos = cos ?? SignalManager.instance().findSignals(
+      this.constructor.name).length ? 1 : 0;
+    this.speed = 100;
+    this.maxSpeed = maxSpeed;
+    this._updateLock = false;
+    this.update();
+  }
+
+  setBaseFrequency(frequency) {
+    this.baseFrequency = frequency;
+    this.update();
+    this.syncProperty("baseFrequency", frequency);
+  }
+
+  setCos(cos) {
+    this.cos = cos;
+    this.update();
+    this.syncProperty("cos", cos ? 0 : 1);
+  }
+
+  setSpeed(speed) {
+    this.speed = speed;
+    this.update();
+    this.syncProperty("speed", speed);
+  }
+
+  update() {
+    const fFac = this.baseFrequency / this.points.length / 100,
+          cosFac = this.cos * Math.PI / 2,
+          nRevs = Math.floor(this.speed / 60),
+          ptsPerRev =  nRevs * Math.PI / (this.points.length-1);
+
+    for (let i = 0; i < this.points.length; ++i) {
+      let vlu = Math.sin(((i*fFac)+cosFac)*Math.PI) * this.amplitude;
+      if (this.speed)
+        vlu *= Math.sin(((i*ptsPerRev)+cosFac));
+      else
+        vlu *= this.cos;
+      this.points[i] = vlu * 100;
+    }
+  }
+}
+SignalManager.register(SignalResolver);
