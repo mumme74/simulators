@@ -1,4 +1,4 @@
-FROM instrumentisto/rsync-ssh:alpine3.15
+FROM instrumentisto/rsync-ssh:alpine
 RUN apk add --update --no-cache npm \
      && rm -rf /var/cache/apk/*
 
