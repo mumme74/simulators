@@ -53,16 +53,8 @@ class OscillioscopeInput extends SignalInputBase {
     }
 
     mean /= (data.length / 1000);
-    this.data = data;
-    this.value = mean;
-    this.min = min;
-    this.max = max;
-    this.tDiv = +this.mode.tDivChoices.value();
-    // trigger source on this channel?
-    this.triggerPoints = (this.mode.triggerSettings.chNr === this.chNr) ?
-      triggerPoints : [];
 
-    this.finalize();
+    this.finalize(data, mean, min, max, triggerPoints);
   }
 
   /*_unTriggeredSwep() {
@@ -74,23 +66,40 @@ class OscillioscopeInput extends SignalInputBase {
     this.data = data;
   }*/
 
-  finalize() {
+  finalize(data, mean, min, max, triggerPoints) {
     switch (this.mode.triggerSettings.type.value()) {
     case "Normal":
-      if (this.triggerPoints.length)
+      if (this.triggerPoints.length) {
+        this.store(data, mean, min, max, triggerPoints);
         this.mode.screen.update();
+      }
       break;
     case "Single":
       if (this.triggerPoints.length) {
         this.mode.hold = false;
         this.mode.manager.currentMenu.on_runPauseBtn();
+        this.store(data, mean, min, max, triggerPoints)
+        this.mode.screen.update();
       }
       break;
     case "Auto": default:
       //if (this.triggedAtPoint === -1)
       //  this._unTriggeredSwep();
+      this.store(data, mean, min, max, triggerPoints);
       this.mode.screen.update();
     }
+  }
+
+  store(data, mean, min, max, triggerPoints) {
+
+    this.data = data;
+    this.value = mean;
+    this.min = min;
+    this.max = max;
+    this.tDiv = +this.mode.tDivChoices.value();
+    // trigger source on this channel?
+    this.triggerPoints = (this.mode.triggerSettings.chNr === this.chNr) ?
+      triggerPoints : [];
   }
 }
 
@@ -256,7 +265,7 @@ class OscillioscopeScreen extends ScreenBase {
       this.mode.trigTime(), this.mode.trigTimeUnit(), "triggerTimeBadge",
       {transform:"translate(300,3)"});
 
-    this.horPosWgt = new OscillioscopeHorPosWidget(this, 160, 3);
+    this.horPosWgt = new OscillioscopeHorPosWidget(this, 140, 3);
   }
 
   _buildTriggInfoStr() {
@@ -611,22 +620,26 @@ class OscillioscopeScreen extends ScreenBase {
           msPerPoint = sampleTime/dataLen,
           ptsPerDiv = 1000 * tDiv / msPerPoint,
           tDivShown = this.mode.tDivChoices.value(),
-          ptsPerDivShown = 1000 * tDivShown / msPerPoint,
-          ptsPerDivXShown = displayPoints * tDivShown / gridXNr;
+          ptsPerDivShown = 1000 * tDivShown / msPerPoint;
 
     const clampX = (vlu)=>Math.min(dataLen, Math.max(0, vlu)),
           ptsPerDisplay = ptsPerDivShown * gridXNr,
-          xFact = width / ptsPerDisplay;
+          xFact = width / ptsPerDisplay,
+          midPntInDisp = ptsPerDisplay/2;;
 
     let offsetX = ((horPos / tDivShown) * ptsPerDivShown);
-    let   start = clampX(dataLen/2 - ptsPerDisplay/2),
-          end = clampX(dataLen/2 + ptsPerDisplay/2);
+    let   start = clampX(dataLen/2 - midPntInDisp),
+          end = clampX(dataLen/2 + midPntInDisp);
 
     // if we have trigger lock
     const trigPosPnt = (end-start)/2 + (-trigPos*ptsPerDivShown);
     for (const pt of trigSource.triggerPoints) {
       if (pt >= start && pt <= end) {
-        offsetX -= clampX(pt-start + trigPosPnt);
+        offsetX += Math.max(
+          -midPntInDisp,
+          Math.min(
+            midPntInDisp,
+            start+midPntInDisp-pt  + (-trigPosPnt)+midPntInDisp));
         break;
       }
     }
@@ -702,8 +715,8 @@ export class ModeOscillioscope extends ModeBase {
     this.horPos = new OscillioscopeAxisValue(this.tDivChoices);
 
     // for debug
-    this.triggerSettings.time.value = this.tDivChoices.value();
-    this.triggerSettings.volt.value = this.ch1Settings.vDivChoices.value();
+    //this.triggerSettings.time.value = this.tDivChoices.value();
+    //this.triggerSettings.volt.value = this.ch1Settings.vDivChoices.value();
   }
 
   activated() {
@@ -790,10 +803,11 @@ export class ModeOscillioscope extends ModeBase {
   }
 
   trigTime() {
-    return Math.round(this._tDiv(this.triggerSettings.time.value)*10)/10;
+    return this.triggerSettings.time.value.toFixed(1);
   }
 
   trigTimeUnit() {
+    return this.tDivUnit();
     return this._tDivUnit(this.triggerSettings.time.value);
   }
 
@@ -812,6 +826,8 @@ export class ModeOscillioscope extends ModeBase {
   on_holdChange() {
     this.inputCh1.setHold(this.hold);
     this.inputCh2.setHold(this.hold);
+    this.screen.triggerStatusChoices.select(this.hold ? "Stop" : "Ready");
+    this.screen.updateHeader();
   }
 }
 KeyInputManager.register(ModeOscillioscope);
@@ -920,9 +936,11 @@ class OscillioscopeTriggerMenu1 extends OscillioscopeMenuBase {
   _highlight(on) {
     const screen = this.manager.currentMode.screen,
           fn = on ? "add" : "remove";
-    screen.markerHLine.classList[fn]("highlight");
-    screen.markerVLine.classList[fn]("highlight");
-    screen.updateTrigger();
+    if (screen instanceof OscillioscopeScreen) {
+      screen.markerHLine.classList[fn]("highlight");
+      screen.markerVLine.classList[fn]("highlight");
+      screen.updateTrigger();
+    }
   }
 
   activated() {
@@ -996,12 +1014,18 @@ class OscillioscopeTriggerMenu2 extends OscillioscopeTriggerMenu1 {
 
   on_F2Btn() {
     this.F2Button.click();
-    this.manager.currentMode.screen.updateSettings();
+    const mode = this.manager.mode.currentMode;
+    mode.screen.updateSettings();
   }
 
   on_F3Btn() {
     this.F3Button.click();
-    this.manager.currentMode.screen.updateSettings();
+    const mode = this.manager.currentMode;
+    const type = mode.triggerSettings.type.value(),
+          show = type === "Single" ? "Ready" :
+            type ==='Normal' ? "Scan" : type;
+    mode.screen.triggerStatusChoices.select(show);
+    mode.screen.updateSettings();
   }
 
   on_F4Btn() {
@@ -1039,6 +1063,7 @@ class OscillioscopeTriggerMenu3 extends OscillioscopeTriggerMenu1 {
     this.F2Button.click();
     const mode = this.manager.currentMode;
     mode.triggerSettings.time.value = 0;
+    mode.triggerSettings.volt.value = 0;
     mode.screen.updateTrigger();
     mode.screen.update();
   }
@@ -1173,8 +1198,11 @@ KeyInputManager.register(OscillioscopeChMenu2);
 class OscillioscopeHorMenu1 extends OscillioscopeMenuBase {
 
   _highlight(fn) {
-    this.manager.currentMode.screen.markerVLine
-      .classList[fn]("highlight");
+    const screen = this.manager.currentMode.screen;
+    if (screen instanceof OscillioscopeScreen) {
+      this.manager.currentMode.screen.markerVLine
+        .classList[fn]("highlight");
+    }
   }
 
   activated() {

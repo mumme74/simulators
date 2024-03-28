@@ -113,8 +113,11 @@ class SignalGeneratorChannel {
     this._createSelect(idPart);
     if (this.signal instanceof SignalCyclic)
       this._createFrequency(idPart);
-    Object.values(this.signal.props).forEach(prop=>{
-      this._createProp(idPart, prop);
+    else if (+this.signal.frequency)
+      this.frequency = this.signal.frequency;
+
+    Object.entries(this.signal.props).forEach(([key, prop])=>{
+      this._createProp(idPart, prop, key);
     });
   }
 
@@ -139,11 +142,11 @@ class SignalGeneratorChannel {
     lbl.for = `${idPart}signals`;
     lbl.innerText = "Signaler";
     select.id = lbl.for;
-    SignalManager.instance().allSignals().forEach(sigName=>{
+    SignalManager.instance().allSignals().forEach(([cls, sigName])=>{
       const option = document.createElement("option");
-      option.innerText = sigName.replace("Signal","");
-      option.value = sigName;
-      if (sigName === this.signal.name())
+      option.innerText = sigName.replace(/^Signal/,"");
+      option.value = cls;
+      if (cls === this.signal?.constructor.name)
         option.selected = true;
       select.append(option);
     });
@@ -170,19 +173,23 @@ class SignalGeneratorChannel {
     range.min = prop.min;
     range.max = prop.max;
     range.value = initVlu;
+    if (prop.step) {
+      range.setAttribute("step", prop.step);
+      vlu.setAttribute("step", prop.step);
+    }
     div.append(lbl,range,vlu);
     this.node.append(div);
     return {vlu, range, lbl, div};
   }
 
-  _createProp(idPart, prop) {
-    const initVlu = prop.getCallback(this.signal[prop.name]);
+  _createProp(idPart, prop, name) {
+    const initVlu = prop.getCallback(this.signal[name]);
     const {range,vlu} = this._createRange(idPart, prop, initVlu);
     const cb = (e)=>{
       const fn = `set${
-        prop.name[0].toUpperCase()
+        name[0].toUpperCase()
       }${
-        prop.name.substring(1)
+        name.substring(1)
       }`;
       const v = + e.target.value;
       this.signal[fn](prop.setCallback(v));
@@ -225,8 +232,11 @@ class SignalGeneratorChannel {
       return data;
     }
 
+    if (from !== -1 && this.signal.alwaysSampleFrom)
+      from = this.signal.alwaysSampleFrom;
+
     const signalDurationMs = this.signal.points.length / this.frequency,
-          periodMs = signalDurationMs / this.signal.cycles,
+          periodMs = signalDurationMs / (this.signal.cycles || 1),
           fromIdx = (from>-1 ? from / periodMs : this._acquireFrom);
 
     // loop signal as acquire duration is longer than signal
@@ -282,7 +292,10 @@ class SignalManager {
    * @returns {[string]} An array with all Classnames of registered signals
    */
   allSignals() {
-    return Object.keys(SignalManager.classes);
+    return Object.keys(SignalManager.classes).map(clsName=>{
+      const sig = new SignalManager.classes[clsName]();
+      return [clsName, sig.name()];
+    });
   }
 
   /**
@@ -306,7 +319,7 @@ class SignalProperty {
   constructor({
     name, min = 1, max = 100,
     callbackSet = null, callbackGet = null,
-    caption = ""
+    caption = "", step
   }) {
     this.name = name;
     this.min = min;
@@ -314,6 +327,7 @@ class SignalProperty {
     this._caption = caption || name;
     this.setCallback = callbackSet || ((vlu)=>vlu);
     this.getCallback = callbackGet || ((vlu)=>vlu);
+    this.step = step;
   }
 
   get caption() { return this._caption || this.name ;}
@@ -324,7 +338,8 @@ class SignalProperty {
  * Base class of all signals
  */
 class SignalBase {
-  constructor(props) {
+  constructor(props, name = "") {
+    this._name = name;
     this.points = new Int16Array(12000);
     // store all properties and name them if needed
     this.props = props;
@@ -334,6 +349,7 @@ class SignalBase {
   }
 
   name() {
+    if (this._name) return this._name;
     return this.constructor.name;
   }
 
@@ -350,8 +366,8 @@ class SignalBase {
  * Base class for all continuous signals
  */
 class SignalContinuous extends SignalBase {
-  constructor(props, amplitude) {
-    super(props);
+  constructor(props, amplitude, name = "") {
+    super(props, name);
     this.amplitude = amplitude;
   }
 
@@ -366,8 +382,8 @@ class SignalContinuous extends SignalBase {
 }
 
 class SignalCyclic extends SignalContinuous {
-  constructor(props, amplitude, offset, cycles) {
-    super(props, amplitude);
+  constructor(props, amplitude, offset, cycles, name = "") {
+    super(props, amplitude, name);
     this.offset = offset;
     this.cycles = cycles;
   }
@@ -411,7 +427,7 @@ class SignalDC extends SignalContinuous {
     const props = {
       amplitude: new SignalProperty({min:0.01,max:1000}),
     };
-    super(props, amplitude);
+    super(props, amplitude, "Likspänning");
     this.update();
   }
 
@@ -434,7 +450,7 @@ class SignalSquare extends SignalCyclic {
         callbackGet(vlu) { return vlu * 100; }
       })
     };
-    super(props, amplitude, offset, cycles);
+    super(props, amplitude, offset, cycles, "PWM");
     this.duty = duty;
     this.update();
   }
@@ -470,7 +486,7 @@ class SignalRamp extends SignalCyclic {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20})
     };
-    super(props, amplitude, offset, cycles);
+    super(props, amplitude, offset, cycles, "Sågtand");
     this.update();
   }
 
@@ -500,7 +516,7 @@ class SignalTriangle extends SignalCyclic {
         callbackGet(vlu) { return vlu * 100; }
       })
     };
-    super(props, amplitude, offset, cycles);
+    super(props, amplitude, offset, cycles, "Triangel");
     this.skew = skew;
     this.update();
   }
@@ -547,7 +563,7 @@ class SignalSine extends SignalCyclic {
       amplitude: new SignalProperty({min:0.01,max:1000}),
       offset: new SignalProperty({min:-20,max:20})
     };
-    super(props, amplitude, offset, cycles);
+    super(props, amplitude, offset, cycles, "Sinus");
     this.update();
   }
 
@@ -567,7 +583,138 @@ SignalManager.register(SignalSine);
  * Base class for all non continuos signals, bit frames and such
  */
 class SignalDiscontinuous extends SignalBase {
-  constructor() {
-    super();
+  constructor(props, amplitude, offset, name = "", duration = 0.1, repeats = 3) {
+    super(props, name);
+    this.amplitude = amplitude;
+    this.offset = offset;
+    this.duration = duration;
+    this.repeats = repeats;
+  }
+
+  setAmplitude(amplitude) {
+    this.amplitude = amplitude;
+    this.update();
+  }
+
+  setOffset(offset) {
+    this.offset = offset;
+    this.update();
+  }
+
+  setDuration(duration) {
+    this.duration = duration;
+    this.update();
+  }
+
+  setRepeats(repeats) {
+    this.repeats = repeats;
+    this.update();
+  }
+
+  update() {}
+}
+
+
+class SignalTransient extends SignalDiscontinuous {
+  constructor(amplitude = 12, offset = 0, name = "", duration = 0.1, repeats = 1) {
+    const props = {
+      amplitude: new SignalProperty({min:0.01, max:1000}),
+      offset: new SignalProperty({min:-20,max:20}),
+      repeats: new SignalProperty({min:1,max:5}),
+      duration: new SignalProperty({min:0.001,max:1, step:0.001})
+    };
+    super(props, amplitude, offset, name, duration, repeats);
+    this.frequency = 1;
+    this.alwaysSampleFrom = 0;
+
+    this.update();
+  }
+
+  update() {
+    const distance = this.points.length / this.repeats,
+          halfDur = this.duration / 2 * 100,
+          mulFactor = Math.pow(this.amplitude, 1/(halfDur*100));
+    let x = distance -20 - halfDur, y = this.offset, mul = 1.0;
+    for (let i = 0; i < this.points.length; ++i, ++x) {
+      if (x >= distance) {
+        // decrease
+        y -= this.amplitude * Math.pow(mulFactor, 1/(x-distance+1));
+        if (y <= this.offset-0.1) {
+          x = 0;
+          y = this.offset;
+        }
+      } else if (x+halfDur >= distance) {
+        // increase
+        y += this.amplitude * Math.pow(mulFactor, 1/(distance-x));
+      }
+      this.points[i] = y * 100;
+    }
   }
 }
+SignalManager.register(SignalTransient);
+
+
+class SignalVRSensor extends SignalDiscontinuous {
+  constructor(amplitude = 1, duration = 0) {
+    const props = {
+      amplitude: new SignalProperty({min:0.1,max:10, step:0.1}),
+      duration: new SignalProperty({name:"Ojämn fart",min:0,max:10,step:0.1}),
+      repeats: new SignalProperty({name:"Tänder",min:10,max:80}),
+      missingTooths: new SignalProperty({name:"Saknad tand",min:0,max:2}),
+      speed: new SignalProperty({min:1,max:100}),
+      slowDown: new SignalProperty({min:0,max:1,step:0.05})
+    }
+    super(props, amplitude, 0, "VR sensor", duration, 10);
+    this.missingTooths = 2;//0;
+    this.speed = 1;
+    this.slowDown = 1;
+    this.update();
+    this.frequency = Math.PI;
+  }
+
+  setMissingTooths(tooths) {
+    this.missingTooths = tooths;
+    this.update();
+  }
+
+  setSpeed(speed) {
+    this.speed = speed;
+    this.update();
+  }
+
+  setSlowDown(slowDown) {
+    this.slowDown = slowDown;
+    this.update();
+  }
+
+  update() {
+    // at 1s tDiv sample speed we get 12 kPts in 48s
+    // speed is in rps
+    const oneRotFact = 12 / 4800 * this.speed,
+          slowDownAmplitude = this.amplitude * this.slowDown,
+          oneTooth =  this.repeats * oneRotFact,
+          slowDownSpeed = 4 * oneTooth * oneRotFact; // for 4 cyl compression
+
+
+    let lastVlu = 0, x = 0, t = 0, toothCnt = 0, blockFor = 0;
+    for (let i = 0; i < this.points.length; i++, x++, t++) {
+      const slow = Math.sin((x*slowDownSpeed)*0.8) * this.duration;
+      const vlu = Math.sin(((x*oneTooth)+slow)*0.8) *
+        this.amplitude * (1+slowDownAmplitude * slow);
+
+
+      if (vlu < 0 && lastVlu >= 0) {
+        toothCnt++;
+        if (toothCnt % this.repeats === 0)
+          blockFor = this.missingTooths;
+        else
+          blockFor--;
+      }
+      if (blockFor < 1)
+        this.points[i] = vlu * 100;
+      lastVlu = vlu;
+    }
+    console.log(this.points)
+  }
+}
+SignalManager.register(SignalVRSensor);
