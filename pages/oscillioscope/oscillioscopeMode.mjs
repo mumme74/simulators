@@ -15,7 +15,7 @@ class OscillioscopeInput extends SignalInputBase {
   constructor(mode, ch) {
     super(mode, ch, 50);
     this.chNr = +ch[2];
-    this.chSet = mode[`${ch}Settings`];
+    this.chSettings = mode[`${ch}Settings`];
   }
 
   inspectData(data) {
@@ -24,58 +24,40 @@ class OscillioscopeInput extends SignalInputBase {
     const AC = this.mode.acMode,
           trigVolt = this.mode.triggerSettings.volt.value * 100,
           risingEdge = this.mode.triggerSettings.edge.value()[2] === "R",
-          probeFactor = this.chSet.probeFactor.value(),
+          probeFactor = this.chSettings.probeFactor.value(),
           triggerPoints = [];
-    let min = 0.0, max = 0.0, mean100 = 0, mean1000 = 0, mean = 0,
-        prevVlu = 0, triggedAtPoint = -1;
+    let min = 0.0, max = 0.0, mean = 0,
+        prevVlu = 0;
     for (let i = 0; i < data.length; ++i) {
-      // take average in two steps so we don't get to big a number
-      if ((i % 100) === 0) {
-         mean1000 += (mean100 / 100);
-         mean100 = 0;
-      }
-      if ((i % 1000) === 0) {
-        mean += (mean1000 / 1000);
-        mean1000 = 0;
-      }
-
       const vlu = (AC ? Math.max(0, data[i]) : data[i]) / probeFactor;
-      mean100 += vlu;
+      mean += vlu;
 
       min = Math.min(vlu, min);
       max = Math.max(vlu, max);
 
-      if (risingEdge && trigVolt <= vlu && prevVlu < trigVolt)
+      if (i && risingEdge && trigVolt <= vlu && prevVlu < trigVolt)
         triggerPoints.push(i);
-      else if (!risingEdge && trigVolt >= vlu && prevVlu > trigVolt)
+      else if (i && !risingEdge && trigVolt >= vlu && prevVlu > trigVolt)
         triggerPoints.push(i);
       prevVlu = vlu;
     }
 
-    mean /= (data.length / 1000);
+    mean /= data.length
+    mean /= 100;
 
     this.finalize(data, mean, min, max, triggerPoints);
   }
 
-  /*_unTriggeredSwep() {
-    const data = new Int16Array(this.data.length);
-    for (let i = 20; i < data.length;++i)
-      data[i] = this.data[i-20];
-    for (let i = 20; i >= 0; --i)
-      data[i] = this.data[data.length-21-i];
-    this.data = data;
-  }*/
-
   finalize(data, mean, min, max, triggerPoints) {
     switch (this.mode.triggerSettings.type.value()) {
     case "Normal":
-      if (this.triggerPoints.length) {
+      if (triggerPoints.length) {
         this.store(data, mean, min, max, triggerPoints);
         this.mode.screen.update();
       }
       break;
     case "Single":
-      if (this.triggerPoints.length) {
+      if (triggerPoints.length) {
         this.mode.hold = false;
         this.mode.manager.currentMenu.on_runPauseBtn();
         this.store(data, mean, min, max, triggerPoints)
@@ -83,8 +65,6 @@ class OscillioscopeInput extends SignalInputBase {
       }
       break;
     case "Auto": default:
-      //if (this.triggedAtPoint === -1)
-      //  this._unTriggeredSwep();
       this.store(data, mean, min, max, triggerPoints);
       this.mode.screen.update();
     }
@@ -161,6 +141,7 @@ class OscillioscopeTriggerSettings {
 
   setChannel(chNr) {
     this.chNr = chNr;
+    this.source.selectIdx = chNr -1;
     const vDivChoice = this.mode[`ch${chNr}Settings`].vDivChoices;
     this.volt = new OscillioscopeAxisValue(vDivChoice);
   }
@@ -590,6 +571,13 @@ class OscillioscopeScreen extends ScreenBase {
     if (!trigSource.data)
       return;
 
+    // clamp so curve don't go outside of screen
+    const clamp = (max,min)=> {
+      return (vlu)=>{
+        return Math.max(min,Math.min(max,vlu));
+      }
+    };
+
     const dataLen = trigSource.data.length,
           ch1VDiv = +this.mode.ch1Settings.vDivChoices.value(),
           ch2VDiv = +this.mode.ch2Settings.vDivChoices.value(),
@@ -611,36 +599,38 @@ class OscillioscopeScreen extends ScreenBase {
           ptsPerPxl = 2,
           displayPoints = width * ptsPerPxl,
           tDiv = trigSource.tDiv || +this.mode.tDivChoices.value(),
-          ptsPrDivX = displayPoints * tDiv / gridXNr,
-          totalWidthSec = tDiv * dataLen / ptsPrDivX,
-          midSec = Math.min(dataLen, Math.max(0, totalWidthSec / 2 + horPos * tDiv)),
-          trigPosX = trigPos * ptsPrDivX * gridXNr,
-          horPosX = horPos * ptsPrDivX * gridXNr,
           sampleTime = trigSource.sampleTimeMs || this.mode.sampleTimeMs(),
           msPerPoint = sampleTime/dataLen,
-          ptsPerDiv = 1000 * tDiv / msPerPoint,
           tDivShown = this.mode.tDivChoices.value(),
+          ptsPerDiv = 1000 * tDiv / msPerPoint,
           ptsPerDivShown = 1000 * tDivShown / msPerPoint;
 
-    const clampX = (vlu)=>Math.min(dataLen, Math.max(0, vlu)),
+    const clampData = (vlu)=>Math.min(dataLen, Math.max(0, vlu)),
+          clampMid = clamp(width/2, -width/2),
           ptsPerDisplay = ptsPerDivShown * gridXNr,
           xFact = width / ptsPerDisplay,
           midPntInDisp = ptsPerDisplay/2;;
 
-    let offsetX = ((horPos / tDivShown) * ptsPerDivShown);
-    let   start = clampX(dataLen/2 - midPntInDisp),
-          end = clampX(dataLen/2 + midPntInDisp);
+    let offsetX = ((horPos / tDiv) * ptsPerDiv);
+    let   start = clampData(dataLen/2 - midPntInDisp),
+          end = clampData(dataLen/2 + midPntInDisp);
 
     // if we have trigger lock
-    const trigPosPnt = (end-start)/2 + (-trigPos*ptsPerDivShown);
+    const trigPosPnt = (end-start)/2 + (clampMid(-trigPos/tDivShown)*ptsPerDivShown),
+          trigMode = this.mode.triggerSettings.type.value(),
+          posInScreen = (pt)=>start+midPntInDisp-pt  + (-trigPosPnt)+midPntInDisp;
     for (const pt of trigSource.triggerPoints) {
-      if (pt >= start && pt <= end) {
-        offsetX += Math.max(
-          -midPntInDisp,
-          Math.min(
-            midPntInDisp,
-            start+midPntInDisp-pt  + (-trigPosPnt)+midPntInDisp));
-        break;
+      if (trigMode === "Auto" || trigSource.triggerPoints.length > 1) {
+        if (pt >= start && pt <= end) {
+          offsetX += Math.max(
+            -midPntInDisp,
+            Math.min(midPntInDisp, posInScreen(pt)));
+          break;
+        }
+      } else {
+        offsetX += posInScreen(pt);
+        if (start -offsetX < 0 || end - offsetX > trigSource.data.length)
+          return; // don't render as it would be out of bounds
       }
     }
 
@@ -655,34 +645,34 @@ class OscillioscopeScreen extends ScreenBase {
           ch2Bottom = height - ch2ZeroPos,
           ch2Top = -height + ch2Bottom;
 
-
-    // clamp so curve don't go outside of screen
-    const clamp = (max,min)=> {
-      return (vlu)=>{
-        return Math.max(min,Math.min(max,vlu));
-      }
-    };
-
     // render both channels
     [
       {
-        d:inCh1.data,f:ch1Factor, c:this.ch1Curve,
-        cl:clamp(ch1Bottom,ch1Top)
+        ch:inCh1,f:ch1Factor, c:this.ch1Curve,
+        cl:clamp(ch1Bottom,ch1Top),
+        coupling: this.mode.ch1Settings.coupling.value().substring(2)
       },
       {
-        d:inCh2.data,f:ch2Factor, c:this.ch2Curve,
-        cl:clamp(ch2Bottom, ch2Top)
+        ch:inCh2,f:ch2Factor, c:this.ch2Curve,
+        cl:clamp(ch2Bottom, ch2Top),
+        coupling: this.mode.ch2Settings.coupling.value().substring(2)
       }
-    ].forEach(({d,f,c,cl})=>{
-      if (!d?.length) return;
-      let x = 0;
-      const st = Math.floor(start),
-            dArr = [`M0 ${cl(d[Math.floor(st)]/100*f)}`];
-      for (let i = start+1; i < end && (x*xFact) < width; ++i, ++x)
-        dArr.push(`L${x*xFact} ${
-          cl(d[Math.floor(i)]/100*f)
-        }`);
-      c.setAttribute("d", dArr.join(' '));
+    ].forEach(({ch,f,c,cl,coupling})=>{
+      if (!ch.data?.length) return;
+      if (coupling === "GND"){
+        c.setAttribute("d", `M0 0 H${width}`);
+      } else {
+        let x = 0;
+        const acOffset = coupling === "AC" ? -ch.value: 0,
+              d = ch.data,
+              st = Math.floor(start),
+              dArr = [`M0 ${cl((d[Math.floor(st)]/100+acOffset)*f)}`];
+        for (let i = start+1; i < end && (x*xFact) < width; ++i, ++x)
+          dArr.push(`L${x*xFact} ${
+            cl(((d[Math.floor(i)]/100)+acOffset)*f)
+          }`);
+        c.setAttribute("d", dArr.join(' '));
+      }
     })
   }
 }
@@ -969,12 +959,14 @@ class OscillioscopeTriggerMenu1 extends OscillioscopeMenuBase {
     const mode = this.manager.currentMode;
     mode.triggerSettings.time.dec();
     mode.screen.updateSettings();
+    mode.screen.update();
   }
 
   on_rightBtn() {
     const mode = this.manager.currentMode;
     mode.triggerSettings.time.inc();
     mode.screen.updateSettings();
+    mode.screen.update();
   }
 
   on_trigBtn() {
@@ -1009,7 +1001,9 @@ class OscillioscopeTriggerMenu2 extends OscillioscopeTriggerMenu1 {
 
   on_F1Btn() {
     this.F1Button.click();
-    this.manager.currentMode.screen.updateSettings();
+    const mode = this.manager.currentMode;
+    mode.triggerSettings.setChannel(+mode.triggerSettings.source.value()[3])
+    mode.screen.updateSettings();
   }
 
   on_F2Btn() {
@@ -1179,7 +1173,11 @@ class OscillioscopeChMenu2 extends OscillioscopeChMenu1 {
   }
 
   on_F2Btn() {
+    // coupling
     this.F2Button.click();
+    console.log("ch1",this.manager.currentMode.ch1Settings.coupling.value());
+    console.log("ch2",this.manager.currentMode.ch2Settings.coupling.value());
+
     this._updateScreen();
   }
 
@@ -1241,10 +1239,14 @@ class OscillioscopeHorMenu1 extends OscillioscopeMenuBase {
 
   on_leftBtn() {
     this._horPos("dec");
+    const mode = this.manager.currentMode;
+    mode.screen.update();
   }
 
   on_rightBtn() {
     this._horPos("inc");
+    const mode = this.manager.currentMode;
+    mode.screen.update();
   }
 }
 KeyInputManager.register(OscillioscopeHorMenu1);

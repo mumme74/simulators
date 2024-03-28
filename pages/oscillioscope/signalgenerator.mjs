@@ -618,7 +618,7 @@ class SignalDiscontinuous extends SignalBase {
 class SignalTransient extends SignalDiscontinuous {
   constructor(amplitude = 12, offset = 0, name = "", duration = 0.1, repeats = 1) {
     const props = {
-      amplitude: new SignalProperty({min:0.01, max:1000}),
+      amplitude: new SignalProperty({min:-1000, max:1000, step:0.1}),
       offset: new SignalProperty({min:-20,max:20}),
       repeats: new SignalProperty({min:1,max:5}),
       duration: new SignalProperty({min:0.001,max:1, step:0.001})
@@ -633,7 +633,7 @@ class SignalTransient extends SignalDiscontinuous {
   update() {
     const distance = this.points.length / this.repeats,
           halfDur = this.duration / 2 * 100,
-          mulFactor = Math.pow(this.amplitude, 1/(halfDur*100));
+          mulFactor = Math.pow(Math.abs(this.amplitude), 1/(halfDur*100));
     let x = distance -20 - halfDur, y = this.offset, mul = 1.0;
     for (let i = 0; i < this.points.length; ++i, ++x) {
       if (x >= distance) {
@@ -714,7 +714,76 @@ class SignalVRSensor extends SignalDiscontinuous {
         this.points[i] = vlu * 100;
       lastVlu = vlu;
     }
-    console.log(this.points)
   }
 }
 SignalManager.register(SignalVRSensor);
+
+class SignalLinBus extends SignalDiscontinuous {
+  constructor(amplitude = 12, duration = 0.5, repeats = 0.5) {
+    const props = {
+      amplitude: new SignalProperty({min:12,max:24, step:1}),
+      duration: new SignalProperty({name:"Paket utspridda", min:0,max:0.9,step:0.1}),
+      repeats: new SignalProperty({name:"Belastning",min:0.1,max:0.8,step:0.1})
+    }
+    super(props, amplitude, 0.2, "LIN bus", duration, repeats);
+    this.frequency = 96;
+    this._bitLen =  2; // as i point len
+    this._pos = 0;
+    this.update();
+  }
+
+  _genBits(bits) {
+    if (typeof bits === 'string')
+      bits = bits.split('').map(c=>+c);
+    let pos = this._pos;
+    for (const bit of bits) {
+      const bitVlu = bit ? this.amplitude : this.amplitude * 0.3;
+      this.points.fill(bitVlu*100, pos, pos+this._bitLen);
+      pos+=this._bitLen;
+    }
+    this._pos = pos;
+  }
+
+  _randomByte() {
+    return Math.round(Math.random()*256).toString(2);
+  }
+
+  _genPkg() {
+    // gen break
+    this._genBits("".padStart(13,0));
+    // sync
+    this._genBits("10101010");
+    //gen id
+    const id = "0" + this._randomByte();
+    this._genBits(id);
+    // gen data
+    const pkgLen = Math.round(Math.random()*8);
+    for (let i = 0; i < pkgLen; ++i){
+      const byte = this._randomByte();
+      this._genBits(byte);
+    }
+    // gen checksum
+    this._genBits(this._randomByte());
+  }
+
+  _genIdle(spacing) {
+    this.points.fill(this.amplitude*100, this._pos, this._pos + spacing);
+    this._pos += spacing;
+  }
+
+  update() {
+    // frequency is 10kHz 12kpts at 10kHz gives 1200ms long
+    const repeats = (this.points.length / 960 * this.repeats);
+    const spacing = (this.points.length / repeats) - 48,
+          spacingFactor = spacing/ 2 * this.duration;
+
+    for (let i = 0; i < repeats; ++i) {
+      this._genIdle(spacing - (spacingFactor - Math.round(Math.random()*spacingFactor)));
+      this._genPkg();
+      this._genIdle(13); // idle time
+    }
+
+    this._pos = 0;
+  }
+}
+SignalManager.register(SignalLinBus);
