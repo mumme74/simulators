@@ -104,6 +104,28 @@ svg text {
   opacity: 1.0;
 }
 
+.menu-autocomplete {
+  background-color: var(--common);
+  border: none;
+  position: absolute;
+  width: 15rem;
+}
+.menu-autocomplete > * {
+  background-color: var(--common);
+  color: var(--dark-color);
+  font-size: 1.2rem;
+  padding: 0.1rem;
+}
+
+.menu-autocomplete:empty {
+  display: none;
+}
+
+.menu-autocomplete > *.selected {
+  background-color: var(--highlight);
+  color: var(--content);
+}
+
 .menu-popup-root {
   position: fixed;
   font-size: large;

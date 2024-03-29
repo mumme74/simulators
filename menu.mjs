@@ -108,12 +108,18 @@ export class Menu {
     this.root = parentElement;
     const header = document.createElement("header");
     this.root.appendChild(header);
+    this.header = header;
 
     this.search = document.createElement("input");
     this.search.type = "text";
     this.search.placeholder = "Sök efter sida"
     this.search.addEventListener("input", this.onSearch.bind(this));
+    this.search.addEventListener("keydown", this.navigate.bind(this));
     header.appendChild(this.search);
+
+    this.autoComplete =  document.createElement("div");
+    this.autoComplete.classList.add("menu-autocomplete");
+    header.appendChild(this.autoComplete);
 
     this.displaySection = document.createElement("section");
     this.displaySection.className = "menu-display-list";
@@ -266,8 +272,10 @@ export class Menu {
       this.startMenu();
 
     const needle = this.search.value;
-    if (!needle.length)
+    this.onAutoComplete(needle);
+    if (!needle.length) {
       return this.startMenu();
+    }
 
     const nodes = this.displaySection.querySelectorAll(
       ".menu-category-header a");
@@ -287,6 +295,73 @@ export class Menu {
         // go up tree to remove/search for needle
         n = n.parentElement;
       }
+    }
+
+
+  }
+
+  navigate(e) {
+    const comp = this.header.querySelector(".menu-autocomplete");
+    if (comp && this.autoCompleteSel) {
+      const sel = comp.querySelector(".selected");
+      switch (e.key) {
+      case 'ArrowDown':
+        if (comp.children.length > 1) {
+          const n = sel.nextElementSibling ?? comp.firstElementChild;
+          n.classList.add('selected');
+          sel.classList.remove('selected');
+        }
+        break
+      case 'ArrowUp':
+        if (comp.children.length > 1) {
+          const n = sel.previousElementSibling ?? comp.lastElementChild;
+          n.classList.add('selected');
+          sel.classList.remove('selected');
+        }
+        break;
+      case 'Enter': case 'Return':
+        this.search.value = sel.innerText;
+        const page = allPages.find(p=>p.name===this.search.value);
+        if (page) {
+          document.location.pathname = page.path;
+        }
+        break;
+      default:
+      }
+
+    }
+  }
+
+
+  onAutoComplete(needle) {
+    if (this.autoCompleteSel?.length > needle.length)
+      this.autoCompleteSel = null;
+
+    const autoComplete = this.header.querySelector(".menu-autocomplete");
+    autoComplete.innerHTML = "";
+    if (!needle) return;
+
+    const possible = allPages.filter(p=>p.name.toLocaleLowerCase()
+          .startsWith(needle.toLocaleLowerCase()));
+    possible.forEach((page, i)=>{
+      const div = document.createElement("div");
+      div.innerText = page.name;
+      if (page.name === this.autoCompleteSel || !this.autoCompleteSel) {
+        div.classList.add("selected");
+        this.autoCompleteSel = page.name;
+      }
+      autoComplete.appendChild(div);
+    });
+    const box = this.search.getBoundingClientRect(),
+          rootBox = this.root.getBoundingClientRect();
+    autoComplete.style.left = `${box.right-rootBox.left-20}px`;
+    autoComplete.style.top = `${box.top-rootBox.top}px`;
+
+    if (!autoComplete?.querySelector("*.selected") &&
+        autoComplete.children.length)
+    {
+      autoComplete.children[0].classList.add("selected");
+      this.autoCompleteSel = autoComplete.children[0].innerText;
     }
   }
 }
@@ -312,6 +387,7 @@ class MenuPopup extends Menu {
   hide() {
     const rect = this.root.getBoundingClientRect()
     this.root.style.left = `-${rect.width}px`;
+    this.autoComplete.innerHTML = "";
   }
 
   show() {
