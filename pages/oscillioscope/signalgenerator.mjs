@@ -108,6 +108,7 @@ class SignalGeneratorChannel {
     this.running = running;
     this._acquireFrom = 0;
     this.name = name;
+    this._sampleCnt = 0;
 
     this.node = document.getElementById(`${this.name}_fieldset`);
     this.setSignal(localStorage.getItem(`${name}_signal`) || "SignalSine");
@@ -134,6 +135,10 @@ class SignalGeneratorChannel {
     Object.entries(this.signal.props).forEach(([key, prop])=>{
       this._createProp(idPart, prop, key);
     });
+
+    const signalCls = SignalManager.classes[this.signal.constructor.name];
+    if (signalCls.sampleCnt !== undefined)
+      signalCls._sampledCnt = 0; // to make 2 channels sweep in sync
   }
 
   _createOnOff(idPart) {
@@ -255,8 +260,13 @@ class SignalGeneratorChannel {
     if (this.signal.liveInput)
       this.signal.update();
 
-    if (from === -1 && this.signal.alwaysSampleFrom !== undefined)
-      from = this.signal.alwaysSampleFrom;
+    const signalCls = SignalManager.classes[this.signal.constructor.name];
+    if (from === -1) {
+      if (signalCls.sampleCnt !== undefined) {
+        from = +signalCls.sampleCnt;
+      } else if (this.signal.alwaysSampleFrom !== undefined)
+        from = this.signal.alwaysSampleFrom;
+    }
 
     const signalDurationMs = this.signal.points.length / this.frequency,
           periodMs = signalDurationMs / (this.signal.cycles || 1),
@@ -271,7 +281,17 @@ class SignalGeneratorChannel {
       const vlu = this.signal.points[Math.floor(si)];
       data[i] = vlu;
     }
+
     this._acquireFrom = si-1;
+
+    // to make 2 channels sweep in sync
+    if (signalCls.sampleCnt !== undefined) {
+      if (signalCls._sampledCnt % 2 == 0)
+        signalCls.sampleCnt = this._acquireFrom;
+
+      if (!Number.isSafeInteger(++signalCls._sampledCnt))
+        signalCls._sampledCnt = 0;
+    }
 
     return data;
   }
@@ -815,17 +835,33 @@ class SignalVRSensor extends SignalDiscontinuous {
 }
 SignalManager.register(SignalVRSensor);
 
-class SignalLinBus extends SignalDiscontinuous {
-  constructor(amplitude = 12, duration = 0.5, repeats = 0.5) {
-    const props = {
-      amplitude: new SignalProperty({min:12,max:24, step:1}),
-      duration: new SignalProperty({name:"Paket utspridda", min:0,max:0.9,step:0.1}),
-      repeats: new SignalProperty({name:"Belastning",min:0.1,max:0.8,step:0.1})
-    }
-    super(props, amplitude, 0.2, "LIN bus", duration, repeats);
-    this.frequency = 96;
-    this._bitLen =  2; // as i point len
+class SignalBitBase extends Signal2Channel {
+  constructor(props, oneAmplitude, zeroAmplitude, offset, bitLen, name, duration, repeats) {
+    super(props, oneAmplitude, name);
     this._pos = 0;
+    this._bitLen = bitLen;
+    this._oneAmplitude = oneAmplitude;
+    this._zeroAmplitude = zeroAmplitude;
+    this.offset = offset;
+    this.duration = duration;
+    this.repeats = repeats;
+  }
+
+  setOffset(offset) {
+    this.offset = offset;
+    this.syncProperty("offset");
+    this.update();
+  }
+
+  setDuration(duration) {
+    this.duration = duration;
+    this.syncProperty("duration");
+    this.update()
+  }
+
+  setRepeats(repeats) {
+    this.repeats = repeats;
+    this.syncProperty("repeats");
     this.update();
   }
 
@@ -834,7 +870,7 @@ class SignalLinBus extends SignalDiscontinuous {
       bits = bits.split('').map(c=>+c);
     let pos = this._pos;
     for (const bit of bits) {
-      const bitVlu = bit ? this.amplitude : this.amplitude * 0.3;
+      const bitVlu = bit ? this._oneAmplitude : this._zeroAmplitude;
       this.points.fill(bitVlu*100, pos, pos+this._bitLen);
       pos+=this._bitLen;
     }
@@ -843,6 +879,33 @@ class SignalLinBus extends SignalDiscontinuous {
 
   _randomByte() {
     return Math.round(Math.random()*256).toString(2);
+  }
+
+  _genIdle(spacing, amplitude) {
+    this.points.fill(amplitude *100, this._pos, this._pos*this._bitLen + spacing);
+    this._pos += spacing;
+  }
+}
+
+class SignalLinBus extends SignalBitBase {
+  constructor(amplitude = 12, duration = 0.5, repeats = 0.5) {
+    const bitLen = 2, // as in point len
+      props = {
+      amplitude: new SignalProperty({min:12,max:24, step:1}),
+      duration: new SignalProperty({name:"Paket utspridda", min:0,max:0.9,step:0.1}),
+      repeats: new SignalProperty({name:"Belastning",min:0.1,max:0.8,step:0.1})
+    }
+    super(props, amplitude, amplitude*0.3, 0.2, 2, "LIN bus", duration, repeats);
+    this.frequency = 96;
+    this._zeroAmplitude = this.amplitude*0.3;
+    this._oneAmplitude = this.amplitude;
+    this.update();
+  }
+
+  setAmplitude(amplitude) {
+    this.amplitude = amplitude;
+    this._oneAmplitude = amplitude;
+    this._zeroAmplitude = amplitude * 0.3;
   }
 
   _genPkg() {
@@ -863,11 +926,6 @@ class SignalLinBus extends SignalDiscontinuous {
     this._genBits(this._randomByte());
   }
 
-  _genIdle(spacing) {
-    this.points.fill(this.amplitude*100, this._pos, this._pos + spacing);
-    this._pos += spacing;
-  }
-
   update() {
     // frequency is 10kHz 12kpts at 10kHz gives 1200ms long
     const repeats = (this.points.length / 960 * this.repeats);
@@ -875,9 +933,10 @@ class SignalLinBus extends SignalDiscontinuous {
           spacingFactor = spacing/ 2 * this.duration;
 
     for (let i = 0; i < repeats; ++i) {
-      this._genIdle(spacing - (spacingFactor - Math.round(Math.random()*spacingFactor)));
+      const idleTime = spacing - (spacingFactor - Math.round(Math.random()*spacingFactor));
+      this._genIdle(idleTime, this._oneAmplitude);
       this._genPkg();
-      this._genIdle(13); // idle time
+      this._genIdle(13, this._oneAmplitude); // idle time
     }
 
     this._pos = 0;
@@ -885,6 +944,147 @@ class SignalLinBus extends SignalDiscontinuous {
 }
 SignalManager.register(SignalLinBus);
 
+
+
+class SignalCanBus extends SignalBitBase {
+  static sampleCnt = 0; // add a combined sweep in signal generator
+
+  constructor(duration = 0.5, repeats = 0.5) {
+    const props = {
+      canHigh: new SignalProperty({name:"Can H",min:0,max:1}),
+      bitRate: new SignalProperty({name:"kbit", min:125,max:500,step:125}),
+      duration: new SignalProperty({name:"Paket utspridda", min:0,max:0.9,step:0.1}),
+      repeats: new SignalProperty({name:"Belastning",min:0.1,max:0.8,step:0.1})
+    }
+    super(props, 2.5, 3.5, 0, 2, "CAN bus", duration, repeats);
+    this.frequency = 500;
+    const otherCanBus = SignalManager.instance().findSignals(
+      this.constructor.name).find(c=>c!==this);
+    this.canHigh = otherCanBus ? +!otherCanBus.canHigh : 1;
+    this.bitRate = otherCanBus?.bitRate ?? 250;
+
+    this.alwaysSampleFrom = 0;
+
+    if (!this.canHigh)
+      this._zeroAmplitude = 1.5;
+    this.opposite = new SignalBitBase(
+      props, 2.5, this.canHigh ? 1.5 : 3.5, 0, 2,
+      "can opposite", duration, repeats);
+    this.opposite.canHigh = !this.canHigh;
+    this.opposite.bitRate = this.bitRate;
+
+    this.update();
+  }
+
+  setCanHigh(canHigh) {
+    this.canHigh = canHigh;
+    this.opposite._canHigh = +!canHigh;
+    this.opposite._zeroAmplitude = canHigh ? 1.5 : 3.5, 0, 2;
+    this.syncProperty("canHigh", canHigh ? 0 : 1);
+    this.update();
+  }
+
+  setBitRate(bitRate) {
+    this.bitRate = bitRate;
+    this._bitLen = 500 / bitRate;
+    this.opposite.bitRate = bitRate;
+    this.opposite._bitLen = this._bitLen;
+    this.syncProperty("bitRate");
+    this.update();
+  }
+
+  _genBits(bits) {
+    // can butstuffing after 5 equal bits
+    if (typeof bits === 'string')
+      bits = bits.split('').map(b=>+b);
+
+    let prev = -1, sameCnt = 0;
+    for (let i = 0; i < bits.length; i++) {
+      const bit = bits[i];
+      if (prev === bit) {
+        if (++sameCnt === 5) {
+          bits.splice(i, 0, bit ? 0 : 1);
+          i++;
+          sameCnt = 0;
+        }
+      }
+      prev = bit;
+    }
+    super._genBits(bits);
+  }
+
+  _genAck() {
+    this._genBits([1]);
+    const amp = this._zeroAmplitude + (this.canHigh ? 0.5 : -0.5);
+    this.points.fill(amp*100, this._pos, (this._pos * this._bitLen));
+    this._pos += this._bitLen;
+  }
+
+  _genPkg() {
+    // gen SOF and ID
+    let id = this._randomByte() + this._randomByte();
+    this._genBits("0" + id.substring(0, 11));
+    this._genBits.call(this.opposite,"0" + id.substring(0, 11));
+
+    // gen control
+    const nrBytes = Math.round(Math.random()*8);
+    this._genBits("000"+ nrBytes.toString(2));
+    this._genBits.call(this.opposite, "000"+ nrBytes.toString(2));
+
+    // gen data
+    for (let i = 0; i < nrBytes; ++i){
+      const byte = this._randomByte();
+      this._genBits(byte);
+      this._genBits.call(this.opposite,byte);
+    }
+
+    // crc
+    const crc = (this._randomByte() + this._randomByte()).substring(0,14);
+    this._genBits(crc)
+    this._genBits.call(this.opposite, crc);
+
+    // ack
+    this._genAck();
+    this._genAck.call(this.opposite);
+  }
+
+
+  update() {
+    const other = SignalManager.instance().findSignals(this)
+      .find(i=>i!==this);
+
+    if (other && !other._updateLock) {
+      this._updateLock = true;
+      other.update();
+      this._updateLock = false;
+      this.points = new Int16Array(other.opposite.points);
+      return;
+    }
+
+
+    // frequency is 500kHz 12kpts at 500kHz gives 41.6ms long
+    const repeats = (this.points.length / 960 * this.repeats);
+    const spacing = (this.points.length / repeats) - 48,
+          spacingFactor = spacing/ 2 * this.duration;
+
+    this.opposite._pos = 0;
+
+    for (let i = 0; i < repeats; ++i) {
+      const idleTime = spacing - (spacingFactor - Math.round(Math.random()*spacingFactor));
+      this._genIdle(i?idleTime:10, this._oneAmplitude);
+      this._genIdle.call(this.opposite,i?idleTime:10,
+        this.opposite._oneAmplitude);
+      this._genPkg();
+      this._genIdle(7, this._oneAmplitude); // idle time
+      this._genIdle.call(this.opposite,7,
+        this.opposite._oneAmplitude);
+    }
+
+    this._pos = 0;
+    this.opposite._pos = 0;
+  }
+}
+SignalManager.register(SignalCanBus);
 
 
 class SignalResolver extends Signal2Channel {
