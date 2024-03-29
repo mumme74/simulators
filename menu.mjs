@@ -127,32 +127,34 @@ export class Menu {
     this.startMenu();
   }
 
+  buildHref(path) {
+
+    const locParts = location.pathname.split('/').slice(1,-1);
+    const newPath = []; let start = 0;
+    if (path[0]==='/')
+      path = path.slice(1);
+    const pathParts = path.split('/');
+    locParts.forEach((part, i)=>{
+      if ((part !== pathParts[i]))
+        newPath.push('..');
+      else
+        ++start;
+    });
+    if (this.rootFolder)
+      newPath.push(this.rootFolder);
+    newPath.push(...pathParts.slice(start));
+    return newPath.join('/');
+  }
+
 
   startMenu() {
     this._state = "startPage";
 
     const locParts = location.pathname.split('/').slice(1,-1);
 
-    const buildHref = (path) => {
-      const newPath = []; let start = 0;
-      if (path[0]==='/')
-        path = path.slice(1);
-      const pathParts = path.split('/');
-      locParts.forEach((part, i)=>{
-        if ((part !== pathParts[i]))
-          newPath.push('..');
-        else
-          ++start;
-      });
-      if (this.rootFolder)
-        newPath.push(this.rootFolder);
-      newPath.push(...pathParts.slice(start));
-      return newPath.join('/');
-    }
-
     const createLink = (page, li) => {
       const a = document.createElement("a");
-      a.href = buildHref(page.path);
+      a.href = this.buildHref(page.path);
       a.appendChild(document.createTextNode(page.name));
       li.appendChild(a);
       return a;
@@ -323,7 +325,7 @@ export class Menu {
         this.search.value = sel.innerText;
         const page = allPages.find(p=>p.name===this.search.value);
         if (page) {
-          document.location.pathname = page.path;
+          document.location.pathname = this.buildHref(page.path);
         }
         break;
       default:
