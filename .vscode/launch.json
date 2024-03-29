@@ -25,11 +25,24 @@
     {
       "type": "chrome",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
+      "name": "Ubuntu Launch Chrome against localhost",
       "url": "http://localhost:8000",
       "port": 9222,
       "webRoot": "${workspaceFolder}",
       "runtimeExecutable": "/snap/bin/chromium",
+      "runtimeArgs": [
+        "--remote-debugging-port=9222",
+        "--user-data-dir=remote-debug-profile"
+      ]
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Mac Launch Chrome against localhost",
+      "url": "http://localhost:8000",
+      "port": 9222,
+      "webRoot": "${workspaceFolder}",
+      "runtimeExecutable": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
       "runtimeArgs": [
         "--remote-debugging-port=9222",
         "--user-data-dir=remote-debug-profile"
