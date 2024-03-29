@@ -252,6 +252,9 @@ class SignalGeneratorChannel {
       return data;
     }
 
+    if (this.signal.liveInput)
+      this.signal.update();
+
     if (from === -1 && this.signal.alwaysSampleFrom !== undefined)
       from = this.signal.alwaysSampleFrom;
 
@@ -373,6 +376,18 @@ class SignalProperty {
  * Base class of all signals
  */
 class SignalBase {
+
+  /**
+   * special handling when these properties exists
+   * @prop {number} [frequency]  Force signalGenerator to use this frequency
+   * @prop {number} [alwaysSampleFrom] Start to sample from this point, for syning 2 signals
+   * @prop {boolean} [liveInput] If true always re-genereate data
+   */
+  frequency = undefined;
+  alwaysSampleFrom = undefined;
+  liveInput = false;
+
+
   constructor(props, name = "") {
     this._name = name;
     this.points = new Int16Array(12000);
@@ -440,6 +455,8 @@ class SignalCyclic extends SignalContinuous {
     this.update();
   }
 
+
+
   /**
    * How many cycles to generate in one sample period
    * @param {number} cycles The cycles to generate should always be positive integer
@@ -458,6 +475,43 @@ class SignalCyclic extends SignalContinuous {
     const len = this.points.length,
           period = Math.round(len / cycles);
     return {len, period};
+  }
+}
+
+/**
+ * A base class when 2 signals must be in sync
+ */
+class Signal2Channel extends SignalBase {
+  constructor(props, amplitude, name) {
+    super(props,name)
+    this.amplitude = amplitude;
+    this.props = props;
+    this._updateLock = false;
+  }
+
+  syncProperty(propertyName, vlu = null) {
+    this._updateLock = true;
+    SignalManager.instance().findSignals(this).forEach(s=>{
+      s.syncSetProperty(
+        this.propertySetter(propertyName),
+        vlu ?? this[propertyName]);
+    });
+    this._updateLock = false;
+  }
+
+  syncSetProperty(setFn, vlu) {
+    if (this._updateLock) return;
+    if (!this[setFn])
+      throw new Error("Can't set property using " + setFn);
+    this[setFn](vlu);
+    const prop = setFn[3].toLowerCase() + setFn.substring(4);
+    SignalGenerator.instance.setPropertyValue(this, prop);
+  }
+
+  setAmplitude(amplitude) {
+    this.amplitude = amplitude;
+    this.syncProperty("amplitude");
+    this.update();
   }
 }
 
@@ -831,39 +885,7 @@ class SignalLinBus extends SignalDiscontinuous {
 }
 SignalManager.register(SignalLinBus);
 
-class Signal2Channel extends SignalBase {
-  constructor(props, amplitude, name) {
-    super(props,name)
-    this.amplitude = amplitude;
-    this.props = props;
-    this._updateLock = false;
-  }
 
-  syncProperty(propertyName, vlu = null) {
-    this._updateLock = true;
-    SignalManager.instance().findSignals(this).forEach(s=>{
-      s.syncSetProperty(
-        this.propertySetter(propertyName),
-        vlu ?? this[propertyName]);
-    });
-    this._updateLock = false;
-  }
-
-  syncSetProperty(setFn, vlu) {
-    if (this._updateLock) return;
-    if (!this[setFn])
-      throw new Error("Can't set property using " + setFn);
-    this[setFn](vlu);
-    const prop = setFn[3].toLowerCase() + setFn.substring(4);
-    SignalGenerator.instance.setPropertyValue(this, prop);
-  }
-
-  setAmplitude(amplitude) {
-    this.amplitude = amplitude;
-    this.syncProperty("amplitude");
-    this.update();
-  }
-}
 
 class SignalResolver extends Signal2Channel {
   constructor(amplitude = 5, cos = undefined, baseFrequency = 10000) {
@@ -921,3 +943,92 @@ class SignalResolver extends Signal2Channel {
   }
 }
 SignalManager.register(SignalResolver);
+
+class SignalMicrophone extends SignalDiscontinuous {
+  constructor(amplitude = 10, offset = 0) {
+    const props = {
+      amplitude: new SignalProperty({min:1,max:10}),
+      powerOn: new SignalProperty({name:"Mic på", min:0,max:1})
+    }
+    super(props, amplitude, offset, "Mic");
+    this.powerOn = 0;
+    this.liveInput = true;
+    this.alwaysSampleFrom = 0;
+
+    if (!SignalMicrophone._listenerCnt)
+      SignalMicrophone._listenerCnt = 0;
+  }
+
+  setupAudio() {
+    if (this.powerOn) {
+      SignalMicrophone._listenerCnt++;
+    } else if (SignalMicrophone._listenerCnt) {
+      SignalMicrophone._listenerCnt--;
+    }
+
+
+    if (!SignalMicrophone._ctx) {
+      const ctx = SignalMicrophone._ctx = new AudioContext();
+      const analyser = SignalMicrophone._analyser = ctx.createAnalyser();
+      analyser.fftSize = 2048;
+
+      const bufferLength = analyser.frequencyBinCount;
+      const dataArray = new Uint8Array(bufferLength);
+      SignalMicrophone._dataArray = dataArray;
+
+      navigator.mediaDevices.getUserMedia({audio:true})
+        .then(stream=>{
+          const mic = SignalMicrophone._microphone =
+            ctx.createMediaStreamSource(stream);
+          mic.connect(analyser);
+          //analyser.connect(ctx.destination); // route to speakers debug
+          if (this.powerOn) SignalMicrophone._capture();
+      }).catch(reason=>{
+        console.error(reason);
+        alert(reason);
+      });
+    } else if (!SignalMicrophone._listenerCnt) {
+      const ctx = SignalMicrophone._ctx;
+      ctx.close();
+      delete SignalMicrophone._ctx;
+    }
+
+  }
+
+  static _capture() {
+    const analyzer = SignalMicrophone._analyser,
+          dataArray = SignalMicrophone._dataArray;
+    analyzer.getByteTimeDomainData(dataArray);
+
+    if (SignalMicrophone._listenerCnt > 0)
+      requestAnimationFrame(SignalMicrophone._capture);
+  }
+
+  setPowerOn(on) {
+    this.powerOn = on;
+    this.setupAudio();
+
+    if (on) {
+      SignalMicrophone._capture();
+      this.update();
+    }
+  }
+
+  update() {
+    const dataArray = SignalMicrophone._dataArray;
+    if (!dataArray) return;
+    if (!this.powerOn) {
+      this.points.fill(0,0, this.points.length);
+      return;
+    }
+    let j = 0;
+    for (let i = 0; i < this.points.length; i++, j++) {
+      this.points[i] = this.amplitude * (dataArray[j] - 0x7F); // To signed
+      if (j >=  dataArray.length -1)
+        j = 0;
+    }
+  }
+}
+SignalManager.register(SignalMicrophone);
+
+
