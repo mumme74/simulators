@@ -120,17 +120,17 @@ class Input {
 
 const potential = new Input("potential", arrowU, textU, "V", (volts)=>{
   current.value = volts / resistance.value;
-  mathml.recalulate("I");
+  //mathml.recalulate("I");
 });
 
 const resistance = new Input("resistance", arrowR, textR, "Ω", (ohms)=>{
   current.value = potential.value / ohms;
-  mathml.recalulate("U");
+  //mathml.recalulate("U");
 });
 
 const current = new Input("current", arrowI, textI, "A", (amps)=>{
   resistance.value = potential.value / amps;
-  mathml.recalulate("R");
+  //mathml.recalulate("R");
 });
 
 
