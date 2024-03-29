@@ -9,15 +9,31 @@ import { SignalGenerator, SignalInputBase } from './signalgenerator.mjs';
 // this file handles all Oscillioscope measuring
 // ie when we are in oscillioscope mode
 
+/**
+ * How many grid squares in display
+ */
 const gridXNr = 12, gridYNr = 8;
 
+/**
+ * Class which listens to a signal generator
+ */
 class OscillioscopeInput extends SignalInputBase {
+  /**
+   * The constructor
+   * @param {ModeOscillioscope} mode Owner instance
+   * @param {string} ch Channel 1 or 2 ie ch1 vs ch2
+   */
   constructor(mode, ch) {
     super(mode, ch, 50);
     this.chNr = +ch[2];
     this.chSettings = mode[`${ch}Settings`];
   }
 
+  /**
+   * Inspect incoming data
+   * Calls screen update if it follows through trigger mode
+   * @param {Int16Array} data The sampled data
+   */
   inspectData(data) {
     if (this.mode.hold) return;
 
@@ -48,6 +64,9 @@ class OscillioscopeInput extends SignalInputBase {
     this.finalize(data, mean, min, max, triggerPoints);
   }
 
+  /**
+   * Sort of private routes data to screen depending on trigger setting
+   */
   finalize(data, mean, min, max, triggerPoints) {
     switch (this.mode.triggerSettings.type.value()) {
     case "Normal":
@@ -84,7 +103,7 @@ class OscillioscopeInput extends SignalInputBase {
 }
 
 /**
- * handle time and Volt based trigger settings
+ * Handle time and Volt based trigger settings
  * and the same for Ch voltages
  * Construct a pair of these to get x/y trigger settings
  */
@@ -98,20 +117,39 @@ class OscillioscopeAxisValue {
     this.xDivChoices = xDivChoices;
   }
 
+  /**
+   * Reset value
+   */
   reset() {
     this.value = 0.0;
   }
 
+  /**
+   * Decrement value
+   */
   dec() {
     this.value -= this.xDivChoices.value() / 10;
   }
 
+  /**
+   * Increment value
+   */
   inc() {
     this.value += this.xDivChoices.value() / 10;
   }
 }
 
+/**
+ * Class containing settings for a channel
+ */
 class OscillioscopeChannelSettings {
+  /**
+   * Constructor
+   * @param {ModeOscillioscope} mode The owner instance
+   * @param {number} chNr The channel nr for these settings
+   * @param {boolean} on  Start as on or off
+   * @param {number} zero The zero pos of this channel
+   */
   constructor(mode, chNr, on, zero = 0.0) {
     this.mode = mode;
     this.chNr = chNr;
@@ -128,7 +166,16 @@ class OscillioscopeChannelSettings {
   }
 }
 
+/**
+ * Class that holds all trigger settings
+ */
 class OscillioscopeTriggerSettings {
+  /**
+   * Constructor
+   * @param {ModeOscillioscope} mode The owner mode
+   * @param {Choices} tDivChoices The Time div choices
+   * @param {number} chNr The channel nr
+   */
   constructor(mode, tDivChoices, chNr) {
     this.mode = mode;
     this.time = new OscillioscopeAxisValue(tDivChoices);
@@ -139,6 +186,10 @@ class OscillioscopeTriggerSettings {
     this.setChannel(chNr);
   }
 
+  /**
+   * Sets trigger source to channel
+   * @param {number} chNr The channel, ie 1 or 2
+   */
   setChannel(chNr) {
     this.chNr = chNr;
     this.source.selectIdx = chNr -1;
@@ -147,7 +198,16 @@ class OscillioscopeTriggerSettings {
   }
 }
 
+/**
+ * Widget that displays where in sampled set we are looking at presently
+ */
 class OscillioscopeHorPosWidget extends ScreenBadgeBase {
+  /**
+   * Constructor
+   * @param {OscillioscopeScreen} screen The owner screen
+   * @param {number} x Position in screen at x
+   * @param {number} y Position in screen at y
+   */
   constructor(screen, x, y) {
     const width = 110, height = 17, screenEdgeIn = 30;
     const lineCurve = screen.createElement("line", {
@@ -177,6 +237,9 @@ class OscillioscopeHorPosWidget extends ScreenBadgeBase {
     this.screen = screen;
   }
 
+  /**
+   * Update moves things around so they display wanted info
+   */
   update() {
     const horPos = this.screen.mode.horPos.value,
           tDiv = this.screen.mode.tDivChoices.value(),
@@ -210,7 +273,14 @@ class OscillioscopeHorPosWidget extends ScreenBadgeBase {
   }
 }
 
+/**
+ * The screen class, handles all things displayed in screen
+ */
 class OscillioscopeScreen extends ScreenBase {
+  /**
+   * Constructor
+   * @param {ModeOscillioscope} mode The owner mode
+   */
   constructor(mode) {
     super(mode);
     this.triggerStatusChoices = new Choices([
@@ -218,6 +288,10 @@ class OscillioscopeScreen extends ScreenBase {
 
   }
 
+  /**
+   * Redraw creates new SVG nodes.
+   * Different than update which just moves stuff
+   */
   redraw() {
     super.redraw();
     this.drawHeader();
@@ -230,6 +304,9 @@ class OscillioscopeScreen extends ScreenBase {
     this.updateTrigger();
   }
 
+  /**
+   * Draw things in top of screen
+   */
   drawHeader() {
     const currentMenu = this.mode.manager.currentMenu;
     this.triggerStatus = new ScreenBadgeText(
@@ -279,6 +356,9 @@ class OscillioscopeScreen extends ScreenBase {
     }`
   }
 
+  /**
+   * Draw things at bottom of screen
+   */
   drawFooter() {
     const currentMenu = this.mode.manager.currentMenu;
     this.ch1Settings = new ScreenBadgeText(
@@ -323,6 +403,9 @@ class OscillioscopeScreen extends ScreenBase {
     };
   }
 
+  /**
+   * Draws the screen ie grid, arrows and lines
+   */
   drawScreen() {
     const sizeRect = this._displayRect();
     const dashStyle = `1 ${
@@ -365,6 +448,9 @@ class OscillioscopeScreen extends ScreenBase {
     }
   }
 
+  /**
+   * Draw trigger and marker lines
+   */
   drawTrigger() {
     const {
       xLeft, xRight, xMiddle, yTop, yBottom, yMiddle
@@ -407,6 +493,9 @@ class OscillioscopeScreen extends ScreenBase {
     return Math.min(yBottom, Math.max(yTop, yMiddle - chPos * vDiv));
   }
 
+  /**
+   * Draw all channel stuff, curves, and pos arrows
+   */
   drawChannels() {
     const {
       xLeft, yTop, xRight,
@@ -443,6 +532,10 @@ class OscillioscopeScreen extends ScreenBase {
       this.ch1Arrow, this.ch2Arrow, this.ch1Curve, this.ch2Curve);
   }
 
+  /**
+   * Update all info related to a setting
+   * Don't redraw the full screen
+   */
   updateSettings() {
     this.updateHeader();
     this.updateFooter();
@@ -450,6 +543,9 @@ class OscillioscopeScreen extends ScreenBase {
     this.updateChannels();
   }
 
+  /**
+   * Update only header
+   */
   updateHeader() {
     this.triggerStatus.setText(this.triggerStatusChoices.value());
 
@@ -464,12 +560,18 @@ class OscillioscopeScreen extends ScreenBase {
     this.triggerTime.setUnit(this.mode.trigTimeUnit());
   }
 
+  /**
+   * Update only footer
+   */
   updateFooter() {
     this.triggerSettings.setText(this._buildTriggInfoStr());
     this.ch1Settings.setText(this._buildChInfo(1));
     this.ch2Settings.setText(this._buildChInfo(2));
   }
 
+  /**
+   * Update the trigger related stuff in screen
+   */
   updateTrigger() {
     const {
             xLeft, xMiddle, xRight,
@@ -506,6 +608,10 @@ class OscillioscopeScreen extends ScreenBase {
     this.trigVArrow.transform.baseVal[0].matrix.e = xClamped;
   }
 
+  /**
+   * Update channels, side arrows and such
+   * When moving vertically
+   */
   updateChannels() {
     const {
       xLeft, yTop, xRight,
@@ -550,6 +656,9 @@ class OscillioscopeScreen extends ScreenBase {
     return Math.min(xRight, Math.max(xLeft, xMiddle + xPos * tDiv));
   }
 
+  /**
+   * Update maker when moving horizontally
+   */
   updateHorPos() {
     const {
       xLeft, yTop, xRight,
@@ -565,6 +674,9 @@ class OscillioscopeScreen extends ScreenBase {
     this.update();
   }
 
+  /**
+   * Update curves when a new sampled dataset arrives
+   */
   update() {
     const inCh1 = this.mode.inputCh1,
           inCh2 = this.mode.inputCh2,
@@ -687,7 +799,14 @@ class OscillioscopeScreen extends ScreenBase {
   }
 }
 
+/**
+ * The root class for the Oscillioscope mode
+ */
 export class ModeOscillioscope extends ModeBase {
+  /**
+   * Constructor
+   * @param {KeyInputManager} manager The manager for all modes
+   */
   constructor(manager) {
     super(manager, []);
     this.ch1Settings = new OscillioscopeChannelSettings(
@@ -719,6 +838,9 @@ export class ModeOscillioscope extends ModeBase {
     //this.triggerSettings.volt.value = this.ch1Settings.vDivChoices.value();
   }
 
+  /**
+   * Event callback when this mode is activated
+   */
   activated() {
     this.manager.oscInstance.buttons.onOffBtn.classList.add("on");
     this.manager.activateMenu("OscillioscopeMenuRoot");
@@ -726,6 +848,9 @@ export class ModeOscillioscope extends ModeBase {
     this.inputCh2.start();
   }
 
+  /**
+   * Event callback when this mode is deactivated
+   */
   cleanup() {
     this.inputCh1.stop();
     this.inputCh2.stop();
@@ -802,27 +927,50 @@ export class ModeOscillioscope extends ModeBase {
     return this._tDivUnit(this.tDivChoices.value());
   }
 
+  /**
+   * The trigger horizontal setting formatted for trigger screen
+   * @returns {string} The trigger time formatted
+   */
   trigTime() {
     return this.triggerSettings.time.value.toFixed(1);
   }
 
+  /**
+   * The trigger horizontal setting time uint to display on screen
+   * @returns {string} The unit appropriate for current trigger setting
+   */
   trigTimeUnit() {
     return this.tDivUnit();
     return this._tDivUnit(this.triggerSettings.time.value);
   }
 
+  /**
+   * The trigger vertical setting formatted to display on screen
+   * @returns {string} The trigger vertical position formatted for display
+   */
   trigVolt() {
     return Math.round(this._vDiv(this.triggerSettings.volt.value)*10)/10;
   }
 
+  /**
+   * The trigger vertical setting unit currently used
+   * @returns {string} The unit appropriate for current setting
+   */
   trigVoltUnit() {
     return this._vDivUnit(this.triggerSettings.volt.value);
   }
 
+  /**
+   * How long a sampled set spans in time
+   * @returns {number} The time in milliseconds
+   */
   sampleTimeMs() {
     return +this.tDivChoices.value() * gridXNr * 4000; // 4 times more then shown in display
   }
 
+  /**
+   * Event callback when hold state has changed
+   */
   on_holdChange() {
     this.inputCh1.setHold(this.hold);
     this.inputCh2.setHold(this.hold);
@@ -832,6 +980,9 @@ export class ModeOscillioscope extends ModeBase {
 }
 KeyInputManager.register(ModeOscillioscope);
 
+/**
+ * The base menu for oscillioscope
+ */
 class OscillioscopeMenuBase extends MenuBase {
   constructor(manager, subMenus = []) {
     super(manager, subMenus);
@@ -868,6 +1019,9 @@ class OscillioscopeMenuBase extends MenuBase {
   }
 }
 
+/**
+ * Base class used for instance of checks
+ */
 class OscillioscopeMenuRoot extends OscillioscopeMenuBase {
   constructor(manager) {
     super(manager, [
@@ -878,6 +1032,9 @@ class OscillioscopeMenuRoot extends OscillioscopeMenuBase {
 }
 KeyInputManager.register(OscillioscopeMenuRoot);
 
+/**
+ * Basic Oscillioscope menu
+ */
 class OscillioscopeMenu extends OscillioscopeMenuBase {
   constructor(manager, subMenus = []) {
     super(manager, subMenus);
@@ -931,6 +1088,9 @@ class OscillioscopeMenu extends OscillioscopeMenuBase {
 }
 KeyInputManager.register(OscillioscopeMenu);
 
+/**
+ * Base for all trigger menus
+ */
 class OscillioscopeTriggerMenu1 extends OscillioscopeMenuBase {
 
   _highlight(on) {
@@ -985,6 +1145,9 @@ class OscillioscopeTriggerMenu1 extends OscillioscopeMenuBase {
 }
 KeyInputManager.register(OscillioscopeTriggerMenu1);
 
+/**
+ * Trigger menu page 1/2
+ */
 class OscillioscopeTriggerMenu2 extends OscillioscopeTriggerMenu1 {
   constructor(manager, subMenus = []) {
     super(manager, subMenus);
@@ -1044,6 +1207,9 @@ class OscillioscopeTriggerMenu2 extends OscillioscopeTriggerMenu1 {
 }
 KeyInputManager.register(OscillioscopeTriggerMenu2);
 
+/**
+ * Trigger menu page 2/2
+ */
 class OscillioscopeTriggerMenu3 extends OscillioscopeTriggerMenu1 {
   redraw() {
     // Function buttons
@@ -1084,6 +1250,9 @@ class OscillioscopeTriggerMenu3 extends OscillioscopeTriggerMenu1 {
 }
 KeyInputManager.register(OscillioscopeTriggerMenu3);
 
+/**
+ * Base Oscillioscope channel menu
+ */
 class OscillioscopeChMenu1 extends OscillioscopeMenuBase {
   static chSelect = "";
 
@@ -1146,6 +1315,9 @@ class OscillioscopeChMenu1 extends OscillioscopeMenuBase {
 }
 KeyInputManager.register(OscillioscopeChMenu1);
 
+/**
+ * The first Channel menu with buttons
+ */
 class OscillioscopeChMenu2 extends OscillioscopeChMenu1 {
   redraw() {
     const screen = this.manager.currentMode.screen,
@@ -1203,6 +1375,9 @@ class OscillioscopeChMenu2 extends OscillioscopeChMenu1 {
 }
 KeyInputManager.register(OscillioscopeChMenu2);
 
+/**
+ * The horizontal menu base
+ */
 class OscillioscopeHorMenu1 extends OscillioscopeMenuBase {
 
   _highlight(fn) {
